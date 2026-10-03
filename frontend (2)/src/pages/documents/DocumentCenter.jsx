@@ -122,7 +122,14 @@ export const DocumentCenter = ({ onNavigate }) => {
                 showToast(`Cannot download: Document is ON HOLD.`, 'danger', 'Download Restricted');
                 return;
               }
-              showToast(`${item.docNumber}.pdf downloaded.`, 'success', 'PDF Ready');
+              showToast(`Preparing PDF dialog for ${item.docNumber}. Choose "Save as PDF" to download.`, 'success', 'PDF Ready');
+              if (item.entityType === 'BL') onNavigate('bills-of-lading', item.id);
+              else if (item.entityType === 'MANIFEST') onNavigate('manifests', item.id);
+              else if (item.entityType === 'WR') onNavigate('warehouse-receipts', item.id);
+              
+              setTimeout(() => {
+                window.print();
+              }, 400);
             }}
             className={`btn btn-sm ${item.isOnHold ? 'btn-ghost disabled' : 'btn-outline'}`}
             title={item.isOnHold ? 'Hold active - locked' : 'Download Document PDF'}

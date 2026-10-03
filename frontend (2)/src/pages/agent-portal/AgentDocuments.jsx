@@ -76,7 +76,13 @@ export const AgentDocuments = ({ onNavigate }) => {
         'Download Locked'
       );
     } else {
-      showToast(`${item.fileName || `${item.docNumber}.pdf`} downloaded.`, 'success', 'Document Downloaded');
+      showToast(`Preparing PDF dialog for ${item.fileName || item.docNumber}. Choose "Save as PDF" to download.`, 'success', 'Document Downloaded');
+      if (item.entityType === 'BL') onNavigate('bills-of-lading', item.id);
+      else if (item.entityType === 'MANIFEST') onNavigate('manifests', item.id);
+      else if (item.entityType === 'WR') onNavigate('warehouse-receipts', item.id);
+      setTimeout(() => {
+        window.print();
+      }, 400);
     }
   };
 

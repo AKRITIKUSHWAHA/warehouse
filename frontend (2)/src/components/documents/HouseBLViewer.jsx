@@ -23,7 +23,8 @@ export const HouseBLViewer = ({ hbl, onNavigate }) => {
       showToast(`Cannot download document: House B/L is currently ON HOLD.`, 'danger', 'Download Restricted');
       return;
     }
-    showToast(`House Bill of Lading ${hbl.hblNumber}.pdf prepared for download.`, 'success', 'PDF Ready');
+    window.print();
+    showToast(`Opening Print dialog for House Bill of Lading ${hbl.hblNumber}. Choose "Save as PDF" to download.`, 'success', 'PDF Ready');
   };
 
   const packages = hbl.packages && hbl.packages.length > 0 ? hbl.packages : [];

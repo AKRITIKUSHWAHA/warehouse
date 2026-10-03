@@ -294,7 +294,8 @@ export const AgentBLDetail = ({ blId, onNavigate }) => {
         'Access Blocked'
       );
     } else {
-      showToast(`Master B/L ${bl.blNumber}.pdf downloaded.`, 'success', 'Document Downloaded');
+      window.print();
+      showToast(`Opening Print dialog for Master B/L ${bl.blNumber}. Choose "Save as PDF" to download.`, 'success', 'Document Downloaded');
     }
   };
 
