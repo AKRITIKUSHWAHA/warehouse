@@ -53,12 +53,12 @@ export const CargoDetail = ({ cargoId, onNavigate }) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '1200px', margin: '0 auto' }}>
       <PageHeader
-        title={`Cargo Unit ${activeCargo.id}`}
+        title={`Cargo Unit ${activeCargo.cargoNumber || activeCargo.id}`}
         subtitle={`Associated with Warehouse Receipt ${activeCargo.receiptNumber} (${activeCargo.customer})`}
         icon={Box}
         breadcrumbs={[
           { label: 'Cargo Inventory', href: '#' },
-          { label: activeCargo.id }
+          { label: activeCargo.cargoNumber || activeCargo.id }
         ]}
         actions={
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>

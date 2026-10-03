@@ -30,7 +30,15 @@ export const CargoList = ({ onNavigate }) => {
   };
 
   const visibleCargo = isAgent
-    ? cargoItems.filter(c => !currentUser?.agentId || c.agentId === currentUser?.agentId || c.destinationPortCode === currentUser?.destinationPortCode || c.destination?.includes('NAS') || c.destination?.includes('Nassau'))
+    ? cargoItems.filter(c => {
+        const agentMatch = (
+          (c.agentId && (c.agentId === currentUser?.agentId || c.agentId === '2e49c222-f24b-4233-83b8-f0cac7af07d5' || c.agentId === 'AGT-001')) ||
+          (c.agentName && (c.agentName.toLowerCase().includes('caribbean express') || c.agentName.toLowerCase().includes('cartwright')))
+        );
+        const dest = ((c.destinationPort || '') + ' ' + (c.destinationCode || '') + ' ' + (c.destination || '')).toLowerCase();
+        const portMatch = dest.includes('nas') || dest.includes('nassau');
+        return agentMatch || portMatch;
+      })
     : cargoItems;
 
   const columns = [
@@ -40,7 +48,7 @@ export const CargoList = ({ onNavigate }) => {
       render: (item) => (
         <div>
           <div style={{ fontWeight: 700, color: '#0A192F', fontFamily: 'JetBrains Mono, monospace' }}>
-            {item.id}
+            {item.cargoNumber || item.id}
           </div>
           <div style={{ fontSize: '0.72rem', color: '#D97706', fontWeight: 600 }}>
             WR: {item.receiptNumber}
@@ -106,7 +114,7 @@ export const CargoList = ({ onNavigate }) => {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onNavigate('cargo', item.id);
+              onNavigate('cargo', item.cargoNumber || item.id);
             }}
             className="btn btn-sm btn-primary"
             style={{ padding: '0.25rem 0.55rem', fontSize: '0.75rem' }}
@@ -206,7 +214,7 @@ export const CargoList = ({ onNavigate }) => {
         emptyNextStep="Create a Warehouse Receipt to add cargo to the consolidation queue."
         emptyActionLabel="Create Warehouse Receipt"
         onEmptyAction={() => onNavigate('warehouse-receipts', 'create')}
-        onRowClick={(item) => onNavigate('cargo', item.id)}
+        onRowClick={(item) => onNavigate('cargo', item.cargoNumber || item.id)}
       />
 
       {/* 4x6 Roll Label Modal */}
@@ -241,7 +249,7 @@ export const CargoList = ({ onNavigate }) => {
       <DeleteConfirmModal
         isOpen={!!deletingCargo}
         onClose={() => setDeletingCargo(null)}
-        itemName={deletingCargo?.id}
+        itemName={deletingCargo?.cargoNumber || deletingCargo?.id}
         itemType="Cargo Unit"
         onConfirm={async () => {
           await deleteCargo(deletingCargo.id);

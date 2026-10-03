@@ -2,6 +2,8 @@ export interface CargoFilterParams {
   search?: string;
   status?: string;
   destinationCode?: string;
+  agentId?: string | null;
+  agentName?: string | null;
   warehouseReceiptId?: string;
   limit: number;
   offset: number;
@@ -27,6 +29,8 @@ export interface CreateCargoInput {
   warehouseLocation?: string;
   destinationPort?: string;
   destinationCode?: string;
+  agentId?: string | null;
+  agentName?: string | null;
   status?: string;
   barcode?: string;
   qrCode?: string;

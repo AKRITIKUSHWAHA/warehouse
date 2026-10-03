@@ -8,7 +8,7 @@ export const cargoService = {
     try {
       const res = await apiClient.get('cargo', { params: { ...filters, limit: 100 } });
       if (res && res.data) {
-        const liveList = Array.isArray(res.data) ? res.data : (res.data.items || []);
+        const liveList = Array.isArray(res.data) ? res.data : (res.data.data || res.data.items || []);
         setStored(KEYS.CARGO, liveList);
         return liveList;
       }
@@ -40,7 +40,7 @@ export const cargoService = {
     if (!id) return null;
     try {
       const res = await apiClient.get(`cargo/${encodeURIComponent(id)}`);
-      if (res && res.data) return res.data;
+      if (res && res.data) return res.data.data || res.data;
     } catch (err) {
       console.warn(`API error fetching cargo by id ${id}:`, err?.message || err);
     }
@@ -82,6 +82,8 @@ export const cargoService = {
       warehouseLocation: data.warehouseLocation || "Bay A-01",
       destinationPort: data.destinationPort || "NAS - Nassau, Bahamas",
       destinationCode: data.destinationCode || (data.destinationPort?.includes(' - ') ? data.destinationPort.split(' - ')[0].trim() : 'NAS'),
+      agentId: data.agentId || '2e49c222-f24b-4233-83b8-f0cac7af07d5',
+      agentName: data.agentName || 'Caribbean Express Freight Ltd.',
       status: data.status || "Ready for Consolidation",
       barcode: data.barcode || `CRG${Math.floor(10000000 + Math.random() * 90000000)}`,
       qrCode: data.qrCode || `VI-CRG-${cargoNumber}`

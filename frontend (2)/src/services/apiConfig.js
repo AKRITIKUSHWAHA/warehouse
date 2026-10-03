@@ -2,15 +2,15 @@
  * API Configuration & Base Fetch Client for VI Customs Backend
  */
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5001/api/v1';
-export const TOKEN_STORAGE_KEY = 'kers_auth_token';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.port === '5173' ? '/api/v1' : 'http://127.0.0.1:5000/api/v1');
+export const TOKEN_STORAGE_KEY = 'kers_token';
 
 /**
  * Get current stored JWT token
  */
 export function getAuthToken() {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem(TOKEN_STORAGE_KEY) || sessionStorage.getItem(TOKEN_STORAGE_KEY);
+  return localStorage.getItem(TOKEN_STORAGE_KEY) || localStorage.getItem('kers_auth_token') || sessionStorage.getItem(TOKEN_STORAGE_KEY);
 }
 
 /**

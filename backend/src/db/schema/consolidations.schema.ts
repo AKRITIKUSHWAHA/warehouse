@@ -43,6 +43,8 @@ export const consolidations = pgTable('consolidations', {
   
   assignedShipmentId: text('assigned_shipment_id'),
   assignedMasterBLId: text('assigned_master_bl_id'),
+  agentId: text('agent_id'),
+  agentName: text('agent_name'),
   notes: text('notes'),
   
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),

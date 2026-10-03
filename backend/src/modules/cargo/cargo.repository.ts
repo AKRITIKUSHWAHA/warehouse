@@ -1,4 +1,4 @@
-import { eq, ilike, or, count, and, desc } from 'drizzle-orm';
+﻿import { eq, ilike, or, count, and, desc } from 'drizzle-orm';
 import { db } from '../../db/index.js';
 import { cargo } from '../../db/schema/index.js';
 import { CargoFilterParams } from './cargo.types.js';
@@ -14,6 +14,9 @@ export class CargoRepository {
     }
     if (filters.destinationCode && filters.destinationCode !== 'All') {
       conditions.push(eq(cargo.destinationCode, filters.destinationCode));
+    }
+    if (filters.agentId && UUID_REGEX.test(filters.agentId)) {
+      conditions.push(eq(cargo.agentId, filters.agentId));
     }
     if (filters.warehouseReceiptId && UUID_REGEX.test(filters.warehouseReceiptId)) {
       conditions.push(eq(cargo.warehouseReceiptId, filters.warehouseReceiptId));

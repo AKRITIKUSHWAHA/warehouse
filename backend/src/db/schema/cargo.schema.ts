@@ -22,6 +22,8 @@ export const cargo = pgTable('cargo', {
   warehouseLocation: text('warehouse_location').default('CFS Miami'),
   destinationPort: text('destination_port'),
   destinationCode: text('destination_code'),
+  agentId: uuid('agent_id'),
+  agentName: text('agent_name'),
   status: text('status').default('Ready for Consolidation').notNull(),
   barcode: text('barcode'),
   qrCode: text('qr_code'),

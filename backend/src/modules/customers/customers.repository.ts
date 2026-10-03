@@ -3,30 +3,23 @@ import { db } from '../../db/index.js';
 import { customers } from '../../db/schema/index.js';
 import { CustomerFilterParams, CreateCustomerInput, UpdateCustomerInput } from './customers.types.js';
 
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 export class CustomersRepository {
   async findMany(filters: CustomerFilterParams) {
     const conditions = [];
 
-    if (filters.destinationCode && filters.destinationCode !== 'All') {
+    if (filters.destinationCode) {
       conditions.push(eq(customers.destinationCode, filters.destinationCode));
     }
-    if (filters.status && filters.status !== 'All') {
+    if (filters.status) {
       conditions.push(eq(customers.status, filters.status));
     }
-    if (filters.search && filters.search.trim()) {
-      const q = filters.search.trim();
+    if (filters.search) {
       conditions.push(
         or(
-          ilike(customers.name, `%${q}%`),
-          ilike(customers.companyName, `%${q}%`),
-          ilike(customers.customerNumber, `%${q}%`),
-          ilike(customers.destinationPort, `%${q}%`),
-          ilike(customers.contactPerson, `%${q}%`),
-          ilike(customers.email, `%${q}%`),
-          ilike(customers.telephone, `%${q}%`),
-          ilike(customers.phone, `%${q}%`)
+          ilike(customers.name, `%${filters.search}%`),
+          ilike(customers.companyName, `%${filters.search}%`),
+          ilike(customers.customerNumber, `%${filters.search}%`),
+          ilike(customers.destinationPort, `%${filters.search}%`)
         )
       );
     }
@@ -49,14 +42,10 @@ export class CustomersRepository {
   }
 
   async findById(id: string) {
-    const whereCond = UUID_REGEX.test(id)
-      ? or(eq(customers.id, id), eq(customers.customerNumber, id))
-      : eq(customers.customerNumber, id);
-
     const result = await db
       .select()
       .from(customers)
-      .where(whereCond)
+      .where(or(eq(customers.id, id), eq(customers.customerNumber, id)))
       .limit(1);
 
     return result[0] || null;
@@ -68,17 +57,9 @@ export class CustomersRepository {
   }
 
   async getNextCustomerNumber(): Promise<string> {
-    const list = await db.select({ customerNumber: customers.customerNumber }).from(customers);
-    let maxSeq = 0;
-    for (const item of list) {
-      const match = item.customerNumber?.match(/CUS-(\d{4})-(\d+)/);
-      if (match) {
-        const seq = parseInt(match[2], 10);
-        if (seq > maxSeq) maxSeq = seq;
-      }
-    }
-    const nextSeq = maxSeq + 1;
-    return `CUS-2026-${String(nextSeq).padStart(4, '0')}`;
+    const total = await this.countTotal();
+    const nextSeq = String(total + 1).padStart(4, '0');
+    return `CUS-2026-${nextSeq}`;
   }
 
   async create(data: CreateCustomerInput & { customerNumber: string; createdDate: string }) {
@@ -91,27 +72,19 @@ export class CustomersRepository {
   }
 
   async update(id: string, data: UpdateCustomerInput) {
-    const whereCond = UUID_REGEX.test(id)
-      ? or(eq(customers.id, id), eq(customers.customerNumber, id))
-      : eq(customers.customerNumber, id);
-
     const [updated] = await db
       .update(customers)
       .set({ ...data, updatedAt: new Date() })
-      .where(whereCond)
+      .where(or(eq(customers.id, id), eq(customers.customerNumber, id)))
       .returning();
 
     return updated || null;
   }
 
   async delete(id: string) {
-    const whereCond = UUID_REGEX.test(id)
-      ? or(eq(customers.id, id), eq(customers.customerNumber, id))
-      : eq(customers.customerNumber, id);
-
     const [deleted] = await db
       .delete(customers)
-      .where(whereCond)
+      .where(or(eq(customers.id, id), eq(customers.customerNumber, id)))
       .returning();
 
     return !!deleted;

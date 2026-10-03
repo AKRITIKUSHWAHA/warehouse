@@ -104,7 +104,6 @@ export const AppDataProvider = ({ children }) => {
           apiClient.get('/vessels'),
           apiClient.get('/voyages'),
           apiClient.get('/agents'),
-          apiClient.get('/audit', { params: { limit: 200 } }),
         ]);
 
         if (portsRes.status === 'fulfilled' && portsRes.value?.data) {
@@ -118,30 +117,17 @@ export const AppDataProvider = ({ children }) => {
           setStored(KEYS.SETTINGS, apiSettings);
         }
         if (customersRes.status === 'fulfilled' && customersRes.value?.data) {
-          const rawCust = Array.isArray(customersRes.value.data) ? customersRes.value.data : customersRes.value.data.items || [];
-          const apiCust = rawCust.map(c => ({
-            ...c,
-            customerNumber: c.customerNumber || c.id,
-            telephone: c.telephone || c.phone || '',
-            createdDate: c.createdDate || (c.createdAt ? new Date(c.createdAt).toISOString().split('T')[0] : '2026-10-01'),
-          }));
+          const apiCust = Array.isArray(customersRes.value.data) ? customersRes.value.data : customersRes.value.data.items || [];
           setCustomers(apiCust);
           setStored(KEYS.CUSTOMERS, apiCust);
         }
         if (receiptsRes.status === 'fulfilled' && receiptsRes.value?.data) {
-          const rawWR = Array.isArray(receiptsRes.value.data) ? receiptsRes.value.data : receiptsRes.value.data.items || [];
-          const apiWR = rawWR.map(r => ({
-            ...r,
-            customer: r.customer || r.customerName || '',
-            customerName: r.customerName || r.customer || '',
-            cbm: r.cbm || r.totalCbm || '0.00',
-            cft: r.cft || r.totalCft || '0.00',
-          }));
+          const apiWR = Array.isArray(receiptsRes.value.data) ? receiptsRes.value.data : receiptsRes.value.data.items || [];
           setWarehouseReceipts(apiWR);
           setStored(KEYS.WAREHOUSE_RECEIPTS, apiWR);
         }
         if (cargoRes.status === 'fulfilled' && cargoRes.value?.data) {
-          const apiCargo = Array.isArray(cargoRes.value.data) ? cargoRes.value.data : cargoRes.value.data.items || [];
+          const apiCargo = Array.isArray(cargoRes.value.data) ? cargoRes.value.data : (cargoRes.value.data.data || cargoRes.value.data.items || []);
           setCargoItems(apiCargo);
           setStored(KEYS.CARGO, apiCargo);
         }
@@ -178,20 +164,20 @@ export const AppDataProvider = ({ children }) => {
           setHouseBills(apiHBL);
           setStored(KEYS.HOUSE_BILLS, apiHBL);
         }
-        if (containersRes.status === 'fulfilled' && containersRes.value) {
-          const val = containersRes.value.data || containersRes.value;
-          const apiCont = Array.isArray(val) ? val : val.items || [];
-          if (apiCont.length > 0) { setContainers(apiCont); setStored(KEYS.CONTAINERS, apiCont); }
+        if (containersRes.status === 'fulfilled' && containersRes.value?.data) {
+          const apiCont = Array.isArray(containersRes.value.data) ? containersRes.value.data : containersRes.value.data.items || [];
+          setContainers(apiCont);
+          setStored(KEYS.CONTAINERS, apiCont);
         }
-        if (vesselsRes.status === 'fulfilled' && vesselsRes.value) {
-          const val = vesselsRes.value.data || vesselsRes.value;
-          const apiVes = Array.isArray(val) ? val : val.items || [];
-          if (apiVes.length > 0) { setVessels(apiVes); setStored(KEYS.VESSELS, apiVes); }
+        if (vesselsRes.status === 'fulfilled' && vesselsRes.value?.data) {
+          const apiVes = Array.isArray(vesselsRes.value.data) ? vesselsRes.value.data : vesselsRes.value.data.items || [];
+          setVessels(apiVes);
+          setStored(KEYS.VESSELS, apiVes);
         }
-        if (voyagesRes.status === 'fulfilled' && voyagesRes.value) {
-          const val = voyagesRes.value.data || voyagesRes.value;
-          const apiVoy = Array.isArray(val) ? val : val.items || [];
-          if (apiVoy.length > 0) { setVoyages(apiVoy); setStored(KEYS.VOYAGES, apiVoy); }
+        if (voyagesRes.status === 'fulfilled' && voyagesRes.value?.data) {
+          const apiVoy = Array.isArray(voyagesRes.value.data) ? voyagesRes.value.data : voyagesRes.value.data.items || [];
+          setVoyages(apiVoy);
+          setStored(KEYS.VOYAGES, apiVoy);
         }
         if (agentsRes.status === 'fulfilled' && agentsRes.value) {
           const val = agentsRes.value.data || agentsRes.value;
@@ -213,46 +199,17 @@ export const AppDataProvider = ({ children }) => {
 
     if (syncUsers) syncUsers();
 
-    try {
-      await Promise.allSettled([
-        customerService.getCustomers(),
-        warehouseService.getReceipts(),
-        cargoService.getCargo(),
-        houseBillService.getHouseBills(),
-        consolidationService.getConsolidations(),
-        shipmentService.getShipments(),
-        billOfLadingService.getBillsOfLading(),
-        manifestService.getManifests(),
-        containerService.getContainers(),
-        vesselService.getVessels(),
-        vesselService.getVoyages(),
-        agentService.getAgents(),
-        portService.getPorts(),
-        auditService.getLogs(),
-        settingsService.getSettings(),
-      ]);
-
-      setCustomers(getStored(KEYS.CUSTOMERS, []));
-      setWarehouseReceipts(getStored(KEYS.WAREHOUSE_RECEIPTS, []));
-      setCargoItems(getStored(KEYS.CARGO, []));
-      setHouseBills(getStored(KEYS.HOUSE_BILLS, []));
-      setConsolidations(getStored(KEYS.CONSOLIDATIONS, []));
-      setShipments(getStored(KEYS.SHIPMENTS, []));
-      setBillsOfLading(getStored(KEYS.BILLS_OF_LADING, []));
-      setManifests(getStored(KEYS.MANIFESTS, []));
-      setContainers(getStored(KEYS.CONTAINERS, []));
-      setVessels(getStored(KEYS.VESSELS, []));
-      setVoyages(getStored(KEYS.VOYAGES, []));
-      setAgents(getStored(KEYS.AGENTS, []));
-      setPorts(getStored(KEYS.PORTS, []));
-      setUsers(getStored(KEYS.USERS, []));
-      setCustomDocuments(getStored(KEYS.DOCUMENTS, []));
-      setAuditLogs(getStored(KEYS.AUDIT_LOGS, []));
-      setSettings(getStored(KEYS.SETTINGS, {}));
-    } catch (err) {
-      console.warn('Backend synchronization notice:', err?.message || err);
-    }
   }, [syncUsers]);
+
+  // Helper to extract list from diverse API response shapes
+  const extractListFromRes = (res) => {
+    if (!res) return null;
+    if (Array.isArray(res)) return res;
+    if (Array.isArray(res?.data)) return res.data;
+    if (Array.isArray(res?.data?.items)) return res.data.items;
+    if (Array.isArray(res?.items)) return res.items;
+    return null;
+  };
 
   // ON-DEMAND API Fetcher: Triggers ONLY the API corresponding to the clicked menu
   const fetchMenuApi = useCallback(async (tabName) => {
@@ -263,42 +220,45 @@ export const AppDataProvider = ({ children }) => {
       switch (tabName) {
         case 'dashboard': {
           if (currentRole === 'operations' || currentRole === 'warehouse') {
-            await apiClient.get('/cfs-dashboard');
-            await apiClient.get('/ops-dashboard');
+            await apiClient.get('/cfs-dashboard').catch(() => {});
+            await apiClient.get('/ops-dashboard').catch(() => {});
           } else if (currentRole === 'documentation') {
-            await apiClient.get('/docs-dashboard');
+            await apiClient.get('/docs-dashboard').catch(() => {});
           } else if (currentRole === 'agent') {
-            await apiClient.get('/agent-dashboard');
+            await apiClient.get('/agent-dashboard').catch(() => {});
           } else {
-            await apiClient.get('/admin-dashboard');
+            await apiClient.get('/admin-dashboard').catch(() => {});
           }
           break;
         }
 
         case 'customers': {
-          const custData = await customerService.getCustomers();
-          if (Array.isArray(custData) && custData.length > 0) {
-            setCustomers(custData);
-            setStored(KEYS.CUSTOMERS, custData);
+          const custRes = await apiClient.get('/customers').catch(() => null);
+          const list = extractListFromRes(custRes);
+          if (list !== null) {
+            setCustomers(list);
+            setStored(KEYS.CUSTOMERS, list);
           }
           break;
         }
 
         case 'warehouse-receipts': {
-          const wrList = await warehouseService.getReceipts();
-          if (Array.isArray(wrList) && wrList.length > 0) {
-            setWarehouseReceipts(wrList);
-            setStored(KEYS.WAREHOUSE_RECEIPTS, wrList);
+          const wrRes = await apiClient.get('/warehouse-receipts').catch(() => null);
+          const list = extractListFromRes(wrRes);
+          if (list !== null) {
+            setWarehouseReceipts(list);
+            setStored(KEYS.WAREHOUSE_RECEIPTS, list);
           }
-          await apiClient.get('/labels').catch(() => {});
+          await apiClient.get('/labels').catch(() => { });
           break;
         }
 
         case 'cargo': {
-          const cargoList = await cargoService.getCargo();
-          if (Array.isArray(cargoList)) {
-            setCargoItems(cargoList);
-            setStored(KEYS.CARGO, cargoList);
+          const cargoRes = await apiClient.get('/cargo').catch(() => null);
+          const list = extractListFromRes(cargoRes);
+          if (list !== null) {
+            setCargoItems(list);
+            setStored(KEYS.CARGO, list);
           }
           break;
         }
@@ -313,54 +273,51 @@ export const AppDataProvider = ({ children }) => {
         }
 
         case 'consolidations': {
-          const consRes = await apiClient.get('/consolidations');
-          const list = Array.isArray(consRes) ? consRes : (Array.isArray(consRes?.data) ? consRes.data : []);
-          setConsolidations(list);
-          setStored(KEYS.CONSOLIDATIONS, list);
+          const consRes = await apiClient.get('/consolidations').catch(() => null);
+          const list = extractListFromRes(consRes);
+          if (list !== null) {
+            setConsolidations(list);
+            setStored(KEYS.CONSOLIDATIONS, list);
+          }
           break;
         }
 
         case 'shipments': {
-          try {
-            const liveShipments = await shipmentService.getShipments({ limit: 200 });
-            if (Array.isArray(liveShipments) && liveShipments.length > 0) {
-              setShipments(liveShipments);
-              setStored(KEYS.SHIPMENTS, liveShipments);
-            } else {
-              const shpRes = await apiClient.get('/shipments');
-              const list = Array.isArray(shpRes) ? shpRes : (Array.isArray(shpRes?.data) ? shpRes.data : []);
-              if (list.length > 0) {
-                setShipments(list);
-                setStored(KEYS.SHIPMENTS, list);
-              }
-            }
-          } catch (e) {
-            console.warn('[AppDataContext] Failed to load shipments:', e.message);
+          const shpRes = await apiClient.get('/shipments').catch(() => null);
+          const list = extractListFromRes(shpRes);
+          if (list !== null) {
+            setShipments(list);
+            setStored(KEYS.SHIPMENTS, list);
           }
           break;
         }
 
         case 'bills-of-lading': {
-          const blRes = await apiClient.get('/bills-of-lading');
-          const list = Array.isArray(blRes) ? blRes : (Array.isArray(blRes?.data) ? blRes.data : []);
-          setBillsOfLading(list);
-          setStored(KEYS.BILLS_OF_LADING, list);
+          const blRes = await apiClient.get('/bills-of-lading').catch(() => null);
+          const list = extractListFromRes(blRes);
+          if (list !== null) {
+            setBillsOfLading(list);
+            setStored(KEYS.BILLS_OF_LADING, list);
+          }
           break;
         }
 
         case 'manifests': {
-          const mnfRes = await apiClient.get('/manifests');
-          const list = Array.isArray(mnfRes) ? mnfRes : (Array.isArray(mnfRes?.data) ? mnfRes.data : []);
-          setManifests(list);
-          setStored(KEYS.MANIFESTS, list);
+          const mnfRes = await apiClient.get('/manifests').catch(() => null);
+          const list = extractListFromRes(mnfRes);
+          if (list !== null) {
+            setManifests(list);
+            setStored(KEYS.MANIFESTS, list);
+          }
           break;
         }
 
         case 'containers': {
-          const cntRes = await apiClient.get('/containers');
-          if (Array.isArray(cntRes) && cntRes.length > 0) {
-            setContainers(cntRes);
-            setStored(KEYS.CONTAINERS, cntRes);
+          const cntRes = await apiClient.get('/containers').catch(() => null);
+          const list = extractListFromRes(cntRes);
+          if (list !== null) {
+            setContainers(list);
+            setStored(KEYS.CONTAINERS, list);
           }
           break;
         }
@@ -376,30 +333,30 @@ export const AppDataProvider = ({ children }) => {
             setVoyages(voyList);
             setStored(KEYS.VOYAGES, voyList);
           }
-          await apiClient.get('/containers-vessels').catch(() => {});
           break;
         }
 
         case 'tracking': {
-          await apiClient.get('/tracking/TRK-VI-994819').catch(() => {});
+          const trkRes = await apiClient.get('/tracking').catch(() => null);
           break;
         }
 
         case 'documents': {
-          const docRes = await apiClient.get('/documents');
-          if (Array.isArray(docRes) && docRes.length > 0) {
-            setCustomDocuments(docRes);
-            setStored(KEYS.DOCUMENTS, docRes);
+          const docRes = await apiClient.get('/documents').catch(() => null);
+          const list = extractListFromRes(docRes);
+          if (list !== null) {
+            setCustomDocuments(list);
+            setStored(KEYS.DOCUMENTS, list);
           }
-          await apiClient.get('/documents-archive').catch(() => {});
           break;
         }
 
         case 'agents': {
-          const agtRes = await apiClient.get('/agents');
-          if (Array.isArray(agtRes) && agtRes.length > 0) {
-            setAgents(agtRes);
-            setStored(KEYS.AGENTS, agtRes);
+          const agtRes = await apiClient.get('/agents').catch(() => null);
+          const list = extractListFromRes(agtRes);
+          if (list !== null) {
+            setAgents(list);
+            setStored(KEYS.AGENTS, list);
           }
           break;
         }
@@ -411,76 +368,26 @@ export const AppDataProvider = ({ children }) => {
             setUsers(rawUsers);
             setStored(KEYS.USERS, rawUsers);
           }
-          await apiClient.get('/users-roles').catch(() => {});
           break;
         }
 
         case 'audit': {
-          try {
-            const logs = await auditService.getLogs({ limit: 200 });
-            setAuditLogs(Array.isArray(logs) ? logs : []);
-            setStored(KEYS.AUDIT_LOGS, Array.isArray(logs) ? logs : []);
-          } catch (e) {
-            console.warn('[AppDataContext] Failed to load audit logs from API:', e.message);
+          const audRes = await apiClient.get('/audit').catch(() => null);
+          const list = extractListFromRes(audRes);
+          if (list !== null) {
+            setAuditLogs(list);
+            setStored(KEYS.AUDIT_LOGS, list);
           }
-          await apiClient.get('/audit-trail').catch(() => {});
-          break;
-        }
-
-        case 'history': {
-          try {
-            const liveShipments = await shipmentService.getShipments({ limit: 200 });
-            if (Array.isArray(liveShipments)) {
-              setShipments(liveShipments);
-              setStored(KEYS.SHIPMENTS, liveShipments);
-            }
-          } catch (e) {
-            console.warn('[AppDataContext] Failed to load shipment history from API:', e.message);
-          }
-          await apiClient.get('/shipment-history').catch(() => {});
           break;
         }
 
         case 'settings': {
-          try {
-            const liveSettings = await settingsService.getSettings();
-            if (liveSettings && Object.keys(liveSettings).length > 0) {
-              setSettings(liveSettings);
-            }
-            const livePorts = await portService.getPorts();
-            if (Array.isArray(livePorts) && livePorts.length > 0) {
-              setPorts(livePorts);
-            }
-          } catch (e) {
-            console.warn('[AppDataContext] Failed to load settings from API:', e.message);
+          const setRes = await apiClient.get('/settings').catch(() => null);
+          const val = setRes?.data || setRes;
+          if (val) {
+            setSettings(val);
+            setStored(KEYS.SETTINGS, val);
           }
-          break;
-        }
-
-        case 'ports': {
-          try {
-            const livePorts = await portService.getPorts();
-            if (Array.isArray(livePorts) && livePorts.length > 0) {
-              setPorts(livePorts);
-            }
-          } catch (e) {
-            console.warn('[AppDataContext] Failed to load ports from API:', e.message);
-          }
-          break;
-        }
-
-        case 'agent-dashboard': {
-          await apiClient.get('/agent-dashboard').catch(() => {});
-          break;
-        }
-
-        case 'agent-shipments': {
-          await apiClient.get('/assigned-shipments').catch(() => {});
-          break;
-        }
-
-        case 'agent-documents': {
-          await apiClient.get('/agent-documents').catch(() => {});
           break;
         }
 
@@ -493,137 +400,103 @@ export const AppDataProvider = ({ children }) => {
   }, [currentRole]);
 
   useEffect(() => {
-    refreshAll();
-    // Fetch initial active menu API on mount
-    fetchMenuApi(activeMenuTab);
+    if (apiClient.getToken()) {
+      refreshAll();
+      // Fetch initial active menu API on mount
+      fetchMenuApi(activeMenuTab);
+    }
   }, []);
 
   // 1. Customers CRUD
   const createCustomer = async (customerData) => {
-    try {
-      const created = await customerService.createCustomer(customerData, currentUser?.name || "Warehouse Staff");
-      await refreshAll();
-      showToast(`Customer Profile ${created.customerNumber || created.name} created successfully.`, 'success', 'Customer Created');
-      return created;
-    } catch (err) {
-      showToast(err.message || 'Failed to create customer profile', 'error', 'Creation Error');
-      throw err;
-    }
+    const created = await customerService.createCustomer(customerData, currentUser?.name || "Warehouse Staff");
+    setCustomers(getStored(KEYS.CUSTOMERS, []));
+    await refreshAll();
+    showToast(`Customer Profile ${created.customerNumber || created.name} created successfully.`, 'success', 'Customer Created');
+    return created;
   };
 
   const updateCustomer = async (id, updates) => {
-    try {
-      const updated = await customerService.updateCustomer(id, updates, currentUser?.name || "Warehouse Staff");
-      await refreshAll();
-      showToast(`Customer Profile ${id} updated successfully.`, 'success', 'Customer Updated');
-      return updated;
-    } catch (err) {
-      showToast(err.message || 'Failed to update customer profile', 'error', 'Update Error');
-      throw err;
-    }
+    const updated = await customerService.updateCustomer(id, updates, currentUser?.name || "Warehouse Staff");
+    setCustomers(getStored(KEYS.CUSTOMERS, []));
+    await refreshAll();
+    showToast(`Customer Profile ${id} updated successfully.`, 'success', 'Customer Updated');
+    return updated;
   };
 
   const deleteCustomer = async (id) => {
-    try {
-      setCustomers(prev => prev.filter(c => c.id !== id && c.customerNumber !== id && c.accountNumber !== id));
-      const success = await customerService.deleteCustomer(id, currentUser?.name || "Super Admin");
-      if (success) {
-        await refreshAll();
-        showToast(`Customer Profile ${id} deleted successfully.`, 'info', 'Customer Deleted');
-      }
-      return success;
-    } catch (err) {
+    setCustomers(prev => prev.filter(c => c.id !== id && c.customerNumber !== id && c.accountNumber !== id));
+    const success = await customerService.deleteCustomer(id, currentUser?.name || "Super Admin");
+    if (success) {
+      setCustomers(getStored(KEYS.CUSTOMERS, []));
       await refreshAll();
-      showToast(err.message || 'Failed to delete customer profile', 'error', 'Delete Error');
-      throw err;
+      showToast(`Customer Profile ${id} deleted successfully.`, 'info', 'Customer Deleted');
     }
+    return success;
   };
 
   // 2. Warehouse Receipts CRUD
   const createWarehouseReceipt = async (receiptData) => {
+    let created;
     try {
-      const created = await warehouseService.createReceipt(receiptData, currentUser?.name || "Warehouse Staff");
-      await refreshAll();
-      showToast(`Warehouse Receipt ${created.receiptNumber || created.id} intaked.`, 'success', 'Receipt Created');
-      return created;
-    } catch (err) {
-      showToast(err.message || 'Failed to intake warehouse receipt', 'error', 'Intake Failed');
-      throw err;
+      const res = await apiClient.post('/warehouse-receipts', receiptData);
+      if (res?.data) created = res.data;
+    } catch (e) {
+      console.warn('Backend createWarehouseReceipt notice:', e.message);
     }
+    if (!created) {
+      created = await warehouseService.createReceipt(receiptData, currentUser?.name || "Warehouse Staff");
+    }
+    await refreshAll();
+    showToast(`Warehouse Receipt ${created.receiptNumber || created.id} intaked.`, 'success', 'Receipt Created');
+    return created;
   };
 
   const updateWarehouseReceipt = async (id, updates) => {
-    try {
-      const updated = await warehouseService.updateReceipt(id, updates, currentUser?.name || "Warehouse Staff");
-      await refreshAll();
-      showToast(`Warehouse Receipt ${id} updated successfully.`, 'success', 'Receipt Updated');
-      return updated;
-    } catch (err) {
-      showToast(err.message || 'Failed to update warehouse receipt', 'error', 'Update Failed');
-      throw err;
-    }
+    const updated = await warehouseService.updateReceipt(id, updates, currentUser?.name || "Warehouse Staff");
+    fetchMenuApi('warehouse-receipts');
+    await refreshAll();
+    showToast(`Warehouse Receipt ${id} updated successfully.`, 'success', 'Receipt Updated');
+    return updated;
   };
 
   const deleteWarehouseReceipt = async (id) => {
-    try {
-      setWarehouseReceipts(prev => prev.filter(r => r.id !== id && r.receiptNumber !== id));
-      const success = await warehouseService.deleteReceipt(id, currentUser?.name || "Warehouse Staff");
-      if (success) {
-        await refreshAll();
-        showToast(`Warehouse Receipt ${id} deleted successfully.`, 'info', 'Receipt Deleted');
-      }
-      return success;
-    } catch (err) {
+    setWarehouseReceipts(prev => prev.filter(r => r.id !== id && r.receiptNumber !== id));
+    const success = await warehouseService.deleteReceipt(id, currentUser?.name || "Warehouse Staff");
+    if (success) {
+      fetchMenuApi('warehouse-receipts');
       await refreshAll();
-      showToast(err.message || 'Failed to delete warehouse receipt', 'error', 'Delete Failed');
-      throw err;
+      showToast(`Warehouse Receipt ${id} deleted successfully.`, 'info', 'Receipt Deleted');
     }
+    return success;
   };
 
   // 3. Cargo Inventory CRUD
   const createCargo = async (cargoData) => {
-    try {
-      const created = await cargoService.createCargo(cargoData, currentUser?.name || "Warehouse Staff");
-      await fetchMenuApi('cargo');
-      await refreshAll();
-      showToast(`Cargo Unit ${created.cargoNumber || created.id} registered into warehouse inventory.`, 'success', 'Cargo Intaked');
-      return created;
-    } catch (err) {
-      await refreshAll();
-      showToast(err.message || 'Failed to intake cargo unit', 'error', 'Intake Failed');
-      throw err;
-    }
+    const created = await cargoService.createCargo(cargoData, currentUser?.name || "Warehouse Staff");
+    fetchMenuApi('cargo');
+    await refreshAll();
+    showToast(`Cargo Unit ${created.id} registered into warehouse inventory.`, 'success', 'Cargo Intaked');
+    return created;
   };
 
   const updateCargo = async (id, updates) => {
-    try {
-      const updated = await cargoService.updateCargo(id, updates, currentUser?.name || "Warehouse Staff");
-      await fetchMenuApi('cargo');
-      await refreshAll();
-      showToast(`Cargo Unit ${updates.cargoNumber || id} updated successfully.`, 'success', 'Cargo Updated');
-      return updated;
-    } catch (err) {
-      await refreshAll();
-      showToast(err.message || 'Failed to update cargo unit', 'error', 'Update Failed');
-      throw err;
-    }
+    const updated = await cargoService.updateCargo(id, updates, currentUser?.name || "Warehouse Staff");
+    fetchMenuApi('cargo');
+    await refreshAll();
+    showToast(`Cargo Unit ${id} updated successfully.`, 'success', 'Cargo Updated');
+    return updated;
   };
 
   const deleteCargo = async (id) => {
-    try {
-      setCargoItems(prev => prev.filter(c => c.id !== id && c.cargoNumber !== id));
-      const success = await cargoService.deleteCargo(id, currentUser?.name || "Warehouse Staff");
-      if (success) {
-        await fetchMenuApi('cargo');
-        await refreshAll();
-        showToast(`Cargo Unit ${id} deleted from inventory.`, 'info', 'Cargo Deleted');
-      }
-      return success;
-    } catch (err) {
+    setCargoItems(prev => prev.filter(c => c.id !== id && c.cargoNumber !== id));
+    const success = await cargoService.deleteCargo(id, currentUser?.name || "Warehouse Staff");
+    if (success) {
+      fetchMenuApi('cargo');
       await refreshAll();
-      showToast(err.message || 'Failed to delete cargo unit', 'error', 'Delete Failed');
-      throw err;
+      showToast(`Cargo Unit ${id} deleted from inventory.`, 'info', 'Cargo Deleted');
     }
+    return success;
   };
 
   // 4. House Bills of Lading CRUD
@@ -632,32 +505,13 @@ export const AppDataProvider = ({ children }) => {
     if (created) {
       setHouseBills(prev => [created, ...prev.filter(h => h.id !== created.id && h.hblNumber !== created.hblNumber)]);
     }
-    if (created) {
-      setHouseBills(prev => [
-        created,
-        ...(Array.isArray(prev) ? prev.filter(h => h.id !== created.id && h.hblNumber !== created.hblNumber) : [])
-      ]);
-    }
-    fetchMenuApi('house-bills');
     await refreshAll();
-    showToast(`House B/L ${created?.hblNumber || created?.id} issued for ${created?.customerName || 'Customer'}.`, 'success', 'House B/L Created');
+    showToast(`House B/L ${created.hblNumber || created.id} issued for ${created.customerName || 'Customer'}.`, 'success', 'House B/L Created');
     return created;
   };
 
   const updateHouseBill = async (id, updates) => {
-    let updated;
-    try {
-      const res = await apiClient.patch(`/house-bills/${id}`, updates);
-      if (res?.data) updated = res.data;
-    } catch (e) {
-      console.warn('Backend updateHouseBill notice:', e.message);
-    }
-    if (!updated) {
-      updated = await houseBillService.updateHouseBill(id, updates, currentUser?.name || "Documentation Staff");
-    }
-    if (updated) {
-      setHouseBills(prev => prev.map(h => (h.id === id || h.hblNumber === id ? { ...h, ...updated } : h)));
-    }
+    const updated = await houseBillService.updateHouseBill(id, updates, currentUser?.name || "Documentation Staff");
     fetchMenuApi('house-bills');
     await refreshAll();
     showToast(`House B/L ${updated?.hblNumber || id} updated successfully.`, 'success', 'House B/L Updated');
@@ -666,15 +520,12 @@ export const AppDataProvider = ({ children }) => {
 
   const deleteHouseBill = async (id) => {
     setHouseBills(prev => prev.filter(h => h.id !== id && h.hblNumber !== id));
-    try {
-      await apiClient.delete(`/house-bills/${id}`);
-    } catch (e) {
-      console.warn('Backend deleteHouseBill notice:', e.message);
-    }
     const success = await houseBillService.deleteHouseBill(id, currentUser?.name || "Documentation Staff");
-    fetchMenuApi('house-bills');
-    await refreshAll();
-    showToast(`House B/L ${id} deleted.`, 'info', 'House B/L Deleted');
+    if (success) {
+      fetchMenuApi('house-bills');
+      await refreshAll();
+      showToast(`House B/L ${id} deleted.`, 'info', 'House B/L Deleted');
+    }
     return success;
   };
 
@@ -723,14 +574,8 @@ export const AppDataProvider = ({ children }) => {
     if (!created) {
       created = await consolidationService.createConsolidation(consolidationData, currentUser?.name || "Operations Staff");
     }
-    if (created) {
-      setConsolidations(prev => [
-        created,
-        ...(Array.isArray(prev) ? prev.filter(c => c.id !== created.id && c.consolidationNumber !== created.consolidationNumber) : [])
-      ]);
-    }
     await refreshAll();
-    showToast(`Consolidation ${created?.consolidationNumber || created?.id} created successfully.`, 'success', 'Consolidation Ready');
+    showToast(`Consolidation ${created.consolidationNumber || created.id} created successfully.`, 'success', 'Consolidation Ready');
     return created;
   };
 
@@ -756,22 +601,14 @@ export const AppDataProvider = ({ children }) => {
   // 6. Shipments CRUD
   const createShipment = async (shipmentData) => {
     let created;
-    const payload = {
-      ...shipmentData,
-      agentId: shipmentData.agentId || currentUser?.agentId || null,
-      agentName: shipmentData.agentName || currentUser?.department || currentUser?.name || 'Nassau Freight Logistics Ltd',
-    };
     try {
-      const res = await apiClient.post('/shipments', payload);
+      const res = await apiClient.post('/shipments', shipmentData);
       if (res?.data) created = res.data;
     } catch (e) {
       console.warn('Backend createShipment notice:', e.message);
     }
     if (!created) {
-      created = await shipmentService.createShipment(payload, currentUser?.name || "Operations Staff");
-    }
-    if (created) {
-      setShipments(prev => [created, ...(Array.isArray(prev) ? prev.filter(s => s.id !== created.id && s.shipmentNumber !== created.shipmentNumber) : [])]);
+      created = await shipmentService.createShipment(shipmentData, currentUser?.name || "Operations Staff");
     }
     await refreshAll();
     showToast(`Shipment ${created.shipmentNumber || created.id} created successfully.`, 'success', 'Shipment Created');
@@ -823,32 +660,13 @@ export const AppDataProvider = ({ children }) => {
     if (!created) {
       created = await billOfLadingService.createBillOfLading(blData, currentUser?.name || "Documentation Staff");
     }
-    if (created) {
-      setBillsOfLading(prev => [
-        created,
-        ...(Array.isArray(prev) ? prev.filter(b => b.id !== created.id && b.blNumber !== created.blNumber) : [])
-      ]);
-    }
-    fetchMenuApi('bills-of-lading');
     await refreshAll();
-    showToast(`Master B/L ${created?.blNumber || created?.id} created successfully.`, 'success', 'Master B/L Created');
+    showToast(`Master B/L ${created.blNumber || created.id} created successfully.`, 'success', 'Master B/L Created');
     return created;
   };
 
   const updateBillOfLading = async (id, updates) => {
-    let updated;
-    try {
-      const res = await apiClient.patch(`/bills-of-lading/${id}`, updates);
-      if (res?.data) updated = res.data;
-    } catch (e) {
-      console.warn('Backend updateBillOfLading notice:', e.message);
-    }
-    if (!updated) {
-      updated = await billOfLadingService.updateBillOfLading(id, updates, currentUser?.name || "Documentation Staff");
-    }
-    if (updated) {
-      setBillsOfLading(prev => prev.map(b => (b.id === id || b.blNumber === id ? { ...b, ...updated } : b)));
-    }
+    const updated = await billOfLadingService.updateBillOfLading(id, updates, currentUser?.name || "Documentation Staff");
     fetchMenuApi('bills-of-lading');
     await refreshAll();
     showToast(`Master B/L ${id} updated successfully.`, 'success', 'Master B/L Updated');
@@ -857,32 +675,17 @@ export const AppDataProvider = ({ children }) => {
 
   const deleteBillOfLading = async (id) => {
     setBillsOfLading(prev => prev.filter(b => b.id !== id && b.blNumber !== id));
-    try {
-      await apiClient.delete(`/bills-of-lading/${id}`);
-    } catch (e) {
-      console.warn('Backend deleteBillOfLading notice:', e.message);
-    }
     const success = await billOfLadingService.deleteBillOfLading(id, currentUser?.name || "Documentation Staff");
-    fetchMenuApi('bills-of-lading');
-    await refreshAll();
-    showToast(`Master B/L ${id} deleted.`, 'info', 'Master B/L Deleted');
+    if (success) {
+      fetchMenuApi('bills-of-lading');
+      await refreshAll();
+      showToast(`Master B/L ${id} deleted.`, 'info', 'Master B/L Deleted');
+    }
     return success;
   };
 
   const placeBLHold = async (blId, reason, notes) => {
-    let updated;
-    try {
-      const res = await apiClient.post(`/bills-of-lading/${blId}/hold`, { reason, holdNotes: notes });
-      if (res?.data) updated = res.data;
-    } catch (e) {
-      console.warn('Backend placeBLHold notice:', e.message);
-    }
-    if (!updated) {
-      updated = await billOfLadingService.placeHold(blId, reason, notes, currentUser?.name || "Operations Staff");
-    }
-    if (updated) {
-      setBillsOfLading(prev => prev.map(b => (b.id === blId || b.blNumber === blId ? { ...b, ...updated } : b)));
-    }
+    const updated = await billOfLadingService.placeHold(blId, reason, notes, currentUser?.name || "Operations Staff");
     fetchMenuApi('bills-of-lading');
     await refreshAll();
     showToast(`Master B/L ${blId} has been placed ON HOLD. Document access restricted.`, 'warning', 'B/L Placed On Hold');
@@ -890,19 +693,7 @@ export const AppDataProvider = ({ children }) => {
   };
 
   const clearBLHold = async (blId, clearNotes) => {
-    let updated;
-    try {
-      const res = await apiClient.post(`/bills-of-lading/${blId}/release`, { notes: clearNotes });
-      if (res?.data) updated = res.data;
-    } catch (e) {
-      console.warn('Backend clearBLHold notice:', e.message);
-    }
-    if (!updated) {
-      updated = await billOfLadingService.clearHold(blId, currentUser?.name || "Operations Staff", clearNotes);
-    }
-    if (updated) {
-      setBillsOfLading(prev => prev.map(b => (b.id === blId || b.blNumber === blId ? { ...b, ...updated } : b)));
-    }
+    const updated = await billOfLadingService.clearHold(blId, currentUser?.name || "Operations Staff", clearNotes);
     fetchMenuApi('bills-of-lading');
     await refreshAll();
     showToast(`Hold cleared for Master B/L ${blId}. Status is now RELEASED.`, 'success', 'B/L Released');
@@ -910,19 +701,7 @@ export const AppDataProvider = ({ children }) => {
   };
 
   const updateBLStatus = async (blId, status) => {
-    let updated;
-    try {
-      const res = await apiClient.patch(`/bills-of-lading/${blId}`, { status });
-      if (res?.data) updated = res.data;
-    } catch (e) {
-      console.warn('Backend updateBLStatus notice:', e.message);
-    }
-    if (!updated) {
-      updated = await billOfLadingService.updateStatus(blId, status, currentUser?.name || "Documentation Staff");
-    }
-    if (updated) {
-      setBillsOfLading(prev => prev.map(b => (b.id === blId || b.blNumber === blId ? { ...b, ...updated } : b)));
-    }
+    const updated = await billOfLadingService.updateStatus(blId, status, currentUser?.name || "Documentation Staff");
     fetchMenuApi('bills-of-lading');
     await refreshAll();
     showToast(`Master B/L ${blId} status updated to ${status}.`, 'info', 'Status Updated');
@@ -944,31 +723,13 @@ export const AppDataProvider = ({ children }) => {
     if (!created) {
       created = await manifestService.generateManifest(manifestData, currentUser?.name || "Documentation Staff");
     }
-    if (created) {
-      setManifests(prev => [
-        created,
-        ...(Array.isArray(prev) ? prev.filter(m => m.id !== created.id && m.manifestNumber !== created.manifestNumber) : [])
-      ]);
-    }
     await refreshAll();
-    showToast(`Shipping Manifest ${created?.manifestNumber || created?.id} generated successfully.`, 'success', 'Manifest Created');
+    showToast(`Shipping Manifest ${created.manifestNumber || created.id} generated successfully.`, 'success', 'Manifest Created');
     return created;
   };
 
   const updateManifest = async (id, updates) => {
-    let updated;
-    try {
-      const res = await apiClient.patch(`/manifests/${id}`, updates);
-      if (res?.data) updated = res.data;
-    } catch (e) {
-      console.warn('Backend updateManifest notice:', e.message);
-    }
-    if (!updated) {
-      updated = await manifestService.updateManifest(id, updates, currentUser?.name || "Documentation Staff");
-    }
-    if (updated) {
-      setManifests(prev => prev.map(m => (m.id === id || m.manifestNumber === id ? { ...m, ...updated } : m)));
-    }
+    const updated = await manifestService.updateManifest(id, updates, currentUser?.name || "Documentation Staff");
     fetchMenuApi('manifests');
     await refreshAll();
     showToast(`Shipping Manifest ${id} updated successfully.`, 'success', 'Manifest Updated');
@@ -977,16 +738,13 @@ export const AppDataProvider = ({ children }) => {
 
   const deleteManifest = async (id) => {
     setManifests(prev => prev.filter(m => m.id !== id && m.manifestNumber !== id));
-    try {
-      await apiClient.delete(`/manifests/${id}`);
-    } catch (e) {
-      console.warn('Backend deleteManifest notice:', e.message);
+    const success = await manifestService.deleteManifest(id, currentUser?.name || "Documentation Staff");
+    if (success) {
+      fetchMenuApi('manifests');
+      await refreshAll();
+      showToast(`Shipping Manifest ${id} deleted.`, 'info', 'Manifest Deleted');
     }
-    await manifestService.deleteManifest(id, currentUser?.name || "Documentation Staff");
-    fetchMenuApi('manifests');
-    await refreshAll();
-    showToast(`Shipping Manifest ${id} deleted.`, 'info', 'Manifest Deleted');
-    return true;
+    return success;
   };
 
   // 9. Vessels & Voyages CRUD
@@ -1215,9 +973,8 @@ export const AppDataProvider = ({ children }) => {
   };
 
   // Clear all transactional records
-  const clearAllData = async () => {
+  const clearAllData = () => {
     clearTransactionalData();
-    await settingsService.cleanSlate();
     refreshAll();
     showToast(`All transactional records cleared! System is now a clean blank slate for testing.`, 'success', 'Data Cleared');
   };

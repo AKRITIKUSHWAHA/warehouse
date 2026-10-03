@@ -6,6 +6,13 @@ import { apiFetch } from './apiConfig';
 export const consolidationService = {
   async getConsolidations(filters = {}) {
     try {
+<<<<<<< HEAD
+      const res = await apiClient.get('consolidations', { params: { ...filters, limit: 100 } });
+      if (res && res.data) {
+        const liveList = Array.isArray(res.data) ? res.data : (res.data.items || []);
+        setStored(KEYS.CONSOLIDATIONS, liveList);
+        return liveList;
+=======
       const res = await apiClient.get('/consolidations', { params: { ...filters, limit: filters.limit || 100 } });
       const apiData = res?.data ? (Array.isArray(res.data) ? res.data : (res.data.items || [])) : (Array.isArray(res) ? res : []);
       if (Array.isArray(apiData) && apiData.length > 0) {
@@ -22,6 +29,7 @@ export const consolidationService = {
         }));
         setStored(KEYS.CONSOLIDATIONS, mapped);
         return mapped;
+>>>>>>> cd5336dd0aa4dc9bc5f6babb410f9351c3606c8b
       }
     } catch (err) {
       console.warn('Backend API /consolidations fetch failed, using local store:', err?.message || err);
@@ -493,7 +501,11 @@ export const consolidationService = {
   async updateConsolidation(id, updates, currentUser = "Operations Staff") {
     let updatedConsolidation = null;
     try {
+<<<<<<< HEAD
+      const res = await apiClient.put(`consolidations/${encodeURIComponent(id)}`, updates);
+=======
       const res = await apiClient.patch(`/consolidations/${encodeURIComponent(id)}`, updates);
+>>>>>>> cd5336dd0aa4dc9bc5f6babb410f9351c3606c8b
       if (res && res.data) {
         updatedConsolidation = res.data;
       } else if (res && res.id) {
@@ -527,7 +539,11 @@ export const consolidationService = {
 
   async deleteConsolidation(id, currentUser = "Operations Staff") {
     try {
+<<<<<<< HEAD
+      await apiClient.delete(`consolidations/${encodeURIComponent(id)}`);
+=======
       await apiClient.delete(`/consolidations/${encodeURIComponent(id)}`);
+>>>>>>> cd5336dd0aa4dc9bc5f6babb410f9351c3606c8b
     } catch (err) {
       console.warn(`Backend deleteConsolidation ${id} failed:`, err?.message || err);
     }

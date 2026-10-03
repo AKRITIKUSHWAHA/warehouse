@@ -16,6 +16,22 @@ export class VoyagesService {
     return item;
   }
 
+<<<<<<< HEAD
+  async createVoyage(data: Record<string, unknown>) {
+    return this.repo.create(data);
+  }
+
+  async updateVoyage(id: string, data: Record<string, unknown>) {
+    const updated = await this.repo.update(id, data);
+    if (!updated) throw new NotFoundError('Voyage');
+    return updated;
+  }
+
+  async deleteVoyage(id: string) {
+    const deleted = await this.repo.delete(id);
+    if (!deleted) throw new NotFoundError('Voyage');
+    return true;
+=======
   async createVoyage(input: Record<string, unknown>) {
     let vesselId = input.vesselId as string | undefined;
     if (vesselId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(vesselId)) {
@@ -68,6 +84,7 @@ export class VoyagesService {
   async deleteVoyage(id: string) {
     await this.getVoyage(id);
     return this.repo.delete(id);
+>>>>>>> cd5336dd0aa4dc9bc5f6babb410f9351c3606c8b
   }
 }
 

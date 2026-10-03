@@ -12,7 +12,8 @@ import {
   PhoneCall,
   UserCheck,
   ChevronRight,
-  ExternalLink
+  ExternalLink,
+  Layers
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { QuickSearchModal } from '../components/modals/QuickSearchModal';
@@ -30,6 +31,7 @@ export const AgentLayout = ({
   const agentTabs = [
     { id: 'agent-dashboard', label: 'Agent Dashboard', icon: LayoutDashboard },
     { id: 'agent-shipments', label: 'My Assigned Shipments', icon: Ship },
+    { id: 'my-consolidations', label: 'My Consolidations', icon: Layers },
     { id: 'agent-documents', label: 'Documents & B/Ls', icon: FileStack },
     { id: 'agent-tracking', label: 'Cargo Tracking', icon: Search }
   ];

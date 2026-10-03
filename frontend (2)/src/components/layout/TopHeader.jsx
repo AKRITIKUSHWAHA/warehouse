@@ -34,7 +34,7 @@ export const TopHeader = ({
   const [showCreateMenu, setShowCreateMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
-  const holdBLCount = billsOfLading.filter(b => b.status === 'On Hold' || b.holdDetails?.isOnHold).length;
+  const holdBLCount = (billsOfLading || []).filter(b => b.status === 'On Hold' || b.holdDetails?.isOnHold).length;
 
   return (
     <header className="top-header no-print">

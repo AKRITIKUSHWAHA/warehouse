@@ -73,6 +73,8 @@ export class ConsolidationService {
       containerFillPercentage: String((Number(input.containerFillPercentage) || 0).toFixed(2)),
       assignedShipmentId: input.assignedShipmentId || null,
       assignedMasterBLId: input.assignedMasterBLId || null,
+      agentId: input.agentId || null,
+      agentName: input.agentName || null,
       notes: input.notes || null,
     });
 

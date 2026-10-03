@@ -10,6 +10,7 @@ export async function consolidationRoutes(app: FastifyInstance): Promise<void> {
   app.get('/', consolidationController.list);
   app.get('/:id', consolidationController.getById);
   app.post('/', consolidationController.create);
+  app.put('/:id', consolidationController.update);
   app.patch('/:id', consolidationController.update);
   app.delete('/:id', consolidationController.delete);
 }

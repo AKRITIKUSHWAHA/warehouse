@@ -138,6 +138,8 @@ export class WarehouseService {
         warehouseLocation: created.warehouseLocation,
         destinationPort: created.destinationPort,
         destinationCode: created.destinationCode,
+        agentId: created.agentId,
+        agentName: created.agentName,
         status: created.status,
         barcode: `CRG${Math.floor(10000000 + Math.random() * 90000000)}`,
         qrCode: `VI-CRG-${created.receiptNumber}`,

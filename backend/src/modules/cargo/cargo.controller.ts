@@ -16,6 +16,7 @@ export class CargoController {
       status: query.status,
       destinationCode: query.destinationCode,
       warehouseReceiptId: query.warehouseReceiptId,
+      agentId: query.agentId,
       limit,
       offset,
     });

@@ -13,8 +13,10 @@ import {
   Anchor,
   FileText,
   ArrowRight,
-  ShieldAlert
+  ShieldAlert,
+  Eye
 } from 'lucide-react';
+import { ResponsiveTable } from '../../components/tables/ResponsiveTable';
 import { useAppData } from '../../context/AppDataContext';
 import { trackingService } from '../../services';
 
@@ -221,6 +223,187 @@ export const ShipmentTrackingPortal = ({ initialQuery = '', onNavigate }) => {
     }))
   ];
 
+  // Unified Trackable Items Table Data
+  const trackableItems = React.useMemo(() => {
+    const list = [];
+    (shipments || []).forEach(s => {
+      list.push({
+        id: s.id,
+        trackingNumber: s.trackingNumber || s.shipmentNumber,
+        referenceNumber: s.shipmentNumber,
+        type: 'Master Shipment',
+        typeBadge: 'Shipment',
+        customer: s.consignee || s.destinationPort,
+        origin: s.origin || 'Port Everglades, FL',
+        destinationPort: s.destinationPort,
+        vesselInfo: s.vesselName ? `${s.vesselName} (${s.voyageNumber || 'N/A'})` : 'Awaiting Assignment',
+        container: s.containerNumber || 'Pending',
+        eta: s.eta || s.etd || '—',
+        status: s.status,
+        rawItem: s,
+        entityType: 'shipment'
+      });
+    });
+
+    (warehouseReceipts || []).forEach(w => {
+      list.push({
+        id: w.id,
+        trackingNumber: w.receiptNumber || w.id,
+        referenceNumber: w.receiptNumber || w.id,
+        type: 'Warehouse Receipt (WR)',
+        typeBadge: 'Intake Cargo',
+        customer: w.customer || w.customerName || 'CFS Consignment',
+        origin: 'Port Everglades CFS Intake',
+        destinationPort: w.destinationPort || 'NAS - Nassau, Bahamas',
+        vesselInfo: w.warehouseLocation ? `Staged: ${w.warehouseLocation}` : 'Intake Yard',
+        container: 'Pending Consolidation',
+        eta: w.date || 'Received',
+        status: w.status || 'Ready for Consolidation',
+        rawItem: w,
+        entityType: 'warehouse'
+      });
+    });
+
+    return list;
+  }, [shipments, warehouseReceipts]);
+
+  const tableColumns = [
+    {
+      header: 'Tracking Number',
+      accessor: 'trackingNumber',
+      render: (item) => (
+        <div>
+          <button
+            type="button"
+            onClick={() => {
+              setSearchQuery(item.trackingNumber);
+              handleSearch(null, item.trackingNumber);
+              window.scrollTo({ top: 180, behavior: 'smooth' });
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              cursor: 'pointer',
+              fontWeight: 800,
+              color: '#0284C7',
+              fontFamily: 'JetBrains Mono, monospace',
+              fontSize: '0.85rem',
+              textAlign: 'left',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <Compass size={14} style={{ color: '#0284C7' }} />
+            <span>{item.trackingNumber}</span>
+          </button>
+          <div style={{ fontSize: '0.7rem', color: '#64748B', marginTop: '2px' }}>
+            Ref: {item.referenceNumber}
+          </div>
+        </div>
+      )
+    },
+    {
+      header: 'Consignment / Type',
+      accessor: 'type',
+      render: (item) => (
+        <div>
+          <span style={{
+            fontSize: '0.68rem',
+            padding: '2px 7px',
+            borderRadius: '4px',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            background: item.entityType === 'shipment' ? 'rgba(2, 132, 199, 0.12)' : 'rgba(217, 119, 6, 0.12)',
+            color: item.entityType === 'shipment' ? '#0284C7' : '#D97706'
+          }}>
+            {item.typeBadge}
+          </span>
+          <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#0A192F', marginTop: '4px' }}>
+            {item.customer}
+          </div>
+        </div>
+      )
+    },
+    {
+      header: 'Route (Origin → Dest)',
+      accessor: 'destinationPort',
+      render: (item) => (
+        <div>
+          <div style={{ fontWeight: 600, color: '#0A192F', fontSize: '0.8rem' }}>{item.destinationPort}</div>
+          <div style={{ fontSize: '0.72rem', color: '#64748B' }}>From {item.origin}</div>
+        </div>
+      )
+    },
+    {
+      header: 'Vessel / Location',
+      accessor: 'vesselInfo',
+      render: (item) => (
+        <div>
+          <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155' }}>{item.vesselInfo}</div>
+          <div style={{ fontSize: '0.7rem', color: '#64748B', fontFamily: 'JetBrains Mono, monospace' }}>
+            {item.container}
+          </div>
+        </div>
+      )
+    },
+    {
+      header: 'ETA / Intake',
+      accessor: 'eta',
+      render: (item) => (
+        <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#475569' }}>
+          {item.eta}
+        </span>
+      )
+    },
+    {
+      header: 'Milestone Status',
+      accessor: 'status',
+      render: (item) => <StatusBadge status={item.status} />
+    },
+    {
+      header: 'Actions',
+      align: 'right',
+      render: (item) => (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.4rem' }}>
+          <button
+            type="button"
+            onClick={() => {
+              setSearchQuery(item.trackingNumber);
+              handleSearch(null, item.trackingNumber);
+              window.scrollTo({ top: 180, behavior: 'smooth' });
+            }}
+            className="btn btn-primary btn-sm"
+            style={{ fontSize: '0.72rem', padding: '0.25rem 0.55rem', gap: '4px' }}
+            title="Track Milestones Live"
+          >
+            <Compass size={13} />
+            <span>Track</span>
+          </button>
+          {onNavigate && (
+            <button
+              type="button"
+              onClick={() => {
+                if (item.entityType === 'shipment') {
+                  onNavigate('shipments', item.id);
+                } else {
+                  onNavigate('warehouse-receipts', item.id);
+                }
+              }}
+              className="btn btn-outline btn-sm"
+              style={{ fontSize: '0.72rem', padding: '0.25rem 0.55rem', gap: '4px' }}
+              title="View Complete Record"
+            >
+              <Eye size={13} />
+              <span className="hide-mobile">Details</span>
+            </button>
+          )}
+        </div>
+      )
+    }
+  ];
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '1100px', margin: '0 auto' }}>
       <PageHeader
@@ -398,15 +581,37 @@ export const ShipmentTrackingPortal = ({ initialQuery = '', onNavigate }) => {
             We could not locate any active shipment or cargo matching "{searchQuery}".
           </div>
         </div>
-      ) : (
-        <div className="card" style={{ padding: '3rem 1.5rem', textAlign: 'center', color: '#64748B' }}>
-          <Compass size={40} style={{ color: '#CBD5E1', margin: '0 auto 0.5rem' }} />
-          <div style={{ fontWeight: 700, color: '#0A192F', fontSize: '1.05rem' }}>Track Cargo Consignment</div>
-          <div style={{ fontSize: '0.85rem', marginTop: '4px' }}>
-            Enter a Tracking Number, Master B/L Number, or Warehouse Receipt above to track real-time milestones.
+      ) : null}
+
+      {/* Trackable Consignments & Shipments Data Table */}
+      <div className="card" style={{ padding: '1.25rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div>
+            <h3 style={{ fontSize: '1.05rem', color: '#0A192F', margin: 0, fontWeight: 700 }}>
+              Active Trackable Shipments &amp; Consignments Table
+            </h3>
+            <p style={{ fontSize: '0.75rem', color: '#64748B', margin: '2px 0 0' }}>
+              Directory of ocean freight shipments and staged warehouse cargo available for live tracking
+            </p>
+          </div>
+          <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#0284C7', background: '#F0F9FF', padding: '0.35rem 0.75rem', borderRadius: '20px', border: '1px solid #BAE6FD' }}>
+            Total: {trackableItems.length} Trackable Records
           </div>
         </div>
-      )}
+
+        <ResponsiveTable
+          columns={tableColumns}
+          data={trackableItems}
+          searchPlaceholder="Filter by tracking #, customer, vessel, port, status..."
+          filterOptions={['All', 'In Transit', 'Loaded & Sealed', 'Delivered', 'Ready for Consolidation']}
+          pageSize={6}
+          onRowClick={(item) => {
+            setSearchQuery(item.trackingNumber);
+            handleSearch(null, item.trackingNumber);
+            window.scrollTo({ top: 180, behavior: 'smooth' });
+          }}
+        />
+      </div>
     </div>
   );
 };

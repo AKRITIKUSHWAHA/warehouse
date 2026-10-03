@@ -10,6 +10,7 @@ export async function containersRoutes(app: FastifyInstance): Promise<void> {
   app.get('/', containersController.list);
   app.get('/:id', containersController.getById);
   app.post('/', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.OPERATIONS)] }, containersController.create);
+  app.put('/:id', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.OPERATIONS)] }, containersController.update);
   app.patch('/:id', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.OPERATIONS)] }, containersController.update);
   app.delete('/:id', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.OPERATIONS)] }, containersController.delete);
 }

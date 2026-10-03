@@ -37,38 +37,29 @@ const KEYS = {
 
 // Initialize localStorage with mock seed data if empty
 export const initializeStorage = () => {
-  const CLEAN_SLATE_KEY = 'kers_clean_slate_v5';
+  const CLEAN_SLATE_KEY = 'kers_clean_slate_v6';
   if (!localStorage.getItem(CLEAN_SLATE_KEY)) {
-    // Sync modern roles and user directory
+    // Clear all transactional collections so UI strictly mirrors live database
+    localStorage.setItem(KEYS.CONTAINERS, JSON.stringify([]));
+    localStorage.setItem(KEYS.VESSELS, JSON.stringify([]));
+    localStorage.setItem(KEYS.VOYAGES, JSON.stringify([]));
+    localStorage.setItem(KEYS.SHIPMENTS, JSON.stringify([]));
+    localStorage.setItem(KEYS.CARGO, JSON.stringify([]));
+    localStorage.setItem(KEYS.CONSOLIDATIONS, JSON.stringify([]));
+    localStorage.setItem(KEYS.BILLS_OF_LADING, JSON.stringify([]));
+    localStorage.setItem(KEYS.HOUSE_BILLS, JSON.stringify([]));
+    localStorage.setItem(KEYS.WAREHOUSE_RECEIPTS, JSON.stringify([]));
+    localStorage.setItem(KEYS.CUSTOMERS, JSON.stringify([]));
+    localStorage.setItem(KEYS.MANIFESTS, JSON.stringify([]));
+    localStorage.setItem(KEYS.DOCUMENTS, JSON.stringify([]));
+
+    // Master configuration
     localStorage.setItem(KEYS.USERS, JSON.stringify(initialUsers));
     localStorage.setItem(KEYS.ROLES, JSON.stringify(initialRolesPermissions));
-
-    // Update active user session if Carlos Mendez was logged in with old role
-    try {
-      const activeRaw = localStorage.getItem('kers_active_user');
-      if (activeRaw) {
-        const active = JSON.parse(activeRaw);
-        if (active.id === 'USR-003') {
-          active.roleKey = 'warehouse';
-          active.role = 'Warehouse Staff';
-          localStorage.setItem('kers_active_user', JSON.stringify(active));
-        }
-      }
-    } catch (e) {
-      // ignore JSON parse error
-    }
-
     localStorage.setItem(KEYS.AGENTS, JSON.stringify(initialAgents));
     localStorage.setItem(KEYS.PORTS, JSON.stringify(initialPorts));
     localStorage.setItem(KEYS.SETTINGS, JSON.stringify(initialSettings));
-    localStorage.setItem(KEYS.AUDIT_LOGS, JSON.stringify([]));
     localStorage.setItem(CLEAN_SLATE_KEY, 'true');
-  }
-
-  const AUDIT_RESET_KEY = 'kers_audit_clean_slate_active';
-  if (!localStorage.getItem(AUDIT_RESET_KEY)) {
-    localStorage.setItem(KEYS.AUDIT_LOGS, JSON.stringify([]));
-    localStorage.setItem(AUDIT_RESET_KEY, 'true');
   }
 
   if (!localStorage.getItem(KEYS.CUSTOMERS)) {
@@ -99,13 +90,13 @@ export const initializeStorage = () => {
     localStorage.setItem(KEYS.DOCUMENTS, JSON.stringify([]));
   }
   if (!localStorage.getItem(KEYS.CONTAINERS)) {
-    localStorage.setItem(KEYS.CONTAINERS, JSON.stringify(initialContainers));
+    localStorage.setItem(KEYS.CONTAINERS, JSON.stringify([]));
   }
   if (!localStorage.getItem(KEYS.VESSELS)) {
-    localStorage.setItem(KEYS.VESSELS, JSON.stringify(initialVessels));
+    localStorage.setItem(KEYS.VESSELS, JSON.stringify([]));
   }
   if (!localStorage.getItem(KEYS.VOYAGES)) {
-    localStorage.setItem(KEYS.VOYAGES, JSON.stringify(initialVoyages));
+    localStorage.setItem(KEYS.VOYAGES, JSON.stringify([]));
   }
   if (!localStorage.getItem(KEYS.AGENTS)) {
     localStorage.setItem(KEYS.AGENTS, JSON.stringify(initialAgents));

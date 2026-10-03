@@ -7,6 +7,7 @@ export const cargoQuerySchema = z.object({
   status: z.string().optional(),
   destinationCode: z.string().optional(),
   warehouseReceiptId: z.string().optional(),
+  agentId: z.string().optional(),
 });
 
 export const createCargoSchema = z.object({
@@ -29,6 +30,8 @@ export const createCargoSchema = z.object({
   warehouseLocation: z.string().optional().default('Bay A-01'),
   destinationPort: z.string().optional().default('NAS - Nassau, Bahamas'),
   destinationCode: z.string().optional().default('NAS'),
+  agentId: z.string().nullish().transform(v => (v && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v)) ? v : undefined),
+  agentName: z.string().nullish(),
   status: z.string().optional().default('Ready for Consolidation'),
   barcode: z.string().optional(),
   qrCode: z.string().optional(),

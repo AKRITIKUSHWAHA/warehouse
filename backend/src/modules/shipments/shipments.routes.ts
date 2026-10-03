@@ -10,6 +10,7 @@ export async function shipmentsRoutes(app: FastifyInstance): Promise<void> {
   app.get('/', shipmentsController.list);
   app.get('/:id', shipmentsController.getById);
   app.post('/', shipmentsController.create);
+  app.put('/:id', shipmentsController.update);
   app.patch('/:id', shipmentsController.update);
   app.put('/:id', shipmentsController.update);
   app.delete('/:id', shipmentsController.delete);

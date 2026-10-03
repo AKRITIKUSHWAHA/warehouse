@@ -9,15 +9,15 @@ export const warehouseService = {
       const res = await apiClient.get('warehouse-receipts', { params: { ...filters, limit: 100 } });
       const apiData = res?.data ? (Array.isArray(res.data) ? res.data : (res.data.items || [])) : (Array.isArray(res) ? res : []);
       if (apiData.length > 0) {
-        const mapped = apiData.map(item => ({
-          ...item,
-          customer: item.customer || item.customerName || '',
-          customerName: item.customerName || item.customer || '',
-          cbm: item.cbm || item.totalCbm || '0.00',
-          cft: item.cft || item.totalCft || '0.00',
-        }));
-        setStored(KEYS.WAREHOUSE_RECEIPTS, mapped);
-        return mapped;
+        const localList = getStored(KEYS.WAREHOUSE_RECEIPTS, []);
+        const mergedMap = new Map();
+        [...localList, ...apiData].forEach(item => {
+          const key = item.id || item.receiptNumber;
+          if (key) mergedMap.set(key, { ...mergedMap.get(key), ...item });
+        });
+        const merged = Array.from(mergedMap.values());
+        setStored(KEYS.WAREHOUSE_RECEIPTS, merged);
+        return merged;
       }
     } catch (err) {
       console.warn('Backend warehouse-receipts fetch note, using cached store:', err?.message || err);
@@ -58,21 +58,7 @@ export const warehouseService = {
     try {
       const res = await apiClient.get(`warehouse-receipts/${encodeURIComponent(id)}`);
       const apiData = res?.data || res;
-      if (apiData && (apiData.id || apiData.receiptNumber)) {
-        const mapped = {
-          ...apiData,
-          customer: apiData.customer || apiData.customerName || '',
-          customerName: apiData.customerName || apiData.customer || '',
-          cbm: apiData.cbm || apiData.totalCbm || '0.00',
-          cft: apiData.cft || apiData.totalCft || '0.00',
-        };
-        const list = getStored(KEYS.WAREHOUSE_RECEIPTS, []);
-        const idx = list.findIndex(r => r.id === mapped.id || r.receiptNumber === mapped.receiptNumber);
-        if (idx !== -1) list[idx] = { ...list[idx], ...mapped };
-        else list.push(mapped);
-        setStored(KEYS.WAREHOUSE_RECEIPTS, list);
-        return mapped;
-      }
+      if (apiData && (apiData.id || apiData.receiptNumber)) return apiData;
     } catch (err) {
       console.warn(`Backend API fetch for receipt ${id} failed:`, err?.message || err);
     }
@@ -160,8 +146,7 @@ export const warehouseService = {
         createdReceipt = res.data || res;
       }
     } catch (err) {
-      console.error('Backend createReceipt error:', err?.message || err);
-      throw err;
+      console.warn('Backend createReceipt failed, falling back to local:', err?.message || err);
     }
 
     if (!createdReceipt) {
@@ -226,8 +211,7 @@ export const warehouseService = {
         updatedReceipt = res.data || res;
       }
     } catch (err) {
-      console.error(`Backend updateReceipt ${id} failed:`, err?.message || err);
-      throw err;
+      console.warn(`Backend updateReceipt ${id} failed:`, err?.message || err);
     }
 
     const list = getStored(KEYS.WAREHOUSE_RECEIPTS, []);
@@ -308,8 +292,7 @@ export const warehouseService = {
     try {
       await apiClient.delete(`warehouse-receipts/${encodeURIComponent(id)}`);
     } catch (err) {
-      console.error(`Backend deleteReceipt ${id} failed:`, err?.message || err);
-      throw err;
+      console.warn(`Backend deleteReceipt ${id} failed:`, err?.message || err);
     }
 
     const list = getStored(KEYS.WAREHOUSE_RECEIPTS, []);

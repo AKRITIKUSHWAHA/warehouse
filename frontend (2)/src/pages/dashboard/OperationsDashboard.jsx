@@ -49,13 +49,13 @@ export const OperationsDashboard = ({ onNavigate }) => {
 
 
   // Metrics for Action Tasks
-  const readyReceipts = warehouseReceipts.filter(w => w.status === 'Ready for Consolidation');
-  const stagedCargo = cargoItems.filter(c => c.status === 'Ready for Consolidation' || !c.assignedConsolidationId);
-  const activeConsolidations = consolidations.filter(c => c.status !== 'Departed' && c.status !== 'Delivered');
-  const activeShipments = shipments.filter(s => s.status !== 'Delivered');
-  const holdBLs = billsOfLading.filter(b => b.status === 'On Hold' || b.holdDetails?.isOnHold);
-  const draftBLs = billsOfLading.filter(b => b.status === 'Draft');
-  const pendingManifestShipments = shipments.filter(s => !s.manifestNumber || s.status === 'Booked' || s.status === 'Consolidated');
+  const readyReceipts = (warehouseReceipts || []).filter(w => w.status === 'Ready for Consolidation');
+  const stagedCargo = (cargoItems || []).filter(c => c.status === 'Ready for Consolidation' || !c.assignedConsolidationId);
+  const activeConsolidations = (consolidations || []).filter(c => c.status !== 'Departed' && c.status !== 'Delivered');
+  const activeShipments = (shipments || []).filter(s => s.status !== 'Delivered');
+  const holdBLs = (billsOfLading || []).filter(b => b.status === 'On Hold' || b.holdDetails?.isOnHold);
+  const draftBLs = (billsOfLading || []).filter(b => b.status === 'Draft');
+  const pendingManifestShipments = (shipments || []).filter(s => !s.manifestNumber || s.status === 'Booked' || s.status === 'Consolidated');
 
   // Shipment columns
   const shipmentColumns = [

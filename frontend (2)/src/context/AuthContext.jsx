@@ -54,12 +54,10 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('kers_token', token);
       localStorage.setItem('kers_jwt_token', token);
       apiClient.setToken(token);
-      setAuthToken(token);
     } else {
       localStorage.removeItem('kers_token');
       localStorage.removeItem('kers_jwt_token');
       apiClient.setToken(null);
-      setAuthToken(null);
     }
   };
 

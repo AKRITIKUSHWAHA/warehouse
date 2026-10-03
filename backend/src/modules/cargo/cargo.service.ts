@@ -53,6 +53,8 @@ export class CargoService {
       warehouseLocation: input.warehouseLocation || 'Bay A-01',
       destinationPort: destPort,
       destinationCode: destCode,
+      agentId: input.agentId || null,
+      agentName: input.agentName || null,
       status: input.status || 'Ready for Consolidation',
       barcode: input.barcode || `CRG${Math.floor(10000000 + Math.random() * 90000000)}`,
       qrCode: input.qrCode || `VI-${cargoNum}`,

@@ -11,6 +11,5 @@ export async function cargoRoutes(app: FastifyInstance): Promise<void> {
   app.get('/:id', cargoController.getById);
   app.post('/', cargoController.create);
   app.put('/:id', cargoController.update);
-  app.patch('/:id', cargoController.update);
   app.delete('/:id', cargoController.delete);
 }
