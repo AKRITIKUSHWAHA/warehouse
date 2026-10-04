@@ -44,3 +44,11 @@ async function startServer(): Promise<void> {
 }
 
 startServer();
+// Active: Local DB connected with labels permissions updated
+
+
+
+
+
+
+

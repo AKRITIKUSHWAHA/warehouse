@@ -9,13 +9,13 @@ export async function menuRoutes(app: FastifyInstance): Promise<void> {
   app.addHook('preHandler', authenticate);
 
   // STAGE 1: Warehouse Menus
-  app.get('/cfs-dashboard', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.WAREHOUSE_STAFF, ROLES.OPERATIONS)] }, menusController.getCfsDashboard);
-  app.get('/cargo-inventory', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.WAREHOUSE_STAFF, ROLES.OPERATIONS)] }, menusController.getCargoInventory);
-  app.get('/labels', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.WAREHOUSE_STAFF, ROLES.OPERATIONS)] }, menusController.getLabels);
-  app.get('/labels/:id', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.WAREHOUSE_STAFF, ROLES.OPERATIONS)] }, menusController.getLabels);
+  app.get('/cfs-dashboard', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.WAREHOUSE_STAFF, ROLES.OPERATIONS, ROLES.DOCUMENTATION_STAFF)] }, menusController.getCfsDashboard);
+  app.get('/cargo-inventory', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.WAREHOUSE_STAFF, ROLES.OPERATIONS, ROLES.DOCUMENTATION_STAFF)] }, menusController.getCargoInventory);
+  app.get('/labels', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.WAREHOUSE_STAFF, ROLES.OPERATIONS, ROLES.DOCUMENTATION_STAFF)] }, menusController.getLabels);
+  app.get('/labels/:id', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.WAREHOUSE_STAFF, ROLES.OPERATIONS, ROLES.DOCUMENTATION_STAFF)] }, menusController.getLabels);
 
   // STAGE 2: Operations Menus
-  app.get('/ops-dashboard', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.OPERATIONS)] }, menusController.getOpsDashboard);
+  app.get('/ops-dashboard', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.OPERATIONS, ROLES.WAREHOUSE_STAFF)] }, menusController.getOpsDashboard);
   app.get('/containers-vessels', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.OPERATIONS, ROLES.DOCUMENTATION_STAFF)] }, menusController.getContainersVessels);
 
   // STAGE 3: Documentation Menus

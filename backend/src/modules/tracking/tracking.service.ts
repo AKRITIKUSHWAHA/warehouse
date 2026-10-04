@@ -45,6 +45,20 @@ export class TrackingService {
       events: timeline,
     };
   }
+
+  async listAll(): Promise<any[]> {
+    return [
+      {
+        trackingNumber: 'TRK-VI-994819',
+        type: 'Ocean LCL Consolidation',
+        status: 'In Transit',
+        origin: 'Port of Miami (USMIA)',
+        destination: 'Nassau Container Port (BSNAS)',
+        vesselName: 'M/V Tropic Sun',
+        voyageNumber: 'VOY-2026-088'
+      }
+    ];
+  }
 }
 
 export const trackingService = new TrackingService();

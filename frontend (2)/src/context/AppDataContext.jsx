@@ -219,8 +219,9 @@ export const AppDataProvider = ({ children }) => {
     try {
       switch (tabName) {
         case 'dashboard': {
-          if (currentRole === 'operations' || currentRole === 'warehouse') {
+          if (currentRole === 'warehouse') {
             await apiClient.get('/cfs-dashboard').catch(() => {});
+          } else if (currentRole === 'operations') {
             await apiClient.get('/ops-dashboard').catch(() => {});
           } else if (currentRole === 'documentation') {
             await apiClient.get('/docs-dashboard').catch(() => {});

@@ -7,10 +7,14 @@ async function main() {
   await db.execute(sql`
     ALTER TABLE cargo
     ADD COLUMN IF NOT EXISTS agent_id UUID,
-    ADD COLUMN IF NOT EXISTS agent_name TEXT
+    ADD COLUMN IF NOT EXISTS agent_name TEXT;
+
+    ALTER TABLE consolidations
+    ADD COLUMN IF NOT EXISTS agent_id TEXT,
+    ADD COLUMN IF NOT EXISTS agent_name TEXT;
   `);
 
-  console.log('✅ agent_id and agent_name columns added to cargo');
+  console.log('✅ agent_id and agent_name columns added to cargo and consolidations');
 
   const r = await db.execute(
     sql`SELECT column_name FROM information_schema.columns WHERE table_name = 'cargo' ORDER BY ordinal_position`

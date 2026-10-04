@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { trackingController } from './tracking.controller.js';
 
 export async function trackingRoutes(app: FastifyInstance): Promise<void> {
-  // Public tracking endpoint
+  // Public tracking endpoints
+  app.get('/', trackingController.listAll);
   app.get('/:trackingNumber', trackingController.lookup);
 }
