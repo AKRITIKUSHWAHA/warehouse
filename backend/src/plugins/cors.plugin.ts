@@ -24,8 +24,8 @@ export async function registerCorsPlugin(app: FastifyInstance): Promise<void> {
         return callback(null, true);
       }
 
-      // Safe fallback to avoid 500 preflight crashes on any valid frontend deploy
-      return callback(null, true);
+      // Reject unauthorized origins
+      return callback(new Error('CORS origin not allowed: ' + origin), false);
     },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],

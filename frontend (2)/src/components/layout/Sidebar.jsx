@@ -37,10 +37,11 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose }) => {
     if (roleKey === 'warehouse') {
       return [
         {
-          title: 'CFS WAREHOUSE INTAKE',
+          title: 'WAREHOUSE & OPERATIONS',
           items: [
-            { id: 'dashboard', label: 'CFS Dashboard', icon: LayoutDashboard },
-            { id: 'warehouse-receipts', label: 'Warehouse Receipts (WR)', icon: Package },
+            { id: 'dashboard', label: 'Operations Dashboard', icon: LayoutDashboard },
+            { id: 'customers', label: 'Customers', icon: Users },
+            { id: 'warehouse-receipts', label: 'Warehouse Receipts', icon: Package },
             { id: 'cargo', label: 'Cargo Inventory', icon: Box },
             { id: 'house-bills', label: 'House B/Ls', icon: FileText },
             { id: 'documents', label: 'Labels & Docs', icon: Tag },
@@ -58,16 +59,19 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose }) => {
     if (roleKey === 'operations') {
       return [
         {
-          title: 'VESSEL & CONSOLIDATIONS',
+          title: 'WAREHOUSE & OPERATIONS',
           items: [
             { id: 'dashboard', label: 'Operations Dashboard', icon: LayoutDashboard },
-            { id: 'consolidations', label: 'Consolidations Wizard', icon: Layers },
-            { id: 'shipments', label: 'Master Shipments', icon: Ship },
-            { id: 'containers', label: 'Containers Fleet', icon: Box },
+            { id: 'customers', label: 'Customers', icon: Users },
+            { id: 'warehouse-receipts', label: 'Warehouse Receipts', icon: Package },
+            { id: 'cargo', label: 'Cargo Inventory', icon: Box },
+            { id: 'house-bills', label: 'House B/Ls', icon: FileText },
+            { id: 'documents', label: 'Labels & Docs', icon: Tag },
+            { id: 'consolidations', label: 'Consolidations', icon: Layers },
+            { id: 'shipments', label: 'Shipments', icon: Ship },
+            { id: 'containers', label: 'Containers', icon: Box },
             { id: 'vessels', label: 'Vessels & Voyages', icon: Anchor },
-            { id: 'cargo', label: 'Cargo Staged', icon: Box },
-            { id: 'bills-of-lading', label: 'Bills of Lading (View)', icon: FileText },
-            { id: 'tracking', label: 'Shipment Tracking', icon: Search }
+            { id: 'tracking', label: 'Tracking', icon: Search }
           ]
         }
       ];
@@ -77,15 +81,17 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose }) => {
     if (roleKey === 'documentation') {
       return [
         {
-          title: 'MARITIME DOCUMENTATION',
+          title: 'DOCUMENTATION & OPERATIONS',
           items: [
             { id: 'dashboard', label: 'Documentation Desk', icon: LayoutDashboard },
-            { id: 'house-bills', label: 'House Bills of Lading (HBL)', icon: FileText },
-            { id: 'bills-of-lading', label: 'Master Bills (MBL) & Holds', icon: FileText },
-            { id: 'manifests', label: 'Ocean Manifests (CSV/XML)', icon: FileSpreadsheet },
+            { id: 'customers', label: 'Customers', icon: Users },
             { id: 'warehouse-receipts', label: 'Warehouse Receipts', icon: Package },
-            { id: 'consolidations', label: 'Consolidations View', icon: Layers },
-            { id: 'customers', label: 'Customer Profiles', icon: Users },
+            { id: 'cargo', label: 'Cargo Inventory', icon: Box },
+            { id: 'bills-of-lading', label: 'Bills of Lading (MBL & HBL)', icon: FileText },
+            { id: 'consolidations', label: 'Consolidations', icon: Layers },
+            { id: 'containers', label: 'Containers', icon: Box },
+            { id: 'vessels', label: 'Vessels & Voyages', icon: Anchor },
+            { id: 'manifests', label: 'Manifests', icon: FileSpreadsheet },
             { id: 'documents', label: 'Documents & Labels', icon: FileStack },
             { id: 'tracking', label: 'Tracking', icon: Search },
             { id: 'history', label: 'Shipment History', icon: History }
@@ -115,29 +121,27 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose }) => {
     // 5. SUPER ADMIN (Marcus Vance - Full HQ & Global Operations)
     return [
       {
-        title: 'EXECUTIVE & SYSTEM',
+        title: '',
         items: [
           { id: 'dashboard', label: 'Admin Dashboard', icon: LayoutDashboard },
-          { id: 'users', label: 'Users & Roles Matrix', icon: ShieldCheck },
-          { id: 'audit', label: 'System Audit Trail', icon: Activity },
+          { id: 'users', label: 'Users & Roles', icon: ShieldCheck },
+          { id: 'audit', label: 'Audit Trail', icon: Activity },
           { id: 'history', label: 'Shipment History', icon: History },
           { id: 'settings', label: 'Settings', icon: Settings }
         ]
       },
       {
-        title: 'OPERATIONS & MARITIME',
+        title: 'OPERATIONS OVERVIEW',
         items: [
-          { id: 'customers', label: 'Customer Profiles', icon: Users },
+          { id: 'customers', label: 'Customers', icon: Users },
           { id: 'warehouse-receipts', label: 'Warehouse Receipts', icon: Package },
           { id: 'cargo', label: 'Cargo Inventory', icon: Box },
-          { id: 'house-bills', label: 'House Bills (HBL)', icon: FileText },
-          { id: 'consolidations', label: 'Consolidation Wizard', icon: Layers },
-          { id: 'shipments', label: 'Master Shipments', icon: Ship },
-          { id: 'bills-of-lading', label: 'Master B/Ls & Holds', icon: FileText },
-          { id: 'manifests', label: 'Ocean Manifests', icon: FileSpreadsheet },
+          { id: 'consolidations', label: 'Consolidations', icon: Layers },
+          { id: 'shipments', label: 'Shipments', icon: Ship },
+          { id: 'bills-of-lading', label: 'Bills of Lading', icon: FileText },
+          { id: 'manifests', label: 'Manifests', icon: FileText },
           { id: 'containers', label: 'Containers', icon: Box },
-          { id: 'vessels', label: 'Vessels & Voyages', icon: Anchor },
-          { id: 'tracking', label: 'Global Tracking', icon: Search }
+          { id: 'vessels', label: 'Vessels & Voyages', icon: Anchor }
         ]
       }
     ];

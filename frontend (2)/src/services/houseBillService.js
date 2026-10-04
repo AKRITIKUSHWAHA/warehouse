@@ -138,7 +138,8 @@ export const houseBillService = {
         return fullItem;
       }
     } catch (err) {
-      console.warn('API error creating house bill, fallback to local:', err);
+      console.warn('API error creating house bill:', err);
+      throw err;
     }
 
     const list = getStored(KEYS.HOUSE_BILLS, []);
@@ -274,6 +275,7 @@ export const houseBillService = {
       if (res?.data) apiUpdated = res.data;
     } catch (err) {
       console.warn('API error updating house bill:', err);
+      throw err;
     }
 
     const list = getStored(KEYS.HOUSE_BILLS, []);
@@ -308,6 +310,7 @@ export const houseBillService = {
       await apiClient.delete(`/house-bills/${id}`);
     } catch (err) {
       console.warn('API error deleting house bill:', err);
+      throw err;
     }
 
     const list = getStored(KEYS.HOUSE_BILLS, []);

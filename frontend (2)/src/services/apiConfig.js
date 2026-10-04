@@ -31,27 +31,7 @@ export function setAuthToken(token) {
 export async function apiFetch(endpoint, options = {}, isRetry = false) {
   const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
   
-  let token = getAuthToken();
-  if (!token && !endpoint.includes('/auth/login') && typeof window !== 'undefined') {
-    try {
-      const activeUserStr = localStorage.getItem('kers_active_user');
-      const activeUser = activeUserStr ? JSON.parse(activeUserStr) : null;
-      const email = activeUser?.email || 'operations@caribbeanexpressbahamas.com';
-      const loginRes = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password: 'Password123!' })
-      });
-      const loginData = await loginRes.json();
-      const freshToken = loginData?.data?.token || loginData?.data?.accessToken;
-      if (freshToken) {
-        token = freshToken;
-        setAuthToken(freshToken);
-      }
-    } catch (e) {
-      // ignore
-    }
-  }
+  const token = getAuthToken();
 
   const headers = {
     'Content-Type': 'application/json',

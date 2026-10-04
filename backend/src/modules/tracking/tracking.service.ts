@@ -1,5 +1,6 @@
 import { TrackingRepository, trackingRepository } from './tracking.repository.js';
 import { TrackingLookupResult } from './tracking.types.js';
+import { NotFoundError } from '../../common/errors/not-found-error.js';
 
 export class TrackingService {
   constructor(private readonly repo: TrackingRepository = trackingRepository) {}
@@ -8,27 +9,7 @@ export class TrackingService {
     const data = await this.repo.findByTrackingNumber(trackingNumber);
     
     if (!data) {
-      // Clean fallback tracking data for demo & new installations
-      return {
-        trackingNumber: trackingNumber || 'TRK-VI-994819',
-        type: 'Ocean LCL Consolidation',
-        status: 'In Transit',
-        origin: 'Port of Miami (USMIA)',
-        destination: 'Nassau Container Port (BSNAS)',
-        destinationPort: 'NAS - Nassau, Bahamas',
-        vesselName: 'M/V Tropic Sun',
-        voyageNumber: 'VOY-2026-088',
-        containerNumber: 'MEDU7748219',
-        etd: '2026-09-02',
-        eta: '2026-09-06',
-        currentLocation: 'En Route to Nassau Port',
-        events: [
-          { id: 'ev-1', stage: 'Cargo Received CFS Miami', status: 'Completed', date: '2026-08-28', location: 'Miami CFS Warehouse' },
-          { id: 'ev-2', stage: 'Container Stuffed & Sealed', status: 'Completed', date: '2026-08-30', location: 'Miami CFS Yard' },
-          { id: 'ev-3', stage: 'Vessel Departed Origin', status: 'Active', date: '2026-09-02', location: 'Port of Miami' },
-          { id: 'ev-4', stage: 'Vessel Arrival Destination', status: 'Pending', date: '2026-09-06', location: 'Nassau Container Port' }
-        ],
-      };
+      throw new NotFoundError(`Tracking information for "${trackingNumber}"`);
     }
 
     const { shipment, events } = data;

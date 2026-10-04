@@ -29,6 +29,11 @@ export class WarehouseController {
     reply.send(paginatedResponse(data, meta));
   };
 
+  getNextNumber = async (_request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+    const nextSeq = await this.service.getNextNumber();
+    reply.send(successResponse({ nextReceiptNumber: String(nextSeq), nextSequenceNumber: nextSeq }));
+  };
+
   getById = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     const { id } = request.params as { id: string };
     const receipt = await this.service.getReceipt(id);
@@ -44,7 +49,7 @@ export class WarehouseController {
   update = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     const { id } = request.params as { id: string };
     const body = updateWarehouseReceiptSchema.parse(request.body);
-    const updated = await this.service.updateReceipt(id, body);
+    const updated = await this.service.updateReceipt(id, body, request.user?.roleKey);
     reply.send(successResponse(updated, 'Warehouse Receipt updated successfully'));
   };
 

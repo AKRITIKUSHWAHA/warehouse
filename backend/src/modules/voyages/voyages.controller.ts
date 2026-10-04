@@ -1,12 +1,7 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { VoyagesService, voyagesService } from './voyages.service.js';
-<<<<<<< HEAD
-import { voyageQuerySchema } from './voyages.schema.js';
-import { successResponse, paginatedResponse, createdResponse } from '../../common/utils/response.js';
-=======
 import { voyageQuerySchema, createVoyageSchema, updateVoyageSchema } from './voyages.schema.js';
-import { successResponse, paginatedResponse } from '../../common/utils/response.js';
->>>>>>> cd5336dd0aa4dc9bc5f6babb410f9351c3606c8b
+import { successResponse, paginatedResponse, createdResponse } from '../../common/utils/response.js';
 import { getPaginationParams, buildPaginationMeta } from '../../common/utils/pagination.js';
 
 export class VoyagesController {
@@ -34,41 +29,22 @@ export class VoyagesController {
   };
 
   create = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
-<<<<<<< HEAD
-    const { createVoyageSchema } = await import('./voyages.schema.js');
     const body = createVoyageSchema.parse(request.body);
     const item = await this.service.createVoyage(body);
     reply.status(201).send(createdResponse(item));
-=======
-    const body = createVoyageSchema.parse(request.body);
-    const created = await this.service.createVoyage(body);
-    reply.status(201).send(successResponse(created, 'Voyage scheduled successfully'));
->>>>>>> cd5336dd0aa4dc9bc5f6babb410f9351c3606c8b
   };
 
   update = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     const { id } = request.params as { id: string };
-<<<<<<< HEAD
-    const { updateVoyageSchema } = await import('./voyages.schema.js');
     const body = updateVoyageSchema.parse(request.body);
     const item = await this.service.updateVoyage(id, body);
     reply.send(successResponse(item));
-=======
-    const body = updateVoyageSchema.parse(request.body);
-    const updated = await this.service.updateVoyage(id, body);
-    reply.send(successResponse(updated, 'Voyage updated successfully'));
->>>>>>> cd5336dd0aa4dc9bc5f6babb410f9351c3606c8b
   };
 
   delete = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     const { id } = request.params as { id: string };
-<<<<<<< HEAD
     const success = await this.service.deleteVoyage(id);
     reply.send(successResponse({ success }));
-=======
-    await this.service.deleteVoyage(id);
-    reply.send(successResponse(null, 'Voyage deleted successfully'));
->>>>>>> cd5336dd0aa4dc9bc5f6babb410f9351c3606c8b
   };
 }
 

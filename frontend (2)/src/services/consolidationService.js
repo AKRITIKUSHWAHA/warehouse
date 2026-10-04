@@ -6,13 +6,6 @@ import { apiFetch } from './apiConfig';
 export const consolidationService = {
   async getConsolidations(filters = {}) {
     try {
-<<<<<<< HEAD
-      const res = await apiClient.get('consolidations', { params: { ...filters, limit: 100 } });
-      if (res && res.data) {
-        const liveList = Array.isArray(res.data) ? res.data : (res.data.items || []);
-        setStored(KEYS.CONSOLIDATIONS, liveList);
-        return liveList;
-=======
       const res = await apiClient.get('/consolidations', { params: { ...filters, limit: filters.limit || 100 } });
       const apiData = res?.data ? (Array.isArray(res.data) ? res.data : (res.data.items || [])) : (Array.isArray(res) ? res : []);
       if (Array.isArray(apiData) && apiData.length > 0) {
@@ -29,7 +22,6 @@ export const consolidationService = {
         }));
         setStored(KEYS.CONSOLIDATIONS, mapped);
         return mapped;
->>>>>>> cd5336dd0aa4dc9bc5f6babb410f9351c3606c8b
       }
     } catch (err) {
       console.warn('Backend API /consolidations fetch failed, using local store:', err?.message || err);
@@ -123,17 +115,18 @@ export const consolidationService = {
         notes: consolidationData.notes || '',
       };
       const res = await apiClient.post('/consolidations', payload);
-      if (res?.data) createdConsolidationFromApi = res.data;
+      if (res?.data) {
+        createdConsolidationFromApi = res.data;
+      }
     } catch (err) {
       console.warn('API error creating consolidation cascade:', err);
+      throw err;
     }
 
     const list = getStored(KEYS.CONSOLIDATIONS, []);
-    const nextSeq = 820 + list.length + 1;
-    const id = createdConsolidationFromApi?.consolidationNumber || consolidationData.consolidationNumber || `CNS-2026-${nextSeq}`;
-
-    const shipmentId = `SHP-2026-${291 + list.length + 1}`;
-    const blId = `BL-VI-2026-${String(95 + list.length + 1).padStart(4, '0')}`;
+    const id = createdConsolidationFromApi?.consolidationNumber || consolidationData.consolidationNumber;
+    const shipmentId = createdConsolidationFromApi?.assignedShipmentId || `SHP-2026-${291 + list.length + 1}`;
+    const blId = createdConsolidationFromApi?.assignedMasterBLId || `BL-VI-2026-${String(95 + list.length + 1).padStart(4, '0')}`;
     const manifestId = `MNF-2026-${443 + list.length}`;
 
     // 1. Resolve selected House Bills
@@ -172,8 +165,7 @@ export const consolidationService = {
     totalCft = Number(totalCft.toFixed(2));
     totalCbm = Number(totalCbm.toFixed(2));
 
-    let createdConsolidation = null;
-    const payload = {
+    const createdConsolidation = createdConsolidationFromApi || {
       ...consolidationData,
       id,
       consolidationNumber: id,
@@ -197,22 +189,6 @@ export const consolidationService = {
       assignedMasterBLId: blId,
       assignedManifestId: manifestId
     };
-
-    try {
-      const res = await apiFetch('/consolidations', {
-        method: 'POST',
-        body: JSON.stringify(payload)
-      });
-      if (res && res.data) {
-        createdConsolidation = res.data;
-      }
-    } catch (err) {
-      console.warn('Backend createConsolidation failed, saving locally:', err.message);
-    }
-
-    if (!createdConsolidation) {
-      createdConsolidation = payload;
-    }
 
     const updatedConsolidations = [createdConsolidation, ...list.filter(c => c.id !== createdConsolidation.id && c.consolidationNumber !== createdConsolidation.consolidationNumber)];
     setStored(KEYS.CONSOLIDATIONS, updatedConsolidations);
@@ -501,11 +477,7 @@ export const consolidationService = {
   async updateConsolidation(id, updates, currentUser = "Operations Staff") {
     let updatedConsolidation = null;
     try {
-<<<<<<< HEAD
-      const res = await apiClient.put(`consolidations/${encodeURIComponent(id)}`, updates);
-=======
       const res = await apiClient.patch(`/consolidations/${encodeURIComponent(id)}`, updates);
->>>>>>> cd5336dd0aa4dc9bc5f6babb410f9351c3606c8b
       if (res && res.data) {
         updatedConsolidation = res.data;
       } else if (res && res.id) {
@@ -513,6 +485,7 @@ export const consolidationService = {
       }
     } catch (err) {
       console.warn(`Backend updateConsolidation ${id} failed:`, err?.message || err);
+      throw err;
     }
 
     const list = getStored(KEYS.CONSOLIDATIONS, []);
@@ -539,13 +512,10 @@ export const consolidationService = {
 
   async deleteConsolidation(id, currentUser = "Operations Staff") {
     try {
-<<<<<<< HEAD
-      await apiClient.delete(`consolidations/${encodeURIComponent(id)}`);
-=======
       await apiClient.delete(`/consolidations/${encodeURIComponent(id)}`);
->>>>>>> cd5336dd0aa4dc9bc5f6babb410f9351c3606c8b
     } catch (err) {
       console.warn(`Backend deleteConsolidation ${id} failed:`, err?.message || err);
+      throw err;
     }
 
     const list = getStored(KEYS.CONSOLIDATIONS, []);

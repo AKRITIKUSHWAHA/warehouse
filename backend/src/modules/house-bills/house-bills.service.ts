@@ -1,24 +1,61 @@
 import { HouseBillsRepository, houseBillsRepository } from './house-bills.repository.js';
 import { HouseBillFilterParams, CreateHouseBillInput } from './house-bills.types.js';
 import { NotFoundError } from '../../common/errors/not-found-error.js';
+import { BadRequestError } from '../../common/errors/bad-request-error.js';
 import { db } from '../../db/index.js';
 import { customers, warehouseReceipts } from '../../db/schema/index.js';
 import { eq, or, inArray } from 'drizzle-orm';
+
+function hydrateHbl(hbl: any) {
+  if (!hbl) return hbl;
+  if (hbl.notes && typeof hbl.notes === 'string' && hbl.notes.includes('---FREIGHT_CHARGES---')) {
+    const parts = hbl.notes.split('\n---FREIGHT_CHARGES---\n');
+    hbl.notes = parts[0];
+    try {
+      hbl.freightCharges = JSON.parse(parts[1]);
+      hbl.charges = hbl.freightCharges;
+    } catch {
+      // ignore json parse error
+    }
+  }
+  return hbl;
+}
 
 export class HouseBillsService {
   constructor(private readonly repo: HouseBillsRepository = houseBillsRepository) {}
 
   async listHouseBills(filters: HouseBillFilterParams) {
-    return this.repo.findMany(filters);
+    const res = await this.repo.findMany(filters);
+    res.data = res.data.map(hydrateHbl);
+    return res;
   }
 
   async getHouseBill(idOrHblNumber: string) {
     const hbl = await this.repo.findByIdOrHblNumber(idOrHblNumber);
     if (!hbl) throw new NotFoundError('House Bill of Lading');
-    return hbl;
+    return hydrateHbl(hbl);
   }
 
   async createHouseBill(input: CreateHouseBillInput) {
+    // Validate that attached warehouse receipts are eligible (not already assigned or consolidated)
+    if (input.warehouseReceiptIds && input.warehouseReceiptIds.length > 0) {
+      const existingWrs = await db
+        .select({
+          id: warehouseReceipts.id,
+          receiptNumber: warehouseReceipts.receiptNumber,
+          status: warehouseReceipts.status,
+          assignedHouseBillId: warehouseReceipts.assignedHouseBillId,
+        })
+        .from(warehouseReceipts)
+        .where(inArray(warehouseReceipts.receiptNumber, input.warehouseReceiptIds));
+
+      for (const wr of existingWrs) {
+        if (wr.status === 'Consolidated' || (wr.assignedHouseBillId && wr.assignedHouseBillId.trim() !== '')) {
+          throw new BadRequestError(`Warehouse receipt ${wr.receiptNumber} is already assigned to a House Bill or is Consolidated.`);
+        }
+      }
+    }
+
     const totalCount = await this.repo.countTotal();
     const seq = String(totalCount + 1).padStart(4, '0');
     const hblNumber = input.hblNumber?.trim() || `HBL-2026-${seq}`;
@@ -40,6 +77,12 @@ export class HouseBillsService {
         )
         .limit(1);
       if (match.length > 0) resolvedCustomerId = match[0].id;
+    }
+
+    let notes = input.notes || '';
+    const chargesPayload = (input as any).freightCharges || (input as any).charges;
+    if (chargesPayload) {
+      notes = `${notes}\n---FREIGHT_CHARGES---\n${JSON.stringify(chargesPayload)}`;
     }
 
     const created = await this.repo.create({
@@ -71,7 +114,7 @@ export class HouseBillsService {
       assignedConsolidationId: input.assignedConsolidationId,
       assignedMasterBLId: input.assignedMasterBLId,
       assignedShipmentId: input.assignedShipmentId,
-      notes: input.notes,
+      notes,
     });
 
     // Automatically link downstream warehouse receipts in database
@@ -93,7 +136,7 @@ export class HouseBillsService {
       }
     }
 
-    return created;
+    return hydrateHbl(created);
   }
 
   async updateHouseBill(idOrHblNumber: string, input: any) {
@@ -134,6 +177,13 @@ export class HouseBillsService {
       updateData.customerId = input.customerId;
     }
 
+    if (input.freightCharges !== undefined || (input as any).charges !== undefined) {
+      const rawNotes = input.notes !== undefined ? input.notes : (existing.notes || '');
+      const baseNotes = rawNotes.split('\n---FREIGHT_CHARGES---\n')[0];
+      const charges = input.freightCharges || (input as any).charges;
+      updateData.notes = charges ? `${baseNotes}\n---FREIGHT_CHARGES---\n${JSON.stringify(charges)}` : baseNotes;
+    }
+
     const updated = await this.repo.update(idOrHblNumber, updateData);
 
     // If warehouseReceiptIds updated, sync linked WRs
@@ -155,7 +205,7 @@ export class HouseBillsService {
       }
     }
 
-    return updated;
+    return hydrateHbl(updated);
   }
 
   async deleteHouseBill(idOrHblNumber: string) {

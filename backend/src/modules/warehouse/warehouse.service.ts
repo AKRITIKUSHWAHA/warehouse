@@ -1,6 +1,7 @@
 import { WarehouseRepository, warehouseRepository } from './warehouse.repository.js';
 import { WarehouseReceiptFilterParams, CreateWarehouseReceiptInput, UpdateWarehouseReceiptInput } from './warehouse.types.js';
 import { NotFoundError } from '../../common/errors/not-found-error.js';
+import { ForbiddenError } from '../../common/errors/forbidden-error.js';
 import { calculateDimensions, convertLbsToKg } from '../../common/utils/calculations.js';
 import { db } from '../../db/index.js';
 import { cargo, customers } from '../../db/schema/index.js';
@@ -20,6 +21,10 @@ export class WarehouseService {
       throw new NotFoundError('Warehouse Receipt');
     }
     return receipt;
+  }
+
+  async getNextNumber(): Promise<number> {
+    return this.repo.getNextSequenceNumber();
   }
 
   async createReceipt(input: CreateWarehouseReceiptInput & { receiptNumber?: string; sequenceNumber?: number; totalPieces?: number; customer?: string | null }) {
@@ -117,42 +122,92 @@ export class WarehouseService {
     });
 
     // Also populate cargo inventory table
-    await db
-      .insert(cargo)
-      .values({
-        cargoNumber: `CRG-${receiptNumber}-01`,
-        warehouseReceiptId: created.id,
-        receiptNumber: created.receiptNumber,
-        customer: created.customerName,
-        description: created.cargoDescription || (packages[0]?.description as string) || 'General Cargo',
-        packageCount: created.packageCount,
-        totalPieces: created.totalPieces,
-        packageType: created.packageType,
-        lengthInches: created.lengthInches,
-        widthInches: created.widthInches,
-        heightInches: created.heightInches,
-        weightLbs: created.weightLbs,
-        weightKg: created.weightKg,
-        cft: created.totalCft,
-        cbm: created.totalCbm,
-        warehouseLocation: created.warehouseLocation,
-        destinationPort: created.destinationPort,
-        destinationCode: created.destinationCode,
-        agentId: created.agentId,
-        agentName: created.agentName,
-        status: created.status,
-        barcode: `CRG${Math.floor(10000000 + Math.random() * 90000000)}`,
-        qrCode: `VI-CRG-${created.receiptNumber}`,
-      })
-      .catch(() => {});
+    try {
+      const UUID_REGEX_STRICT = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+      const safeAgentId = created.agentId && UUID_REGEX_STRICT.test(created.agentId) ? created.agentId : null;
+      await db
+        .insert(cargo)
+        .values({
+          cargoNumber: `CRG-${receiptNumber}-01`,
+          warehouseReceiptId: created.id,
+          receiptNumber: created.receiptNumber,
+          customer: created.customerName,
+          description: created.cargoDescription || (packages[0]?.description as string) || 'General Cargo',
+          packageCount: created.packageCount,
+          totalPieces: created.totalPieces,
+          packageType: created.packageType,
+          lengthInches: created.lengthInches,
+          widthInches: created.widthInches,
+          heightInches: created.heightInches,
+          weightLbs: created.weightLbs,
+          weightKg: created.weightKg,
+          cft: created.totalCft,
+          cbm: created.totalCbm,
+          warehouseLocation: created.warehouseLocation,
+          destinationPort: created.destinationPort,
+          destinationCode: created.destinationCode,
+          agentId: safeAgentId,
+          agentName: created.agentName,
+          status: created.status,
+          barcode: `CRG${Math.floor(10000000 + Math.random() * 90000000)}`,
+          qrCode: `VI-CRG-${created.receiptNumber}`,
+        });
+    } catch (cargoErr) {
+      console.error('Cargo sync failed for WR', created.receiptNumber, cargoErr);
+    }
 
     return created;
   }
 
 
-  async updateReceipt(id: string, input: UpdateWarehouseReceiptInput) {
-    await this.getReceipt(id);
-    return this.repo.update(id, input);
+  async updateReceipt(id: string, input: UpdateWarehouseReceiptInput, userRole?: string) {
+    const existing = await this.getReceipt(id);
+
+    // Only Documentation and Super Admin can edit receiptNumber manually
+    if (input.receiptNumber && input.receiptNumber !== existing.receiptNumber) {
+      if (userRole !== 'super_admin' && userRole !== 'documentation') {
+        throw new ForbiddenError('Only Documentation Staff or Super Admin can modify the Receipt Number.');
+      }
+    }
+
+    const updated = await this.repo.update(id, input);
+
+    // Synchronize matching cargo record
+    if (updated) {
+      try {
+        const cargoUpdates: Record<string, unknown> = { updatedAt: new Date() };
+        if (input.customerName || (input as any).customer) {
+          cargoUpdates.customer = input.customerName || (input as any).customer;
+        }
+        if (input.cargoDescription) {
+          cargoUpdates.description = input.cargoDescription;
+        }
+        if (input.weightLbs !== undefined) {
+          cargoUpdates.weightLbs = String(input.weightLbs);
+        }
+        if (input.weightKg !== undefined) {
+          cargoUpdates.weightKg = String(input.weightKg);
+        }
+        if ((input as any).totalCft !== undefined) {
+          cargoUpdates.cft = String((input as any).totalCft);
+        }
+        if ((input as any).totalCbm !== undefined) {
+          cargoUpdates.cbm = String((input as any).totalCbm);
+        }
+        if (input.warehouseLocation) {
+          cargoUpdates.warehouseLocation = input.warehouseLocation;
+        }
+
+        await db
+          .update(cargo)
+          .set(cargoUpdates)
+          .where(eq(cargo.warehouseReceiptId, existing.id));
+      } catch (syncErr) {
+        console.warn('Notice syncing cargo on WR update:', syncErr);
+      }
+    }
+
+    return updated;
   }
 
   async deleteReceipt(id: string) {

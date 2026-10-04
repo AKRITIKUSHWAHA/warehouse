@@ -316,8 +316,6 @@ export const vesselService = {
     try {
       const payload = {
         voyageNumber: data.voyageNumber || `VOY-2026-${Math.floor(100 + Math.random() * 900)}`,
-<<<<<<< HEAD
-        vesselId: data.vesselId || undefined,
         vesselName: data.vesselName || "M/V Tropic Island",
         carrier: data.carrier || "Tropical Shipping",
         originPort: data.originPort || "Port of Miami (USMIA)",
@@ -328,36 +326,16 @@ export const vesselService = {
         assignedShipmentsCount: Number(data.assignedShipmentsCount) || 0,
         totalTeuUtilized: Number(data.totalTeuUtilized) || 0,
       };
-=======
-        vesselName: data.vesselName || "M/V Tropic Island",
-        originPort: data.originPort || "Port of Miami (USMIA)",
-        destinationPort: data.destinationPort || "Nassau (BSNAS)",
-        departureDate: data.departureDate || new Date().toISOString().split('T')[0],
-        arrivalDate: data.arrivalDate || "2026-09-06",
-        carrier: data.carrier || "Tropical Shipping",
-        status: data.status || "Scheduled",
-        assignedShipmentsCount: Number(data.assignedShipmentsCount) || 0,
-        totalTeuUtilized: data.totalTeuUtilized !== undefined ? String(data.totalTeuUtilized) : "0.00"
-      };
       if (data.vesselId) payload.vesselId = data.vesselId;
-
->>>>>>> cd5336dd0aa4dc9bc5f6babb410f9351c3606c8b
       const res = await apiClient.post('voyages', payload);
       if (res && res.data) {
         created = res.data;
       }
     } catch (e) {
-<<<<<<< HEAD
       console.warn('[vesselService] API createVoyage failed, using local fallback:', e.message);
     }
 
     const list = getStored(KEYS.VOYAGES, []);
-=======
-      console.warn('[vesselService] API createVoyage failed, using fallback:', e.message);
-    }
-
-    const list = getStored(KEYS.VOYAGES);
->>>>>>> cd5336dd0aa4dc9bc5f6babb410f9351c3606c8b
     const id = created?.id || data.id || `voy-${Date.now()}`;
     const newVoyage = created || {
       ...data,
@@ -389,11 +367,7 @@ export const vesselService = {
   async updateVoyage(id, updates, currentUser = "Operations Staff") {
     let updatedItem = null;
     try {
-<<<<<<< HEAD
-      const res = await apiClient.put(`voyages/${id}`, updates);
-=======
       const res = await apiClient.patch(`voyages/${id}`, updates);
->>>>>>> cd5336dd0aa4dc9bc5f6babb410f9351c3606c8b
       if (res && res.data) {
         updatedItem = res.data;
       }
@@ -401,11 +375,7 @@ export const vesselService = {
       console.warn('[vesselService] API updateVoyage failed, using local fallback:', e.message);
     }
 
-<<<<<<< HEAD
     const list = getStored(KEYS.VOYAGES, []);
-=======
-    const list = getStored(KEYS.VOYAGES);
->>>>>>> cd5336dd0aa4dc9bc5f6babb410f9351c3606c8b
     const index = list.findIndex(item => item.id === id || item.voyageNumber === id);
     if (index !== -1) {
       list[index] = updatedItem || { ...list[index], ...updates };
@@ -431,11 +401,7 @@ export const vesselService = {
       console.warn('[vesselService] API deleteVoyage failed, using local fallback:', e.message);
     }
 
-<<<<<<< HEAD
     const list = getStored(KEYS.VOYAGES, []);
-=======
-    const list = getStored(KEYS.VOYAGES);
->>>>>>> cd5336dd0aa4dc9bc5f6babb410f9351c3606c8b
     const existing = list.find(item => item.id === id || item.voyageNumber === id);
     if (!existing) return false;
 

@@ -1,4 +1,4 @@
-﻿import { FastifyRequest, FastifyReply } from 'fastify';
+import { FastifyRequest, FastifyReply } from 'fastify';
 import { AppError } from '../common/errors/app-error.js';
 import { ROLES } from '../common/constants/roles.js';
 
@@ -28,14 +28,14 @@ export async function enforcePortIsolation(
   const query = request.query as Record<string, unknown> | undefined;
   const body = request.body as Record<string, unknown> | undefined;
 
-  // For POST requests, auto-assign the agent's port code if missing
-  if (body && !body.destinationCode) {
-    body.destinationCode = agentPortCode;
+  // Auto-scope query for listing endpoints if not explicitly set
+  if (query && !query.destinationCode) {
+    query.destinationCode = agentPortCode;
   }
 
-  // Allow Agent to create direct shipments for any selected port
-  if (request.method === 'POST') {
-    return;
+  // For POST/PUT/PATCH requests, auto-assign the agent's port code if missing
+  if (body && !body.destinationCode) {
+    body.destinationCode = agentPortCode;
   }
 
   const targetPortCode =
@@ -45,8 +45,11 @@ export async function enforcePortIsolation(
     (query?.portCode as string) ||
     (body?.destinationCode as string);
 
-  if (targetPortCode && agentPortCode && targetPortCode.toUpperCase() !== agentPortCode.toUpperCase() && targetPortCode !== 'All') {
-    // If the port code is a custom system port, allow read/access
-    return;
+  if (targetPortCode && targetPortCode !== 'All' && targetPortCode.toUpperCase() !== agentPortCode.toUpperCase()) {
+    throw new AppError(
+      `Forbidden: Agent is restricted to assigned port '${agentPortCode}' and cannot access or modify records for '${targetPortCode}'`,
+      403,
+      true
+    );
   }
 }

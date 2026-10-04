@@ -61,7 +61,8 @@ export const billOfLadingService = {
         createdBL = res.data;
       }
     } catch (err) {
-      console.warn('Backend createBillOfLading failed, storing locally:', err?.message || err);
+      console.warn('Backend createBillOfLading failed:', err?.message || err);
+      throw err;
     }
 
     if (!createdBL) {
@@ -110,6 +111,7 @@ export const billOfLadingService = {
       }
     } catch (err) {
       console.warn(`Backend updateBillOfLading ${id} failed:`, err?.message || err);
+      throw err;
     }
 
     const list = getStored(KEYS.BILLS_OF_LADING, []);
@@ -142,6 +144,7 @@ export const billOfLadingService = {
       await apiClient.delete(`bills-of-lading/${encodeURIComponent(id)}`);
     } catch (err) {
       console.warn(`Backend deleteBillOfLading ${id} failed:`, err?.message || err);
+      throw err;
     }
 
     const list = getStored(KEYS.BILLS_OF_LADING, []);
@@ -171,6 +174,7 @@ export const billOfLadingService = {
       }
     } catch (err) {
       console.warn('API error placing bill of lading on hold:', err?.message || err);
+      throw err;
     }
 
     const list = getStored(KEYS.BILLS_OF_LADING, []);
@@ -233,6 +237,7 @@ export const billOfLadingService = {
       }
     } catch (err) {
       console.warn('API error clearing bill of lading hold:', err?.message || err);
+      throw err;
     }
 
     const list = getStored(KEYS.BILLS_OF_LADING, []);

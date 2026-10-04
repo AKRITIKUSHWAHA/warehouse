@@ -53,7 +53,8 @@ export const manifestService = {
         createdManifest = res.data;
       }
     } catch (err) {
-      console.warn('Backend generateManifest failed, using local store:', err?.message || err);
+      console.warn('Backend generateManifest failed:', err?.message || err);
+      throw err;
     }
 
     if (!createdManifest) {
@@ -93,6 +94,7 @@ export const manifestService = {
       }
     } catch (err) {
       console.warn(`Backend updateManifest ${id} failed:`, err?.message || err);
+      throw err;
     }
 
     const list = getStored(KEYS.MANIFESTS, []);
@@ -122,6 +124,7 @@ export const manifestService = {
       await apiClient.delete(`manifests/${encodeURIComponent(id)}`);
     } catch (err) {
       console.warn(`Backend deleteManifest ${id} failed:`, err?.message || err);
+      throw err;
     }
 
     const list = getStored(KEYS.MANIFESTS, []);

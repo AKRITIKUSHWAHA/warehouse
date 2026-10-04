@@ -9,11 +9,26 @@ export async function billsOfLadingRoutes(app: FastifyInstance): Promise<void> {
 
   app.get('/', billsOfLadingController.list);
   app.get('/:id', billsOfLadingController.getById);
-  app.post('/', billsOfLadingController.create);
-  app.put('/:id', billsOfLadingController.update);
-  app.patch('/:id', billsOfLadingController.update);
-  app.put('/:id', billsOfLadingController.update);
-  app.delete('/:id', billsOfLadingController.delete);
+  app.post(
+    '/',
+    { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.DOCUMENTATION_STAFF)] },
+    billsOfLadingController.create
+  );
+  app.put(
+    '/:id',
+    { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.DOCUMENTATION_STAFF)] },
+    billsOfLadingController.update
+  );
+  app.patch(
+    '/:id',
+    { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.DOCUMENTATION_STAFF)] },
+    billsOfLadingController.update
+  );
+  app.delete(
+    '/:id',
+    { preHandler: [requireRole(ROLES.SUPER_ADMIN)] },
+    billsOfLadingController.delete
+  );
 
   // Hold governance: Only Super Admin & Documentation Staff can place or clear holds
   app.post(

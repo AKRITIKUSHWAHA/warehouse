@@ -39,35 +39,9 @@ export const apiClient = {
   },
 
   async ensureToken() {
-    let token = this.getToken();
-    if (token && !this.isTokenExpired(token) && token !== 'local-session-active') return token;
-
-    if (typeof window !== 'undefined') {
-      try {
-        const savedUser = localStorage.getItem('kers_active_user');
-        const user = savedUser ? JSON.parse(savedUser) : null;
-        const email = user?.email || 'marcus.vance@vicustoms.com';
-        let res = await fetch(`${API_BASE_URL}/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password: 'Password123!' })
-        });
-        if (!res.ok) {
-          res = await fetch(`${API_BASE_URL}/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password: 'password123' })
-          });
-        }
-        const data = await res.json().catch(() => null);
-        const freshToken = data?.token || data?.data?.token || data?.data?.accessToken;
-        if (freshToken) {
-          this.setToken(freshToken);
-          return freshToken;
-        }
-      } catch (err) {
-        console.warn('[apiClient] Auto-auth attempt failed:', err.message);
-      }
+    const token = this.getToken();
+    if (token && !this.isTokenExpired(token) && token !== 'local-session-active') {
+      return token;
     }
     return null;
   },

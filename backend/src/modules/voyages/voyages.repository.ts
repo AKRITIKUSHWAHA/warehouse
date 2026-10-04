@@ -56,37 +56,22 @@ export class VoyagesRepository {
     const isUuid = typeof data.id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.id);
     const insertData: any = { ...data };
     if (!isUuid) delete insertData.id;
-<<<<<<< HEAD
-    if (insertData.totalTeuUtilized !== undefined) insertData.totalTeuUtilized = String(insertData.totalTeuUtilized);
-=======
     if (insertData.assignedShipmentsCount !== undefined) {
       insertData.assignedShipmentsCount = Number(insertData.assignedShipmentsCount);
     }
     if (insertData.totalTeuUtilized !== undefined) {
       insertData.totalTeuUtilized = String(insertData.totalTeuUtilized);
     }
->>>>>>> cd5336dd0aa4dc9bc5f6babb410f9351c3606c8b
 
     const [created] = await db.insert(voyages).values(insertData).returning();
     return created;
   }
 
-<<<<<<< HEAD
   async update(idOrNumber: string, data: Record<string, unknown>) {
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrNumber);
     const condition = isUuid
       ? or(eq(voyages.id, idOrNumber), eq(voyages.voyageNumber, idOrNumber))
       : eq(voyages.voyageNumber, idOrNumber);
-
-    const updateData: Record<string, unknown> = { ...data, updatedAt: new Date() };
-    delete updateData.id;
-    if (updateData.totalTeuUtilized !== undefined) updateData.totalTeuUtilized = String(updateData.totalTeuUtilized);
-=======
-  async update(id: string, data: Record<string, unknown>) {
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-    const condition = isUuid
-      ? or(eq(voyages.id, id), eq(voyages.voyageNumber, id))
-      : eq(voyages.voyageNumber, id);
 
     const updateData: Record<string, unknown> = { ...data, updatedAt: new Date() };
     delete updateData.id;
@@ -96,25 +81,16 @@ export class VoyagesRepository {
     if (updateData.totalTeuUtilized !== undefined) {
       updateData.totalTeuUtilized = String(updateData.totalTeuUtilized);
     }
->>>>>>> cd5336dd0aa4dc9bc5f6babb410f9351c3606c8b
 
     const [updated] = await db.update(voyages).set(updateData).where(condition).returning();
     return updated || null;
   }
 
-<<<<<<< HEAD
   async delete(idOrNumber: string) {
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrNumber);
     const condition = isUuid
       ? or(eq(voyages.id, idOrNumber), eq(voyages.voyageNumber, idOrNumber))
       : eq(voyages.voyageNumber, idOrNumber);
-=======
-  async delete(id: string) {
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-    const condition = isUuid
-      ? or(eq(voyages.id, id), eq(voyages.voyageNumber, id))
-      : eq(voyages.voyageNumber, id);
->>>>>>> cd5336dd0aa4dc9bc5f6babb410f9351c3606c8b
 
     const [deleted] = await db.delete(voyages).where(condition).returning();
     return !!deleted;

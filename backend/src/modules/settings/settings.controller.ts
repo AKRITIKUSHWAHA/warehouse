@@ -24,9 +24,10 @@ export class SettingsController {
     reply.send(successResponse(updated, 'Settings updated successfully'));
   };
 
-  cleanSlate = async (_request: FastifyRequest, reply: FastifyReply): Promise<void> => {
-    await this.service.cleanSlate();
-    reply.send(successResponse({ success: true }, 'Transactional data cleared successfully'));
+  cleanSlate = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+    const user = request.user as { id?: string; name?: string; roleKey?: string } | undefined;
+    await this.service.cleanSlate(user?.id, user?.name, user?.roleKey, request.ip);
+    reply.send(successResponse({ success: true }, 'Transactional data cleared successfully (audit logs preserved)'));
   };
 }
 

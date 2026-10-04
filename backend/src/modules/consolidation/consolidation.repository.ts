@@ -80,22 +80,14 @@ export class ConsolidationRepository {
 
   async update(id: string, data: Partial<NewConsolidation>) {
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-<<<<<<< HEAD
-    const whereCondition = isUuid
-=======
     const condition = isUuid
->>>>>>> cd5336dd0aa4dc9bc5f6babb410f9351c3606c8b
       ? or(eq(consolidations.id, id), eq(consolidations.consolidationNumber, id))
       : eq(consolidations.consolidationNumber, id);
 
     const [updated] = await db
       .update(consolidations)
       .set({ ...data, updatedAt: new Date() })
-<<<<<<< HEAD
-      .where(whereCondition)
-=======
       .where(condition)
->>>>>>> cd5336dd0aa4dc9bc5f6babb410f9351c3606c8b
       .returning();
 
     return updated || null;
@@ -103,21 +95,13 @@ export class ConsolidationRepository {
 
   async delete(id: string): Promise<boolean> {
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-<<<<<<< HEAD
-    const whereCondition = isUuid
-=======
     const condition = isUuid
->>>>>>> cd5336dd0aa4dc9bc5f6babb410f9351c3606c8b
       ? or(eq(consolidations.id, id), eq(consolidations.consolidationNumber, id))
       : eq(consolidations.consolidationNumber, id);
 
     const [deleted] = await db
       .delete(consolidations)
-<<<<<<< HEAD
-      .where(whereCondition)
-=======
       .where(condition)
->>>>>>> cd5336dd0aa4dc9bc5f6babb410f9351c3606c8b
       .returning();
 
     return !!deleted;
