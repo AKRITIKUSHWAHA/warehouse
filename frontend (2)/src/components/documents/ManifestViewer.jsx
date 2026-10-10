@@ -7,7 +7,7 @@ import { useAppData } from '../../context/AppDataContext';
 
 export const ManifestViewer = ({ manifest }) => {
   const { showToast } = useToast();
-  const { billsOfLading = [], houseBills = [] } = useAppData() || {};
+  const { billsOfLading = [], houseBills = [], settings } = useAppData() || {};
   const [orientation, setOrientation] = useState('landscape'); // 'landscape' | 'portrait'
 
   if (!manifest) return null;
@@ -72,7 +72,7 @@ export const ManifestViewer = ({ manifest }) => {
     lineItems: resolvedLineItems,
     totalCft: manifest.totalCft && manifest.totalCft !== '0.00' && manifest.totalCft !== '0'
       ? manifest.totalCft
-      : (resolvedLineItems[0]?.cft || (manifest.totalCbm ? (parseFloat(manifest.totalCbm) * 35.3147).toFixed(2) : '18.36'))
+      : (resolvedLineItems[0]?.cft ? String(resolvedLineItems[0].cft) : (manifest.totalCbm ? (parseFloat(manifest.totalCbm) * 35.3147).toFixed(2) : '0.00'))
   };
 
   const handlePrint = () => {
@@ -162,7 +162,7 @@ export const ManifestViewer = ({ manifest }) => {
           <div>
             <BrandLogo variant="dark" size="small" />
             <div style={{ fontSize: '0.7rem', color: '#475569', marginTop: '4px' }}>
-              VI Customs Brokers &amp; Logistics — Ocean Manifest Division
+              {settings?.companyProfile?.legalName || settings?.companyProfile?.companyName || 'VI Customs Brokers & Logistics'} — Ocean Manifest Division
             </div>
           </div>
 

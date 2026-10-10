@@ -16,9 +16,12 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
+import { useAuth } from '../../context/AuthContext';
+import { canManageHolds } from '../../config/rolePermissions';
 import { houseBillService } from '../../services/houseBillService';
 
 export const HouseBillDetail = ({ hblId, onNavigate }) => {
+  const { currentUser } = useAuth();
   const { houseBills, warehouseReceipts, updateHouseBill, deleteHouseBill, placeHBLHold, clearHBLHold } = useAppData();
 
   const [showEditModal, setShowEditModal] = useState(false);
@@ -59,70 +62,74 @@ export const HouseBillDetail = ({ hblId, onNavigate }) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '1100px', margin: '0 auto' }}>
-      <PageHeader
-        title={`House Bill of Lading ${hbl.hblNumber}`}
-        subtitle={`Issued for ${hbl.customerName} (${hbl.destinationPort})`}
-        icon={FileText}
-        breadcrumbs={[
-          { label: 'House Bills of Lading', href: '#' },
-          { label: hbl.hblNumber }
-        ]}
-        actions={
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <button onClick={() => onNavigate('house-bills')} className="btn btn-outline btn-sm">
-              <ArrowLeft size={15} />
-              <span>Back</span>
-            </button>
-
-            {isOnHold ? (
-              <button
-                onClick={async () => {
-                  await clearHBLHold(hbl.id || hbl.hblNumber, 'Hold cleared by user');
-                }}
-                className="btn btn-success btn-sm"
-              >
-                <CheckCircle2 size={15} />
-                <span>Clear Hold &amp; Release</span>
+      <div className="no-print">
+        <PageHeader
+          title={`House Bill of Lading ${hbl.hblNumber}`}
+          subtitle={`Issued for ${hbl.customerName} (${hbl.destinationPort})`}
+          icon={FileText}
+          breadcrumbs={[
+            { label: 'House Bills of Lading', href: '#' },
+            { label: hbl.hblNumber }
+          ]}
+          actions={
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <button onClick={() => onNavigate('house-bills')} className="btn btn-outline btn-sm">
+                <ArrowLeft size={15} />
+                <span>Back</span>
               </button>
-            ) : (
-              <button
-                onClick={async () => {
-                  await placeHBLHold(hbl.id || hbl.hblNumber, 'Administrative Hold', 'Pending verification');
-                }}
-                className="btn btn-warning btn-sm"
-              >
-                <AlertTriangle size={15} />
-                <span>Place Hold</span>
-              </button>
-            )}
 
-            {!hbl.assignedConsolidationId && (
-              <button
-                onClick={() => onNavigate('consolidations', 'create')}
-                className="btn btn-primary btn-sm"
-              >
-                <Layers size={15} />
-                <span>Consolidate House B/L</span>
-              </button>
-            )}
+              {canManageHolds(currentUser?.roleKey) && (
+                isOnHold ? (
+                  <button
+                    onClick={async () => {
+                      await clearHBLHold(hbl.id || hbl.hblNumber, 'Hold cleared by user');
+                    }}
+                    className="btn btn-success btn-sm"
+                  >
+                    <CheckCircle2 size={15} />
+                    <span>Clear Hold &amp; Release</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={async () => {
+                      await placeHBLHold(hbl.id || hbl.hblNumber, 'Administrative Hold', 'Pending verification');
+                    }}
+                    className="btn btn-warning btn-sm"
+                  >
+                    <AlertTriangle size={15} />
+                    <span>Place Hold</span>
+                  </button>
+                )
+              )}
 
-            <button onClick={() => setShowEditModal(true)} className="btn btn-secondary btn-sm">
-              <Edit2 size={15} />
-              <span>Edit HBL</span>
-            </button>
-            <button onClick={() => setShowDeleteModal(true)} className="btn btn-danger btn-sm">
-              <Trash2 size={15} />
-              <span>Delete</span>
-            </button>
-          </div>
-        }
-      />
+              {!hbl.assignedConsolidationId && (
+                <button
+                  onClick={() => onNavigate('consolidations', 'create')}
+                  className="btn btn-primary btn-sm"
+                >
+                  <Layers size={15} />
+                  <span>Consolidate House B/L</span>
+                </button>
+              )}
+
+              <button onClick={() => setShowEditModal(true)} className="btn btn-secondary btn-sm">
+                <Edit2 size={15} />
+                <span>Edit HBL</span>
+              </button>
+              <button onClick={() => setShowDeleteModal(true)} className="btn btn-danger btn-sm">
+                <Trash2 size={15} />
+                <span>Delete</span>
+              </button>
+            </div>
+          }
+        />
+      </div>
 
       {/* Main Document Layout */}
       <HouseBLViewer hbl={hbl} onNavigate={onNavigate} />
 
       {/* Linked Warehouse Receipts Explorer Card */}
-      <div className="card" style={{ padding: '1.25rem' }}>
+      <div className="card no-print" style={{ padding: '1.25rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Package size={18} style={{ color: '#D97706' }} />
@@ -154,14 +161,14 @@ export const HouseBillDetail = ({ hblId, onNavigate }) => {
                   style={{ cursor: 'pointer' }}
                 >
                   <td style={{ fontWeight: 800, color: '#D97706', fontFamily: 'JetBrains Mono, monospace' }}>
-                    {wr.receiptNumber}
+                    {wr.receiptNumber || wr.receipt_number}
                   </td>
                   <td>{wr.date}</td>
-                  <td>{wr.cargoDescription}</td>
+                  <td>{wr.cargoDescription || wr.cargo_description}</td>
                   <td>{wr.packages?.length || wr.packageCount} lines</td>
-                  <td style={{ fontWeight: 700 }}>{wr.totalPieces || wr.packageCount} pcs</td>
-                  <td>{wr.weightLbs?.toLocaleString()} lbs</td>
-                  <td style={{ fontWeight: 700, color: '#D97706' }}>{wr.cft} CFT <span style={{ color: '#0284C7', fontWeight: 600 }}>({wr.cbm} CBM)</span></td>
+                  <td style={{ fontWeight: 700 }}>{wr.totalPieces || wr.total_pieces || wr.packageCount} pcs</td>
+                  <td>{(Number(wr.weightLbs || wr.weight_lbs || 0)).toLocaleString()} lbs</td>
+                  <td style={{ fontWeight: 700, color: '#D97706' }}>{Number(wr.totalCft || wr.total_cft || wr.cft || 0)} CFT <span style={{ color: '#0284C7', fontWeight: 600 }}>({Number(wr.totalCbm || wr.total_cbm || wr.cbm || 0)} CBM)</span></td>
                   <td style={{ textAlign: 'right' }}>
                     <button
                       onClick={(e) => {

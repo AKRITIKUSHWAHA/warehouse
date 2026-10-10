@@ -98,11 +98,11 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
     let totalCbm = 0;
 
     selectedReceipts.forEach(w => {
-      totalPieces += Number(w.totalPieces || w.packageCount || 1);
+      totalPieces += Number(w.totalPieces || w.total_pieces || w.packageCount || 1);
       totalPackages += Number(w.packageCount || 1);
-      totalWeightLbs += Number(w.weightLbs || 0);
-      totalCft += Number(w.cft || 0);
-      totalCbm += Number(w.cbm || 0);
+      totalWeightLbs += Number(w.weightLbs || w.weight_lbs || 0);
+      totalCft += Number(w.totalCft || w.total_cft || w.cft || 0);
+      totalCbm += Number(w.totalCbm || w.total_cbm || w.cbm || 0);
     });
 
     const totalWeightKg = Number((totalWeightLbs * 0.453592).toFixed(1));
@@ -358,12 +358,12 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
                         <td style={{ fontWeight: 800, color: '#D97706', fontFamily: 'JetBrains Mono, monospace' }}>
                           {wr.receiptNumber}
                         </td>
-                        <td style={{ fontWeight: 600 }}>{wr.customer}</td>
-                        <td style={{ fontSize: '0.8rem', color: '#334155' }}>{wr.cargoDescription}</td>
-                        <td style={{ fontWeight: 700 }}>{wr.totalPieces || wr.packageCount} pcs</td>
-                        <td>{wr.weightLbs?.toLocaleString()} lbs</td>
+                        <td style={{ fontWeight: 600 }}>{wr.customer || wr.customerName || wr.customer_name || wr.consignee}</td>
+                        <td style={{ fontSize: '0.8rem', color: '#334155' }}>{wr.cargoDescription || wr.cargo_description}</td>
+                        <td style={{ fontWeight: 700 }}>{wr.totalPieces || wr.total_pieces || wr.packageCount} pcs</td>
+                        <td>{(Number(wr.weightLbs || wr.weight_lbs || 0)).toLocaleString()} lbs</td>
                         <td>
-                          <strong style={{ color: '#D97706' }}>{wr.cft} CFT</strong> <span style={{ color: '#0284C7', fontSize: '0.75rem' }}>({wr.cbm} CBM)</span>
+                          <strong style={{ color: '#D97706' }}>{Number(wr.totalCft || wr.total_cft || wr.cft || 0)} CFT</strong> <span style={{ color: '#0284C7', fontSize: '0.75rem' }}>({Number(wr.totalCbm || wr.total_cbm || wr.cbm || 0)} CBM)</span>
                         </td>
                         <td><StatusBadge status={wr.status} size="sm" /></td>
                       </tr>
@@ -457,11 +457,11 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
                   }}
                 >
                   <div>
-                    <strong style={{ color: '#D97706', fontFamily: 'JetBrains Mono, monospace' }}>{wr.receiptNumber}</strong> • {wr.customer}
-                    <div style={{ fontSize: '0.75rem', color: '#64748B' }}>{wr.cargoDescription}</div>
+                    <strong style={{ color: '#D97706', fontFamily: 'JetBrains Mono, monospace' }}>{wr.receiptNumber || wr.receipt_number}</strong> • {wr.customer || wr.customerName || wr.customer_name || wr.consignee}
+                    <div style={{ fontSize: '0.75rem', color: '#64748B' }}>{wr.cargoDescription || wr.cargo_description}</div>
                   </div>
                   <div style={{ textAlign: 'right', fontSize: '0.825rem' }}>
-                    <strong>{wr.totalPieces || wr.packageCount} pieces</strong> • <strong style={{ color: '#D97706' }}>{wr.cft} CFT</strong> ({wr.cbm} CBM)
+                    <strong>{wr.totalPieces || wr.total_pieces || wr.packageCount} pieces</strong> • <strong style={{ color: '#D97706' }}>{Number(wr.totalCft || wr.total_cft || wr.cft || 0)} CFT</strong> ({Number(wr.totalCbm || wr.total_cbm || wr.cbm || 0)} CBM)
                   </div>
                 </div>
               ))}

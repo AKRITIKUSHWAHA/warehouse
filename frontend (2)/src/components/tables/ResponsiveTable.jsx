@@ -107,7 +107,7 @@ export const ResponsiveTable = ({
       {/* Top Filter & Search Bar */}
       {(searchable || filterOptions.length > 0 || customFilterBar) && (
         <div className="table-filter-bar">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: '240px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: 0, width: '100%', flexWrap: 'wrap' }}>
             {searchable && (
               <div className="input-with-icon" style={{ maxWidth: '360px', width: '100%' }}>
                 <Search size={16} className="input-icon-left" />
@@ -125,7 +125,7 @@ export const ResponsiveTable = ({
             )}
 
             {filterOptions.length > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', maxWidth: '100%' }}>
                 <Filter size={14} style={{ color: '#94A3B8' }} />
                 {filterOptions.map(opt => (
                   <button

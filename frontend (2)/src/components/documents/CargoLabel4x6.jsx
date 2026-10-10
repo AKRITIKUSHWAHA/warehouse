@@ -18,8 +18,22 @@ export const CargoLabel4x6 = ({
   const description = cargo.description || cargo.cargoDescription || "General Freight Cargo";
   const weightLbs = cargo.weightLbs || (cargo.grossWeightLbs || 0);
   const weightKg = cargo.weightKg || Number((weightLbs * 0.453592).toFixed(1));
-  const cft = cargo.cft || 0;
-  const cbm = cargo.cbm || Number((cft * 0.0283168).toFixed(2));
+  const packagesCft = (cargo.packages && Array.isArray(cargo.packages) && cargo.packages.length > 0)
+    ? cargo.packages.reduce((sum, p) => sum + (Number(p.cft) || 0), 0)
+    : 0;
+  const packagesCbm = (cargo.packages && Array.isArray(cargo.packages) && cargo.packages.length > 0)
+    ? cargo.packages.reduce((sum, p) => sum + (Number(p.cbm) || 0), 0)
+    : 0;
+
+  const rawCft = (cargo.cft !== undefined && cargo.cft !== null && Number(cargo.cft) > 0)
+    ? Number(cargo.cft)
+    : packagesCft;
+  const cft = rawCft > 0 ? Number(rawCft).toFixed(2) : 0;
+
+  const rawCbm = (cargo.cbm !== undefined && cargo.cbm !== null && Number(cargo.cbm) > 0)
+    ? Number(cargo.cbm)
+    : (packagesCbm > 0 ? packagesCbm : Number((rawCft * 0.0283168).toFixed(2)));
+  const cbm = rawCbm > 0 ? Number(rawCbm).toFixed(2) : 0;
 
   const totalPkgs = totalPieces || cargo.packageCount || cargo.totalPieces || 1;
 
@@ -136,7 +150,7 @@ export const CargoLabel4x6 = ({
             <BarcodeVisual value={cargo.barcode || `${wrNumber}-${pieceIndex}`} height={55} showText={true} />
           </div>
           <div style={{ flexShrink: 0 }}>
-            <QrVisual value={cargo.qrCode || `VI-CARGO-${wrNumber}-${pieceIndex}`} size={70} />
+            <QrVisual value={cargo.qrCode || cargo.barcode || cargo.cargoNumber || `VI-CARGO-${wrNumber}-${pieceIndex}`} size={70} />
           </div>
         </div>
 

@@ -18,7 +18,15 @@ export class CustomersService {
   }
 
   async createCustomer(input: CreateCustomerInput) {
-    const customerNumber = input.customerNumber || (await this.repo.getNextCustomerNumber());
+    let customerNumber = input.customerNumber?.trim();
+    if (!customerNumber) {
+      customerNumber = await this.repo.getNextCustomerNumber();
+    } else {
+      const existing = await this.repo.findById(customerNumber);
+      if (existing) {
+        customerNumber = await this.repo.getNextCustomerNumber();
+      }
+    }
     const createdDate = input.createdDate || new Date().toISOString().split('T')[0];
 
     return this.repo.create({

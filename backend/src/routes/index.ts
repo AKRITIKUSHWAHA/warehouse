@@ -18,6 +18,7 @@ import { manifestsRoutes } from '../modules/manifests/manifests.routes.js';
 import { documentsRoutes } from '../modules/documents/documents.routes.js';
 import { trackingRoutes } from '../modules/tracking/tracking.routes.js';
 import { auditRoutes } from '../modules/audit/audit.routes.js';
+import { historyRoutes } from '../modules/history/history.routes.js';
 import { settingsRoutes } from '../modules/settings/settings.routes.js';
 import { adminRoutes } from '../modules/admin/admin.routes.js';
 import { menuRoutes } from '../modules/menus/menus.routes.js';
@@ -49,6 +50,7 @@ export async function registerAppRoutes(app: FastifyInstance): Promise<void> {
       await v1.register(documentsRoutes, { prefix: '/documents' });
       await v1.register(trackingRoutes, { prefix: '/tracking' });
       await v1.register(auditRoutes, { prefix: '/audit' });
+      await v1.register(historyRoutes, { prefix: '/history' });
       await v1.register(settingsRoutes, { prefix: '/settings' });
       await v1.register(adminRoutes, { prefix: '/admin' });
       await v1.register(menuRoutes);

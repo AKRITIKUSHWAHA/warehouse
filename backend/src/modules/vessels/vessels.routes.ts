@@ -9,9 +9,9 @@ export async function vesselsRoutes(app: FastifyInstance): Promise<void> {
 
   app.get('/', vesselsController.list);
   app.get('/:id', vesselsController.getById);
-  app.post('/', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.OPERATIONS)] }, vesselsController.create);
-  app.put('/:id', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.OPERATIONS)] }, vesselsController.update);
-  app.patch('/:id', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.OPERATIONS)] }, vesselsController.update);
+  app.post('/', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.OPERATIONS, ROLES.DOCUMENTATION_STAFF)] }, vesselsController.create);
+  app.put('/:id', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.OPERATIONS, ROLES.DOCUMENTATION_STAFF)] }, vesselsController.update);
+  app.patch('/:id', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.OPERATIONS, ROLES.DOCUMENTATION_STAFF)] }, vesselsController.update);
   app.delete('/:id', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.OPERATIONS)] }, vesselsController.delete);
 }
 

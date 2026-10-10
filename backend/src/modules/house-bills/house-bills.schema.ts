@@ -1,14 +1,27 @@
 import { z } from 'zod';
 
-export const contactObjectSchema = z.union([
-  z.string().transform(name => ({ name, address: 'Miami, FL' })),
-  z.object({
-    name: z.string().min(1),
-    address: z.string().optional().default('Miami, FL'),
-    contact: z.string().optional(),
-    taxId: z.string().optional(),
-  }),
-]);
+export const contactObjectSchema = z.preprocess((val: any) => {
+  if (typeof val === 'string') {
+    return { name: val.trim() || 'General Party', address: 'Miami, FL' };
+  }
+  if (val && typeof val === 'object') {
+    const rawName = val.name || val.companyName || val.customerName || val.contactPerson || val.contact;
+    const cleanName = (typeof rawName === 'string' && rawName.trim().length > 0) ? rawName.trim() : 'General Consignee';
+    const cleanAddress = (typeof val.address === 'string' && val.address.trim().length > 0) ? val.address.trim() : 'Destination Port';
+    return {
+      name: cleanName,
+      address: cleanAddress,
+      contact: val.contact || undefined,
+      taxId: val.taxId || undefined,
+    };
+  }
+  return { name: 'General Consignee', address: 'Destination Port' };
+}, z.object({
+  name: z.string().min(1),
+  address: z.string().optional().default('Miami, FL'),
+  contact: z.string().optional(),
+  taxId: z.string().optional(),
+}));
 
 export const createHouseBillSchema = z.object({
   hblNumber: z.string().optional(),
@@ -17,7 +30,10 @@ export const createHouseBillSchema = z.object({
     .optional()
     .nullable()
     .transform(val => (val && val.includes('-') && val.length === 36 ? val : undefined)),
-  customerName: z.string().min(2),
+  customerName: z.preprocess((val: any) => {
+    if (typeof val === 'string' && val.trim().length > 0) return val.trim();
+    return 'General Customer';
+  }, z.string().min(1)),
   shipper: contactObjectSchema,
   consignee: contactObjectSchema,
   notifyParty: contactObjectSchema.optional(),

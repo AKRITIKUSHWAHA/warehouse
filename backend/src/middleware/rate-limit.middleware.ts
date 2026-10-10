@@ -6,7 +6,7 @@ interface RateLimitRecord {
 
 const loginAttempts = new Map<string, RateLimitRecord>();
 const WINDOW_MS = 60 * 1000; // 1 minute
-const MAX_ATTEMPTS = 5; // 5 attempts per minute per IP
+const MAX_ATTEMPTS = 20; // 20 attempts per minute per IP
 
 // Periodically clean up stale records every 5 minutes
 setInterval(() => {

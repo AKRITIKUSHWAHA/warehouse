@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
 import { useAuth } from '../../context/AuthContext';
+import { canManageHolds } from '../../config/rolePermissions';
 
 export const HouseBillsList = ({ onNavigate }) => {
   const { houseBills, deleteHouseBill, updateHouseBill, placeHBLHold, clearHBLHold, billsOfLading, fetchMenuApi } = useAppData();
@@ -30,7 +31,9 @@ export const HouseBillsList = ({ onNavigate }) => {
   const [deletingHBL, setDeletingHBL] = useState(null);
 
   useEffect(() => {
-    if (fetchMenuApi) fetchMenuApi('house-bills');
+    if ((!houseBills || houseBills.length === 0) && fetchMenuApi) {
+      fetchMenuApi('house-bills');
+    }
   }, [fetchMenuApi]);
 
   // Filter if Agent
@@ -136,31 +139,33 @@ export const HouseBillsList = ({ onNavigate }) => {
         const isOnHold = item.status === 'On Hold' || item.holdDetails?.isOnHold;
         return (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', justifyContent: 'flex-end' }}>
-            {isOnHold ? (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  clearHBLHold(item.id || item.hblNumber, 'Hold cleared from table');
-                }}
-                className="btn btn-sm btn-success"
-                title="Clear Hold on House B/L"
-                style={{ padding: '0.25rem 0.45rem', fontSize: '0.75rem' }}
-              >
-                <CheckCircle2 size={13} />
-                <span className="hide-mobile">Clear</span>
-              </button>
-            ) : (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  placeHBLHold(item.id || item.hblNumber, 'Documentation Hold', 'Awaiting clearance');
-                }}
-                className="btn btn-sm btn-ghost"
-                title="Place House B/L On Hold"
-                style={{ padding: '0.25rem 0.45rem', color: '#D97706' }}
-              >
-                <AlertTriangle size={13} />
-              </button>
+            {canManageHolds(currentUser?.roleKey) && (
+              isOnHold ? (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    clearHBLHold(item.id || item.hblNumber, 'Hold cleared from table');
+                  }}
+                  className="btn btn-sm btn-success"
+                  title="Clear Hold on House B/L"
+                  style={{ padding: '0.25rem 0.45rem', fontSize: '0.75rem' }}
+                >
+                  <CheckCircle2 size={13} />
+                  <span className="hide-mobile">Clear</span>
+                </button>
+              ) : (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    placeHBLHold(item.id || item.hblNumber, 'Documentation Hold', 'Awaiting clearance');
+                  }}
+                  className="btn btn-sm btn-ghost"
+                  title="Place House B/L On Hold"
+                  style={{ padding: '0.25rem 0.45rem', color: '#D97706' }}
+                >
+                  <AlertTriangle size={13} />
+                </button>
+              )
             )}
 
             <button

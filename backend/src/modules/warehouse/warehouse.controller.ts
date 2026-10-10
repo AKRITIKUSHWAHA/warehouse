@@ -7,6 +7,9 @@ import {
 } from './warehouse.schema.js';
 import { successResponse, paginatedResponse } from '../../common/utils/response.js';
 import { getPaginationParams, buildPaginationMeta } from '../../common/utils/pagination.js';
+import { db } from '../../db/index.js';
+import { settings } from '../../db/schema/index.js';
+import { eq } from 'drizzle-orm';
 
 export class WarehouseController {
   constructor(private readonly service: WarehouseService = warehouseService) {}
@@ -31,7 +34,12 @@ export class WarehouseController {
 
   getNextNumber = async (_request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     const nextSeq = await this.service.getNextNumber();
-    reply.send(successResponse({ nextReceiptNumber: String(nextSeq), nextSequenceNumber: nextSeq }));
+    const setting = await db.select().from(settings).where(eq(settings.key, 'numberingRules')).limit(1);
+    const configuredPrefix = (setting[0]?.value as any)?.warehouseReceiptPrefix?.trim();
+    const formatted = configuredPrefix
+      ? (configuredPrefix.endsWith('-') ? `${configuredPrefix}${nextSeq}` : `${configuredPrefix}-${nextSeq}`)
+      : String(nextSeq);
+    reply.send(successResponse({ nextReceiptNumber: formatted, nextSequenceNumber: nextSeq }));
   };
 
   getById = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {

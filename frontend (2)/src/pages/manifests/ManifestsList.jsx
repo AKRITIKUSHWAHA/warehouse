@@ -12,7 +12,7 @@ import { WorkflowIndicator } from '../../components/common/WorkflowIndicator';
 import { useAuth } from '../../context/AuthContext';
 
 export const ManifestsList = ({ onNavigate }) => {
-  const { manifests, createManifest, updateManifest, deleteManifest, refreshAll } = useAppData();
+  const { manifests, createManifest, updateManifest, deleteManifest, fetchMenuApi } = useAppData();
   const { isAgent, currentUser } = useAuth();
   const { showToast } = useToast();
   const [editingManifest, setEditingManifest] = useState(null);
@@ -21,12 +21,14 @@ export const ManifestsList = ({ onNavigate }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
-    if (refreshAll) refreshAll();
+    if ((!manifests || manifests.length === 0) && fetchMenuApi) {
+      fetchMenuApi('manifests');
+    }
   }, []);
 
   const handleManualRefresh = async () => {
     setIsRefreshing(true);
-    if (refreshAll) await refreshAll();
+    if (fetchMenuApi) await fetchMenuApi('manifests');
     setTimeout(() => setIsRefreshing(false), 500);
   };
 

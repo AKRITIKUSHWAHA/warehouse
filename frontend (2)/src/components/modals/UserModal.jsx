@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, X, Save, Plus } from 'lucide-react';
+import { ShieldCheck, X, Save, Plus, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 export const UserModal = ({
   isOpen,
@@ -16,6 +16,12 @@ export const UserModal = ({
     department: 'Operations & Freight Logistics',
     status: 'Active'
   });
+
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
 
   const roles = [
     { key: 'super_admin', name: 'Super Admin', department: 'Executive Management & Administration' },
@@ -45,6 +51,11 @@ export const UserModal = ({
         status: 'Active'
       });
     }
+    setPassword('');
+    setConfirmPassword('');
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+    setPasswordError('');
   }, [user, isEdit, isOpen]);
 
   useEffect(() => {
@@ -75,7 +86,47 @@ export const UserModal = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+    setPasswordError('');
+
+    if (!isEdit) {
+      if (!password || password.trim().length === 0) {
+        setPasswordError('Password is required.');
+        return;
+      }
+      if (password.length < 6) {
+        setPasswordError('Password must be at least 6 characters long.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setPasswordError('Passwords do not match. Please verify both fields.');
+        return;
+      }
+    } else {
+      if (password || confirmPassword) {
+        if (!password) {
+          setPasswordError('Please enter a new password or leave both password fields blank.');
+          return;
+        }
+        if (password.length < 6) {
+          setPasswordError('New password must be at least 6 characters long.');
+          return;
+        }
+        if (password !== confirmPassword) {
+          setPasswordError('New passwords do not match. Please verify both fields.');
+          return;
+        }
+      }
+    }
+
+    const payload = {
+      ...formData
+    };
+
+    if (password && password.trim().length > 0) {
+      payload.password = password.trim();
+    }
+
+    onSave(payload);
     onClose();
   };
 
@@ -96,7 +147,7 @@ export const UserModal = ({
         style={{
           maxWidth: '560px',
           width: '100%',
-          maxHeight: 'min(92vh, 640px)',
+          maxHeight: 'min(92vh, 680px)',
           display: 'flex',
           flexDirection: 'column',
           margin: 'auto',
@@ -150,7 +201,7 @@ export const UserModal = ({
                 {isEdit ? `Edit Staff Account (${formData.name || 'User'})` : 'Add New Staff User Account'}
               </div>
               <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '2px', lineHeight: 1.3 }}>
-                {isEdit ? 'Update credentials and role permissions' : 'Set up credentials, role tier, and facility access'}
+                {isEdit ? 'Update credentials, password, and role permissions' : 'Set up credentials, password, role tier, and facility access'}
               </div>
             </div>
           </div>
@@ -205,6 +256,7 @@ export const UserModal = ({
               gap: '1rem'
             }}
           >
+            {/* Full Name & Email Address */}
             <div
               style={{
                 display: 'grid',
@@ -241,6 +293,123 @@ export const UserModal = ({
               </div>
             </div>
 
+            {/* Password & Confirm Password */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                gap: '1rem'
+              }}
+            >
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label" style={{ fontWeight: 600, fontSize: '0.8125rem', marginBottom: '0.35rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span>
+                    {isEdit ? 'New Password' : 'Password'} {!isEdit && <span className="required" style={{ color: '#EF4444' }}>*</span>}
+                  </span>
+                  {isEdit && <span style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 400 }}>Optional</span>}
+                </label>
+                <div className="input-with-icon" style={{ position: 'relative' }}>
+                  <Lock size={15} className="input-icon-left" style={{ color: '#94A3B8' }} />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    className="form-control"
+                    placeholder={isEdit ? 'Leave blank to keep current' : 'Min. 6 characters'}
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (passwordError) setPasswordError('');
+                    }}
+                    style={{ paddingLeft: '2.2rem', paddingRight: '2.5rem' }}
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    style={{
+                      position: 'absolute',
+                      right: '8px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      padding: '4px',
+                      cursor: 'pointer',
+                      color: '#94A3B8',
+                      display: 'flex',
+                      alignItems: 'center',
+                      borderRadius: '4px'
+                    }}
+                  >
+                    {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label" style={{ fontWeight: 600, fontSize: '0.8125rem', marginBottom: '0.35rem' }}>
+                  Confirm {isEdit ? 'New Password' : 'Password'} {(!isEdit || password) && <span className="required" style={{ color: '#EF4444' }}>*</span>}
+                </label>
+                <div className="input-with-icon" style={{ position: 'relative' }}>
+                  <Lock size={15} className="input-icon-left" style={{ color: '#94A3B8' }} />
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    className="form-control"
+                    placeholder={isEdit ? 'Confirm new password' : 'Re-enter password'}
+                    value={confirmPassword}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      if (passwordError) setPasswordError('');
+                    }}
+                    style={{ paddingLeft: '2.2rem', paddingRight: '2.5rem' }}
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                    style={{
+                      position: 'absolute',
+                      right: '8px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      padding: '4px',
+                      cursor: 'pointer',
+                      color: '#94A3B8',
+                      display: 'flex',
+                      alignItems: 'center',
+                      borderRadius: '4px'
+                    }}
+                  >
+                    {showConfirmPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Error Message Alert */}
+            {passwordError && (
+              <div
+                style={{
+                  background: '#FEF2F2',
+                  border: '1px solid #FCA5A5',
+                  borderRadius: '8px',
+                  padding: '0.6rem 0.85rem',
+                  fontSize: '0.78rem',
+                  color: '#B91C1C',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}
+              >
+                <AlertCircle size={15} style={{ flexShrink: 0 }} />
+                <span>{passwordError}</span>
+              </div>
+            )}
+
+            {/* Assigned Role */}
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label" style={{ fontWeight: 600, fontSize: '0.8125rem', marginBottom: '0.35rem' }}>
                 Assigned Role &amp; Permission Tier
@@ -256,6 +425,7 @@ export const UserModal = ({
               </select>
             </div>
 
+            {/* Department & Status */}
             <div
               style={{
                 display: 'grid',

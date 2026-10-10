@@ -497,12 +497,13 @@ export const consolidationService = {
       };
       setStored(KEYS.CONSOLIDATIONS, list);
 
+      const refNumber = list[index]?.consolidationNumber || updatedConsolidation?.consolidationNumber || id;
       await auditService.logAction(
         currentUser,
         "Consolidation",
         "Updated Consolidation",
-        id,
-        `Updated details for Consolidation ${id}.`
+        refNumber,
+        `Updated details for Consolidation ${refNumber}.`
       );
 
       return list[index];
@@ -548,12 +549,13 @@ export const consolidationService = {
       }
     }
 
+    const refNumber = existing?.consolidationNumber || id;
     await auditService.logAction(
       currentUser,
       "Consolidation",
       "Deleted Consolidation",
-      id,
-      `Deleted Consolidation ${id} (${existing?.title || 'Consolidation'}).`
+      refNumber,
+      `Deleted Consolidation ${refNumber} (${existing?.title || 'Consolidation'}).`
     );
 
     return true;

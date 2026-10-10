@@ -8,7 +8,7 @@ export const WarehouseReceiptModal = ({
   onSave,
   receipt = null
 }) => {
-  const { ports } = useAppData();
+  const { ports, agents } = useAppData();
   const hasInitializedRef = useRef(false);
 
   const [formData, setFormData] = useState({
@@ -25,7 +25,7 @@ export const WarehouseReceiptModal = ({
     destinationCode: ports[0]?.code || 'NAS',
     destinationPort: ports[0] ? `${ports[0].code} - ${ports[0].name}` : 'NAS - Nassau, Bahamas',
     status: 'Ready for Consolidation',
-    agentId: 'AGT-001'
+    agentId: agents[0]?.id || null
   });
 
   useEffect(() => {
@@ -51,10 +51,10 @@ export const WarehouseReceiptModal = ({
         destinationCode: receipt.destinationCode || 'NAS',
         destinationPort: receipt.destinationPort || 'NAS - Nassau, Bahamas',
         status: receipt.status || 'Ready for Consolidation',
-        agentId: receipt.agentId || 'AGT-001'
+        agentId: receipt.agentId || (agents[0]?.id || null)
       });
     }
-  }, [receipt, isOpen]);
+  }, [receipt, isOpen, agents]);
 
   if (!isOpen) return null;
 

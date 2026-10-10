@@ -22,21 +22,28 @@ import { CustomerModal } from '../../components/modals/CustomerModal';
 import { useAuth } from '../../context/AuthContext';
 
 export const CreateWarehouseReceipt = ({ onNavigate }) => {
-  const { createWarehouseReceipt, customers, agents, ports, warehouseReceipts, createCustomer } = useAppData();
-  const { isDocs, isSuperAdmin } = useAuth();
+  const { createWarehouseReceipt, customers, agents, ports, warehouseReceipts, createCustomer, settings } = useAppData();
+  const { currentUser, isDocs, isSuperAdmin } = useAuth();
   const canEditWR = isDocs || isSuperAdmin;
 
+  const configuredPrefix = settings?.numberingRules?.warehouseReceiptPrefix?.trim();
   const maxSeq = warehouseReceipts.reduce((max, r) => {
-    const num = parseInt(r.receiptNumber || r.sequenceNumber, 10);
+    const raw = String(r.receiptNumber || r.sequenceNumber || '');
+    const match = raw.match(/(\d+)$/);
+    const num = match ? parseInt(match[1], 10) : NaN;
     return !isNaN(num) && num > max ? num : max;
   }, 3099);
   const nextSeq = Math.max(3100, maxSeq + 1);
-  const initialReceiptNum = String(nextSeq);
+  const initialReceiptNum = configuredPrefix
+    ? (configuredPrefix.endsWith('-') ? `${configuredPrefix}${nextSeq}` : `${configuredPrefix}-${nextSeq}`)
+    : String(nextSeq);
 
   const getPortCode = (p) => p?.portCode || p?.code || 'NAS';
   const nasPort = ports.find(p => getPortCode(p) === 'NAS') || ports[0];
   const defaultPort = nasPort ? `${getPortCode(nasPort)} - ${nasPort.name}` : 'NAS - Nassau Container Port';
   const defaultPortCode = nasPort ? getPortCode(nasPort) : 'NAS';
+  const initialAgent = agents.find(a => a.assignedPortCode === defaultPortCode);
+  const initialAgentName = initialAgent?.name || nasPort?.defaultAgent || '';
 
   // Form Header State (Fresh Blank State)
   const [formData, setFormData] = useState({
@@ -47,11 +54,11 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
     customerName: '',
     shipper: '',
     consignee: '',
-    agentId: agents[0]?.id || null,
-    agentName: agents[0]?.name || 'Caribbean Express Freight Ltd.',
+    agentId: initialAgent?.id || null,
+    agentName: initialAgentName,
     destinationPort: defaultPort,
     destinationCode: defaultPortCode,
-    warehouseLocation: 'Bay A-1 (CFS Staging)',
+    warehouseLocation: 'General Staging',
     cargoDescription: '',
     unitType: 'inches', // 'inches' | 'cm'
     hazardous: false,
@@ -112,14 +119,23 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
     }
     const selected = customers.find(c => c.id === custId);
     if (selected) {
+      const destP = selected.destinationPort || formData.destinationPort;
+      const destC = selected.destinationCode || (destP && destP.includes(' - ') ? destP.split(' - ')[0].trim() : formData.destinationCode);
+      const portObj = ports.find(p => getPortCode(p) === destC);
+      const matchedAgent = agents.find(a => a.assignedPortCode === destC);
+      const matchedAgentName = matchedAgent?.name || portObj?.defaultAgent || '';
+      const matchedAgentId = matchedAgent?.id || null;
+
       setFormData(prev => ({
         ...prev,
         customerId: selected.id,
         customer: selected.name,
         customerName: selected.name,
         consignee: `${selected.name}\n${selected.address || ''}\nAttn: ${selected.contactPerson || ''} (${selected.telephone || ''})`.trim(),
-        destinationPort: selected.destinationPort || prev.destinationPort,
-        destinationCode: selected.destinationCode || prev.destinationCode
+        destinationPort: destP,
+        destinationCode: destC,
+        agentId: matchedAgentId,
+        agentName: matchedAgentName
       }));
     }
   };
@@ -252,6 +268,8 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
 
     const payload = {
       ...formData,
+      receivedBy: currentUser?.name ? `${currentUser.name} (${currentUser.role || 'Super Administrator'})` : 'CFS Receiving Operations',
+      receivedByRole: currentUser?.role || 'Receiving Officer',
       customer: formData.customer || formData.customerName || (formData.consignee ? formData.consignee.split('\n')[0] : 'General Consignee'),
       customerName: formData.customerName || formData.customer || (formData.consignee ? formData.consignee.split('\n')[0] : 'General Consignee'),
       packages,
@@ -263,7 +281,7 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
       cbm: roundedCbm,
       volumetricWeightLbs,
       volumetricWeightKg,
-      warehouseLocation: formData.warehouseLocation || 'Bay A-1 (CFS Staging)',
+      warehouseLocation: formData.warehouseLocation || 'General Staging',
       cargoDescription: descSummary || formData.cargoDescription || 'General Cargo Merchandise',
       status: "Ready for Consolidation"
     };
@@ -336,7 +354,17 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
                     onChange={(e) => {
                       const dest = e.target.value;
                       const code = dest.includes(' - ') ? dest.split(' - ')[0].trim() : dest;
-                      setFormData(prev => ({ ...prev, destinationPort: dest, destinationCode: code }));
+                      const portObj = ports.find(p => getPortCode(p) === code);
+                      const matchedAgent = agents.find(a => a.assignedPortCode === code);
+                      const matchedAgentName = matchedAgent?.name || portObj?.defaultAgent || '';
+                      const matchedAgentId = matchedAgent?.id || null;
+                      setFormData(prev => ({
+                        ...prev,
+                        destinationPort: dest,
+                        destinationCode: code,
+                        agentId: matchedAgentId,
+                        agentName: matchedAgentName
+                      }));
                     }}
                     required
                   >
@@ -391,19 +419,33 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                     <label className="form-label" style={{ margin: 0 }}>Shipper / Supplier Information</label>
-                    <select
-                      style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', maxWidth: '200px' }}
-                      onChange={(e) => handleShipperSelect(e.target.value)}
-                      defaultValue=""
-                    >
-                      <option value="" disabled>Quick Fill Shipper...</option>
-                      {customers.map(c => (
-                        <option key={c.id} value={c.id}>
-                          {c.name} ({c.customerNumber || c.id})
-                        </option>
-                      ))}
-                      <option value="CREATE_NEW" style={{ fontWeight: 'bold', color: '#0284C7' }}>+ Create New Customer</option>
-                    </select>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <select
+                        style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', maxWidth: '170px' }}
+                        onChange={(e) => handleShipperSelect(e.target.value)}
+                        defaultValue=""
+                      >
+                        <option value="" disabled>Quick Fill Shipper...</option>
+                        {customers.map(c => (
+                          <option key={c.id} value={c.id}>
+                            {c.name} ({c.customerNumber || c.id})
+                          </option>
+                        ))}
+                        <option value="CREATE_NEW" style={{ fontWeight: 'bold', color: '#0284C7' }}>+ Create New Customer</option>
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCustomerCreationTarget('shipper');
+                          setShowAddCustomerModal(true);
+                        }}
+                        className="btn btn-outline btn-xs"
+                        style={{ padding: '2px 6px', fontSize: '0.7rem', color: '#0284C7', borderColor: '#0284C7' }}
+                        title="Add New Customer Profile"
+                      >
+                        + New
+                      </button>
+                    </div>
                   </div>
                   <textarea
                     className="form-textarea"
@@ -417,19 +459,33 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                     <label className="form-label" style={{ margin: 0 }}>Consignee / Destination Importer <span className="required">*</span></label>
-                    <select
-                      style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', maxWidth: '200px' }}
-                      onChange={(e) => handleConsigneeSelect(e.target.value)}
-                      defaultValue=""
-                    >
-                      <option value="" disabled>Quick Fill Consignee...</option>
-                      {customers.map(c => (
-                        <option key={c.id} value={c.id}>
-                          {c.name} ({c.destinationCode ? `${c.destinationCode} • ` : ''}{c.customerNumber || c.id})
-                        </option>
-                      ))}
-                      <option value="CREATE_NEW" style={{ fontWeight: 'bold', color: '#0284C7' }}>+ Create New Customer</option>
-                    </select>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <select
+                        style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', maxWidth: '170px' }}
+                        onChange={(e) => handleConsigneeSelect(e.target.value)}
+                        defaultValue=""
+                      >
+                        <option value="" disabled>Quick Fill Consignee...</option>
+                        {customers.map(c => (
+                          <option key={c.id} value={c.id}>
+                            {c.name} ({c.destinationCode ? `${c.destinationCode} • ` : ''}{c.customerNumber || c.id})
+                          </option>
+                        ))}
+                        <option value="CREATE_NEW" style={{ fontWeight: 'bold', color: '#0284C7' }}>+ Create New Customer</option>
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCustomerCreationTarget('consignee');
+                          setShowAddCustomerModal(true);
+                        }}
+                        className="btn btn-outline btn-xs"
+                        style={{ padding: '2px 6px', fontSize: '0.7rem', color: '#0284C7', borderColor: '#0284C7' }}
+                        title="Add New Customer Profile"
+                      >
+                        + New
+                      </button>
+                    </div>
                   </div>
                   <textarea
                     className="form-textarea"
@@ -641,8 +697,8 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
                   <span>Add Another Package Row</span>
                 </button>
 
-                <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
-                  Formula: ({formData.unitType === 'inches' ? 'Length" × Width" × Height" × Pieces ÷ 1,728' : 'Length × Width × Height × Pieces ÷ 1,000,000'})
+                <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 500 }}>
+                  ✓ Live Automatic Volume Calculation (CFT &amp; CBM)
                 </div>
               </div>
 
@@ -674,36 +730,17 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
               </div>
             </div>
 
-            {/* Section 4: Warehouse Location & Staging */}
+            {/* Section 3: Handling Flags & Notes */}
             <div>
               <h3 style={{ fontSize: '1rem', color: '#0A192F', borderBottom: '1px solid #E2E8F0', paddingBottom: '0.5rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <MapPin size={18} style={{ color: '#0284C7' }} />
-                <span>3. Warehouse Staging Location &amp; Handling</span>
+                <span>3. Special Handling &amp; Receiving Remarks</span>
               </h3>
 
-              <div className="grid grid-cols-2 gap-4" style={{ marginBottom: '1rem' }}>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Warehouse Staging Bay / Bin Location <span className="required">*</span></label>
-                  <select
-                    className="form-select"
-                    value={formData.warehouseLocation}
-                    onChange={(e) => handleInputChange('warehouseLocation', e.target.value)}
-                    required
-                  >
-                    <option value="Bay A-1 (CFS Staging)">Bay A-1 (CFS Staging)</option>
-                    <option value="Bay A-2 (Pallet Staging)">Bay A-2 (Pallet Staging)</option>
-                    <option value="Bay B-1 (Loose Cargo)">Bay B-1 (Loose Cargo)</option>
-                    <option value="Bay B-2 (Consolidation Area)">Bay B-2 (Consolidation Area)</option>
-                    <option value="Rack C-01 (High Shelf)">Rack C-01 (High Shelf)</option>
-                    <option value="Rack C-04 (Hardware/Parts)">Rack C-04 (Hardware/Parts)</option>
-                    <option value="Secure Cage (High-Value)">Secure Cage (High-Value)</option>
-                    <option value="Cold Storage Room">Cold Storage Room</option>
-                  </select>
-                </div>
-
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Handling &amp; Cargo Flags</label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginTop: '0.4rem' }}>
+              <div style={{ marginBottom: '1rem' }}>
+                <div className="form-group" style={{ marginBottom: '0.75rem' }}>
+                  <label className="form-label">Cargo Flags</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', marginTop: '0.2rem' }}>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
                       <input
                         type="checkbox"
@@ -718,7 +755,7 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
                         checked={formData.hazardous}
                         onChange={(e) => handleInputChange('hazardous', e.target.checked)}
                       />
-                      <span>HAZMAT</span>
+                      <span>HAZMAT / Dangerous Goods</span>
                     </label>
                   </div>
                 </div>

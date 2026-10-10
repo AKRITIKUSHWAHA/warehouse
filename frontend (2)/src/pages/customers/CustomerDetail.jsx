@@ -23,13 +23,13 @@ import { useAppData } from '../../context/AppDataContext';
 import { customerService } from '../../services/customerService';
 
 export const CustomerDetail = ({ customerId, onNavigate }) => {
-  const { customers, warehouseReceipts, houseBills, updateCustomer, deleteCustomer } = useAppData();
+  const { customers, warehouseReceipts = [], houseBills = [], updateCustomer, deleteCustomer, fetchMenuApi } = useAppData();
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [fetchedCustomer, setFetchedCustomer] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const contextCustomer = customers.find(c => c.id === customerId || c.customerNumber === customerId || c.name === customerId);
+  const contextCustomer = (customers || []).find(c => c.id === customerId || c.customerNumber === customerId || c.name === customerId);
   const customer = contextCustomer || fetchedCustomer;
 
   React.useEffect(() => {
@@ -42,6 +42,13 @@ export const CustomerDetail = ({ customerId, onNavigate }) => {
         .finally(() => setIsLoading(false));
     }
   }, [contextCustomer, customerId]);
+
+  React.useEffect(() => {
+    if (fetchMenuApi) {
+      fetchMenuApi('house-bills');
+      fetchMenuApi('warehouse-receipts');
+    }
+  }, [fetchMenuApi, customerId]);
 
   if (!customer) {
     if (isLoading) {
@@ -61,14 +68,22 @@ export const CustomerDetail = ({ customerId, onNavigate }) => {
     );
   }
 
+  const custNameLower = (customer.name || '').trim().toLowerCase();
+  const custId = customer.id;
+  const custNum = customer.customerNumber;
+
   // Linked Warehouse Receipts
-  const linkedWrs = warehouseReceipts.filter(
-    w => w.customerId === customer.id || w.customerId === customer.customerNumber || w.customer === customer.name || w.customerName === customer.name
+  const linkedWrs = (warehouseReceipts || []).filter(
+    w => (custId && w.customerId === custId) ||
+         (custNum && w.customerId === custNum) ||
+         (custNameLower && (w.customer || w.customerName || '').trim().toLowerCase() === custNameLower)
   );
 
   // Linked House Bills
-  const linkedHbls = houseBills.filter(
-    h => h.customerId === customer.id || h.customerId === customer.customerNumber || h.customerName === customer.name || h.consignee?.name === customer.name
+  const linkedHbls = (houseBills || []).filter(
+    h => (custId && h.customerId === custId) ||
+         (custNum && h.customerId === custNum) ||
+         (custNameLower && (h.customerName || (typeof h.consignee === 'object' ? h.consignee?.name : h.consignee) || '').trim().toLowerCase() === custNameLower)
   );
 
   return (

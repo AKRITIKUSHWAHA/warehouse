@@ -61,6 +61,33 @@ export class AuthService {
       destinationPortCode: user.assignedPortCode,
     };
   }
+
+  async switchUser(userIdOrEmail: string): Promise<AuthUserResponse> {
+    let user = null;
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userIdOrEmail);
+    if (isUuid) {
+      user = await this.repo.findUserById(userIdOrEmail);
+    }
+    if (!user) {
+      user = await this.repo.findUserByEmail(userIdOrEmail);
+    }
+    if (!user) {
+      throw new AppError('User account not found', 404, true);
+    }
+
+    return {
+      id: user.id,
+      userCode: user.userCode,
+      name: user.name,
+      email: user.email,
+      roleKey: user.roleKey as RoleType,
+      department: user.department,
+      avatar: user.avatar,
+      status: user.status,
+      agentId: user.agentId,
+      destinationPortCode: user.assignedPortCode,
+    };
+  }
 }
 
 export const authService = new AuthService();

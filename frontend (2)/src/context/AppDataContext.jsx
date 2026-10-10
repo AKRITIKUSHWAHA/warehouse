@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { getStored, setStored, KEYS, initializeStorage, clearTransactionalData } from '../services/storageService';
 import { customerService } from '../services/customerService';
 import { warehouseService } from '../services/warehouseService';
@@ -11,6 +11,7 @@ import { manifestService } from '../services/manifestService';
 import { portService, containerService, vesselService, agentService, userService, documentService, settingsService } from '../services';
 
 import { auditService } from '../services/auditService';
+import { historyService } from '../services/historyService';
 import { apiClient } from '../services/apiClient';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
@@ -38,168 +39,21 @@ export const AppDataProvider = ({ children }) => {
   const [customDocuments, setCustomDocuments] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
   const [settings, setSettings] = useState(null);
+  const [historyData, setHistoryData] = useState([]);
+  const [historySummary, setHistorySummary] = useState(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isBackendConnected, setIsBackendConnected] = useState(false);
   const [activeMenuTab, setActiveMenuTab] = useState('dashboard');
 
-  // Refresh all state from storage and sync with live backend
-  const refreshAll = useCallback(async () => {
-    initializeStorage();
-    setCustomers(getStored(KEYS.CUSTOMERS, []));
-    setWarehouseReceipts(getStored(KEYS.WAREHOUSE_RECEIPTS, []));
-    setCargoItems(getStored(KEYS.CARGO, []));
-    setHouseBills(getStored(KEYS.HOUSE_BILLS, []));
-    setConsolidations(getStored(KEYS.CONSOLIDATIONS, []));
-    setShipments(getStored(KEYS.SHIPMENTS, []));
-    setBillsOfLading(getStored(KEYS.BILLS_OF_LADING, []));
-    setManifests(getStored(KEYS.MANIFESTS, []));
-    setContainers(getStored(KEYS.CONTAINERS, []));
-    setVessels(getStored(KEYS.VESSELS, []));
-    setVoyages(getStored(KEYS.VOYAGES, []));
-    setAgents(getStored(KEYS.AGENTS, []));
-    setPorts(getStored(KEYS.PORTS, []));
-    setUsers(getStored(KEYS.USERS, []));
-    setCustomDocuments(getStored(KEYS.DOCUMENTS, []));
-    setAuditLogs(getStored(KEYS.AUDIT_LOGS, []));
-    setSettings(getStored(KEYS.SETTINGS, {}));
-    setIsLoading(false);
-
-    // Sync live from PostgreSQL Backend API
-    try {
-      const isLive = await apiClient.checkHealth();
-      setIsBackendConnected(isLive);
-      if (isLive) {
-        // Only fetch protected data if user is authenticated with a token
-        if (!apiClient.getToken()) {
-          return;
-        }
-
-        const [
-          portsRes,
-          settingsRes,
-          customersRes,
-          receiptsRes,
-          cargoRes,
-          consolidationsRes,
-          shipmentsRes,
-          billsRes,
-          manifestsRes,
-          houseBillsRes,
-          containersRes,
-          vesselsRes,
-          voyagesRes,
-          agentsRes,
-        ] = await Promise.allSettled([
-          apiClient.get('/ports'),
-          apiClient.get('/settings'),
-          apiClient.get('/customers'),
-          apiClient.get('/warehouse-receipts'),
-          apiClient.get('/cargo'),
-          apiClient.get('/consolidations'),
-          apiClient.get('/shipments'),
-          apiClient.get('/bills-of-lading'),
-          apiClient.get('/manifests'),
-          apiClient.get('/house-bills'),
-          apiClient.get('/containers'),
-          apiClient.get('/vessels'),
-          apiClient.get('/voyages'),
-          apiClient.get('/agents'),
-        ]);
-
-        if (portsRes.status === 'fulfilled' && portsRes.value?.data) {
-          const apiPorts = portsRes.value.data;
-          setPorts(apiPorts);
-          setStored(KEYS.PORTS, apiPorts);
-        }
-        if (settingsRes.status === 'fulfilled' && settingsRes.value?.data) {
-          const apiSettings = settingsRes.value.data;
-          setSettings(apiSettings);
-          setStored(KEYS.SETTINGS, apiSettings);
-        }
-        if (customersRes.status === 'fulfilled' && customersRes.value?.data) {
-          const apiCust = Array.isArray(customersRes.value.data) ? customersRes.value.data : customersRes.value.data.items || [];
-          setCustomers(apiCust);
-          setStored(KEYS.CUSTOMERS, apiCust);
-        }
-        if (receiptsRes.status === 'fulfilled' && receiptsRes.value?.data) {
-          const apiWR = Array.isArray(receiptsRes.value.data) ? receiptsRes.value.data : receiptsRes.value.data.items || [];
-          setWarehouseReceipts(apiWR);
-          setStored(KEYS.WAREHOUSE_RECEIPTS, apiWR);
-        }
-        if (cargoRes.status === 'fulfilled' && cargoRes.value?.data) {
-          const apiCargo = Array.isArray(cargoRes.value.data) ? cargoRes.value.data : (cargoRes.value.data.data || cargoRes.value.data.items || []);
-          setCargoItems(apiCargo);
-          setStored(KEYS.CARGO, apiCargo);
-        }
-        if (consolidationsRes.status === 'fulfilled' && consolidationsRes.value?.data) {
-          const apiConsol = Array.isArray(consolidationsRes.value.data) ? consolidationsRes.value.data : consolidationsRes.value.data.items || [];
-          setConsolidations(apiConsol);
-          setStored(KEYS.CONSOLIDATIONS, apiConsol);
-        }
-        if (shipmentsRes.status === 'fulfilled' && shipmentsRes.value?.data) {
-          const apiShip = Array.isArray(shipmentsRes.value.data) ? shipmentsRes.value.data : shipmentsRes.value.data.items || [];
-          setShipments(apiShip);
-          setStored(KEYS.SHIPMENTS, apiShip);
-        }
-        if (billsRes.status === 'fulfilled' && billsRes.value?.data) {
-          const apiBills = Array.isArray(billsRes.value.data) ? billsRes.value.data : billsRes.value.data.items || [];
-          setBillsOfLading(apiBills);
-          setStored(KEYS.BILLS_OF_LADING, apiBills);
-        }
-        if (manifestsRes.status === 'fulfilled' && manifestsRes.value?.data) {
-          const apiMan = Array.isArray(manifestsRes.value.data) ? manifestsRes.value.data : manifestsRes.value.data.items || [];
-          setManifests(apiMan);
-          setStored(KEYS.MANIFESTS, apiMan);
-        }
-        if (houseBillsRes.status === 'fulfilled' && houseBillsRes.value?.data) {
-          const rawHBL = Array.isArray(houseBillsRes.value.data) ? houseBillsRes.value.data : houseBillsRes.value.data.items || [];
-          const apiHBL = rawHBL.map(item => ({
-            ...item,
-            customerName: item.customerName || (typeof item.consignee === 'object' ? item.consignee.name : item.consignee) || '',
-            totalCft: item.totalCft !== undefined ? Number(item.totalCft) : 0,
-            totalCbm: item.totalCbm !== undefined ? Number(item.totalCbm) : 0,
-            totalWeightLbs: item.totalWeightLbs !== undefined ? Number(item.totalWeightLbs) : 0,
-            warehouseReceiptIds: Array.isArray(item.warehouseReceiptIds) ? item.warehouseReceiptIds : [],
-          }));
-          setHouseBills(apiHBL);
-          setStored(KEYS.HOUSE_BILLS, apiHBL);
-        }
-        if (containersRes.status === 'fulfilled' && containersRes.value?.data) {
-          const apiCont = Array.isArray(containersRes.value.data) ? containersRes.value.data : containersRes.value.data.items || [];
-          setContainers(apiCont);
-          setStored(KEYS.CONTAINERS, apiCont);
-        }
-        if (vesselsRes.status === 'fulfilled' && vesselsRes.value?.data) {
-          const apiVes = Array.isArray(vesselsRes.value.data) ? vesselsRes.value.data : vesselsRes.value.data.items || [];
-          setVessels(apiVes);
-          setStored(KEYS.VESSELS, apiVes);
-        }
-        if (voyagesRes.status === 'fulfilled' && voyagesRes.value?.data) {
-          const apiVoy = Array.isArray(voyagesRes.value.data) ? voyagesRes.value.data : voyagesRes.value.data.items || [];
-          setVoyages(apiVoy);
-          setStored(KEYS.VOYAGES, apiVoy);
-        }
-        if (agentsRes.status === 'fulfilled' && agentsRes.value) {
-          const val = agentsRes.value.data || agentsRes.value;
-          const apiAgents = Array.isArray(val) ? val : val.items || [];
-          if (apiAgents.length > 0) { setAgents(apiAgents); setStored(KEYS.AGENTS, apiAgents); }
-        }
-        try {
-          const liveLogs = await auditService.getLogs({ limit: 200 });
-          setAuditLogs(Array.isArray(liveLogs) ? liveLogs : []);
-          setStored(KEYS.AUDIT_LOGS, Array.isArray(liveLogs) ? liveLogs : []);
-        } catch (audErr) {
-          console.warn('[AppDataContext] Initial audit sync notice:', audErr.message);
-        }
-      }
-    } catch (e) {
-      console.warn('Backend live sync notice:', e.message);
-      setIsBackendConnected(false);
-    }
-
-    if (syncUsers) syncUsers();
-
-  }, [syncUsers]);
+  const customersRef = useRef(customers);
+  const warehouseReceiptsRef = useRef(warehouseReceipts);
+  const houseBillsRef = useRef(houseBills);
+  useEffect(() => {
+    customersRef.current = customers;
+    warehouseReceiptsRef.current = warehouseReceipts;
+    houseBillsRef.current = houseBills;
+  }, [customers, warehouseReceipts, houseBills]);
 
   // Helper to extract list from diverse API response shapes
   const extractListFromRes = (res) => {
@@ -210,6 +64,7 @@ export const AppDataProvider = ({ children }) => {
     if (Array.isArray(res?.items)) return res.items;
     return null;
   };
+
 
   // ON-DEMAND API Fetcher: Triggers ONLY the API corresponding to the clicked menu
   const fetchMenuApi = useCallback(async (tabName) => {
@@ -240,6 +95,23 @@ export const AppDataProvider = ({ children }) => {
             setCustomers(list);
             setStored(KEYS.CUSTOMERS, list);
           }
+          if (!warehouseReceiptsRef.current || warehouseReceiptsRef.current.length === 0) {
+            apiClient.get('/warehouse-receipts').then(res => {
+              const wList = extractListFromRes(res);
+              if (wList) {
+                setWarehouseReceipts(wList);
+                setStored(KEYS.WAREHOUSE_RECEIPTS, wList);
+              }
+            }).catch(() => {});
+          }
+          if (!houseBillsRef.current || houseBillsRef.current.length === 0) {
+            houseBillService.getHouseBills().then(hbList => {
+              if (Array.isArray(hbList)) {
+                setHouseBills(hbList);
+                setStored(KEYS.HOUSE_BILLS, hbList);
+              }
+            }).catch(() => {});
+          }
           break;
         }
 
@@ -251,6 +123,15 @@ export const AppDataProvider = ({ children }) => {
             setStored(KEYS.WAREHOUSE_RECEIPTS, list);
           }
           await apiClient.get('/labels').catch(() => { });
+          if (!customersRef.current || customersRef.current.length === 0) {
+            apiClient.get('/customers').then(res => {
+              const cList = extractListFromRes(res);
+              if (cList) {
+                setCustomers(cList);
+                setStored(KEYS.CUSTOMERS, cList);
+              }
+            }).catch(() => {});
+          }
           break;
         }
 
@@ -260,6 +141,15 @@ export const AppDataProvider = ({ children }) => {
           if (list !== null) {
             setCargoItems(list);
             setStored(KEYS.CARGO, list);
+          }
+          if (!customersRef.current || customersRef.current.length === 0) {
+            apiClient.get('/customers').then(res => {
+              const cList = extractListFromRes(res);
+              if (cList) {
+                setCustomers(cList);
+                setStored(KEYS.CUSTOMERS, cList);
+              }
+            }).catch(() => {});
           }
           break;
         }
@@ -338,7 +228,20 @@ export const AppDataProvider = ({ children }) => {
         }
 
         case 'tracking': {
-          const trkRes = await apiClient.get('/tracking').catch(() => null);
+          const [shpRes, wrRes] = await Promise.all([
+            apiClient.get('/shipments').catch(() => null),
+            apiClient.get('/warehouse-receipts').catch(() => null)
+          ]);
+          const shpList = extractListFromRes(shpRes);
+          const wrList = extractListFromRes(wrRes);
+          if (shpList !== null) {
+            setShipments(shpList);
+            setStored(KEYS.SHIPMENTS, shpList);
+          }
+          if (wrList !== null) {
+            setWarehouseReceipts(wrList);
+            setStored(KEYS.WAREHOUSE_RECEIPTS, wrList);
+          }
           break;
         }
 
@@ -392,6 +295,32 @@ export const AppDataProvider = ({ children }) => {
           break;
         }
 
+        case 'ports': {
+          const pRes = await apiClient.get('/ports').catch(() => null);
+          const raw = extractListFromRes(pRes);
+          if (raw !== null) {
+            const mapped = raw.map(p => ({
+              ...p,
+              code: p.code || p.portCode,
+              portCode: p.portCode || p.code,
+            }));
+            setPorts(mapped);
+            setStored(KEYS.PORTS, mapped);
+          }
+          break;
+        }
+
+        case 'history': {
+          setHistoryLoading(true);
+          const histRes = await historyService.getShipmentHistory().catch(() => null);
+          if (histRes && histRes.data) {
+            setHistoryData(histRes.data);
+            setHistorySummary(histRes.summary);
+          }
+          setHistoryLoading(false);
+          break;
+        }
+
         default:
           break;
       }
@@ -400,27 +329,76 @@ export const AppDataProvider = ({ children }) => {
     }
   }, [currentRole]);
 
+  // On-Demand Refresh: Only initializes storage, checks health, master configs, and fetches the active/targeted menu tab
+  const refreshAll = useCallback(async (targetTab) => {
+    initializeStorage();
+    setIsLoading(false);
+
+    try {
+      const isLive = await apiClient.checkHealth();
+      setIsBackendConnected(isLive);
+      if (!isLive || !apiClient.getToken()) {
+        return;
+      }
+
+      // 1. Ensure master metadata (settings & ports) is loaded if not yet populated
+      if (!settings || Object.keys(settings).length === 0) {
+        apiClient.get('/settings').then(res => {
+          if (res?.data) {
+            setSettings(res.data);
+            setStored(KEYS.SETTINGS, res.data);
+          }
+        }).catch(() => {});
+      }
+
+      if (!ports || ports.length === 0) {
+        apiClient.get('/ports').then(res => {
+          const raw = extractListFromRes(res);
+          if (raw) {
+            const mapped = raw.map(p => ({
+              ...p,
+              code: p.code || p.portCode,
+              portCode: p.portCode || p.code,
+            }));
+            setPorts(mapped);
+            setStored(KEYS.PORTS, mapped);
+          }
+        }).catch(() => {});
+      }
+
+      // 2. Fetch data only for the active or requested menu tab
+      let tabToFetch = targetTab;
+      if (!tabToFetch && typeof window !== 'undefined') {
+        const path = window.location.pathname.replace(/^\//, '').split('/')[0];
+        tabToFetch = path || activeMenuTab || 'dashboard';
+      }
+
+      if (tabToFetch && tabToFetch !== 'all') {
+        await fetchMenuApi(tabToFetch);
+      }
+    } catch (e) {
+      console.warn('Backend live sync notice:', e.message);
+      setIsBackendConnected(false);
+    }
+  }, [fetchMenuApi, activeMenuTab, settings, ports]);
+
   useEffect(() => {
     if (apiClient.getToken()) {
       refreshAll();
-      // Fetch initial active menu API on mount
-      fetchMenuApi(activeMenuTab);
     }
   }, []);
 
   // 1. Customers CRUD
   const createCustomer = async (customerData) => {
     const created = await customerService.createCustomer(customerData, currentUser?.name || "Warehouse Staff");
-    setCustomers(getStored(KEYS.CUSTOMERS, []));
-    await refreshAll();
+    await fetchMenuApi('customers');
     showToast(`Customer Profile ${created.customerNumber || created.name} created successfully.`, 'success', 'Customer Created');
     return created;
   };
 
   const updateCustomer = async (id, updates) => {
     const updated = await customerService.updateCustomer(id, updates, currentUser?.name || "Warehouse Staff");
-    setCustomers(getStored(KEYS.CUSTOMERS, []));
-    await refreshAll();
+    await fetchMenuApi('customers');
     showToast(`Customer Profile ${id} updated successfully.`, 'success', 'Customer Updated');
     return updated;
   };
@@ -429,8 +407,7 @@ export const AppDataProvider = ({ children }) => {
     setCustomers(prev => prev.filter(c => c.id !== id && c.customerNumber !== id && c.accountNumber !== id));
     const success = await customerService.deleteCustomer(id, currentUser?.name || "Super Admin");
     if (success) {
-      setCustomers(getStored(KEYS.CUSTOMERS, []));
-      await refreshAll();
+      await fetchMenuApi('customers');
       showToast(`Customer Profile ${id} deleted successfully.`, 'info', 'Customer Deleted');
     }
     return success;
@@ -448,15 +425,14 @@ export const AppDataProvider = ({ children }) => {
     if (!created) {
       created = await warehouseService.createReceipt(receiptData, currentUser?.name || "Warehouse Staff");
     }
-    await refreshAll();
+    await fetchMenuApi('warehouse-receipts');
     showToast(`Warehouse Receipt ${created.receiptNumber || created.id} intaked.`, 'success', 'Receipt Created');
     return created;
   };
 
   const updateWarehouseReceipt = async (id, updates) => {
     const updated = await warehouseService.updateReceipt(id, updates, currentUser?.name || "Warehouse Staff");
-    fetchMenuApi('warehouse-receipts');
-    await refreshAll();
+    await fetchMenuApi('warehouse-receipts');
     showToast(`Warehouse Receipt ${id} updated successfully.`, 'success', 'Receipt Updated');
     return updated;
   };
@@ -465,8 +441,7 @@ export const AppDataProvider = ({ children }) => {
     setWarehouseReceipts(prev => prev.filter(r => r.id !== id && r.receiptNumber !== id));
     const success = await warehouseService.deleteReceipt(id, currentUser?.name || "Warehouse Staff");
     if (success) {
-      fetchMenuApi('warehouse-receipts');
-      await refreshAll();
+      await fetchMenuApi('warehouse-receipts');
       showToast(`Warehouse Receipt ${id} deleted successfully.`, 'info', 'Receipt Deleted');
     }
     return success;
@@ -475,16 +450,14 @@ export const AppDataProvider = ({ children }) => {
   // 3. Cargo Inventory CRUD
   const createCargo = async (cargoData) => {
     const created = await cargoService.createCargo(cargoData, currentUser?.name || "Warehouse Staff");
-    fetchMenuApi('cargo');
-    await refreshAll();
+    await fetchMenuApi('cargo');
     showToast(`Cargo Unit ${created.id} registered into warehouse inventory.`, 'success', 'Cargo Intaked');
     return created;
   };
 
   const updateCargo = async (id, updates) => {
     const updated = await cargoService.updateCargo(id, updates, currentUser?.name || "Warehouse Staff");
-    fetchMenuApi('cargo');
-    await refreshAll();
+    await fetchMenuApi('cargo');
     showToast(`Cargo Unit ${id} updated successfully.`, 'success', 'Cargo Updated');
     return updated;
   };
@@ -493,8 +466,7 @@ export const AppDataProvider = ({ children }) => {
     setCargoItems(prev => prev.filter(c => c.id !== id && c.cargoNumber !== id));
     const success = await cargoService.deleteCargo(id, currentUser?.name || "Warehouse Staff");
     if (success) {
-      fetchMenuApi('cargo');
-      await refreshAll();
+      await fetchMenuApi('cargo');
       showToast(`Cargo Unit ${id} deleted from inventory.`, 'info', 'Cargo Deleted');
     }
     return success;
@@ -506,15 +478,14 @@ export const AppDataProvider = ({ children }) => {
     if (created) {
       setHouseBills(prev => [created, ...prev.filter(h => h.id !== created.id && h.hblNumber !== created.hblNumber)]);
     }
-    await refreshAll();
+    await fetchMenuApi('house-bills');
     showToast(`House B/L ${created.hblNumber || created.id} issued for ${created.customerName || 'Customer'}.`, 'success', 'House B/L Created');
     return created;
   };
 
   const updateHouseBill = async (id, updates) => {
     const updated = await houseBillService.updateHouseBill(id, updates, currentUser?.name || "Documentation Staff");
-    fetchMenuApi('house-bills');
-    await refreshAll();
+    await fetchMenuApi('house-bills');
     showToast(`House B/L ${updated?.hblNumber || id} updated successfully.`, 'success', 'House B/L Updated');
     return updated;
   };
@@ -523,8 +494,7 @@ export const AppDataProvider = ({ children }) => {
     setHouseBills(prev => prev.filter(h => h.id !== id && h.hblNumber !== id));
     const success = await houseBillService.deleteHouseBill(id, currentUser?.name || "Documentation Staff");
     if (success) {
-      fetchMenuApi('house-bills');
-      await refreshAll();
+      await fetchMenuApi('house-bills');
       showToast(`House B/L ${id} deleted.`, 'info', 'House B/L Deleted');
     }
     return success;
@@ -536,7 +506,6 @@ export const AppDataProvider = ({ children }) => {
       setHouseBills(prev => prev.map(h => (h.id === hblId || h.hblNumber === hblId ? updated : h)));
     }
     await fetchMenuApi('house-bills');
-    await refreshAll();
     showToast(`House B/L ${hblId} placed ON HOLD.`, 'warning', 'House B/L On Hold');
     return updated;
   };
@@ -547,7 +516,6 @@ export const AppDataProvider = ({ children }) => {
       setHouseBills(prev => prev.map(h => (h.id === hblId || h.hblNumber === hblId ? updated : h)));
     }
     await fetchMenuApi('house-bills');
-    await refreshAll();
     showToast(`Hold cleared for House B/L ${hblId}.`, 'success', 'House B/L Released');
     return updated;
   };
@@ -558,7 +526,6 @@ export const AppDataProvider = ({ children }) => {
       setHouseBills(prev => prev.map(h => (h.id === hblId || h.hblNumber === hblId ? updated : h)));
     }
     await fetchMenuApi('house-bills');
-    await refreshAll();
     showToast(`House B/L ${hblId} status updated to ${status}.`, 'info', 'Status Updated');
     return updated;
   };
@@ -575,7 +542,7 @@ export const AppDataProvider = ({ children }) => {
     if (!created) {
       created = await consolidationService.createConsolidation(consolidationData, currentUser?.name || "Operations Staff");
     }
-    await refreshAll();
+    await fetchMenuApi('consolidations');
     showToast(`Consolidation ${created.consolidationNumber || created.id} created successfully.`, 'success', 'Consolidation Ready');
     return created;
   };
@@ -583,7 +550,6 @@ export const AppDataProvider = ({ children }) => {
   const updateConsolidation = async (id, updates) => {
     const updated = await consolidationService.updateConsolidation(id, updates, currentUser?.name || "Operations Staff");
     await fetchMenuApi('consolidations');
-    await refreshAll();
     showToast(`Consolidation ${id} updated successfully.`, 'success', 'Consolidation Updated');
     return updated;
   };
@@ -593,7 +559,6 @@ export const AppDataProvider = ({ children }) => {
     const success = await consolidationService.deleteConsolidation(id, currentUser?.name || "Operations Staff");
     if (success) {
       await fetchMenuApi('consolidations');
-      await refreshAll();
       showToast(`Consolidation ${id} deleted.`, 'info', 'Consolidation Deleted');
     }
     return success;
@@ -611,7 +576,7 @@ export const AppDataProvider = ({ children }) => {
     if (!created) {
       created = await shipmentService.createShipment(shipmentData, currentUser?.name || "Operations Staff");
     }
-    await refreshAll();
+    await fetchMenuApi('shipments');
     showToast(`Shipment ${created.shipmentNumber || created.id} created successfully.`, 'success', 'Shipment Created');
     return created;
   };
@@ -620,7 +585,6 @@ export const AppDataProvider = ({ children }) => {
     try {
       const updated = await shipmentService.updateShipment(id, updates, currentUser?.name || "Super Admin");
       await fetchMenuApi('shipments');
-      await refreshAll();
       showToast(`Shipment ${updated?.shipmentNumber || id} updated successfully.`, 'success', 'Shipment Updated');
       return updated;
     } catch (err) {
@@ -635,12 +599,10 @@ export const AppDataProvider = ({ children }) => {
       const success = await shipmentService.deleteShipment(id, currentUser?.name || "Super Admin");
       if (success) {
         await fetchMenuApi('shipments');
-        await refreshAll();
         showToast(`Shipment ${id} deleted successfully.`, 'info', 'Shipment Deleted');
       }
       return success;
     } catch (err) {
-      await refreshAll();
       showToast(err?.message || 'Failed to delete shipment', 'error', 'Delete Error');
       throw err;
     }
@@ -651,25 +613,17 @@ export const AppDataProvider = ({ children }) => {
     try {
       const created = await billOfLadingService.createBillOfLading(blData, currentUser?.name || "Documentation Staff");
       await fetchMenuApi('bills-of-lading');
-      await refreshAll();
       showToast(`Master B/L ${created?.blNumber || created?.id} created successfully.`, 'success', 'Master B/L Created');
       return created;
     } catch (err) {
       showToast(err?.message || 'Failed to create Master B/L', 'error', 'Creation Failed');
       throw err;
     }
-    if (!created) {
-      created = await billOfLadingService.createBillOfLading(blData, currentUser?.name || "Documentation Staff");
-    }
-    await refreshAll();
-    showToast(`Master B/L ${created.blNumber || created.id} created successfully.`, 'success', 'Master B/L Created');
-    return created;
   };
 
   const updateBillOfLading = async (id, updates) => {
     const updated = await billOfLadingService.updateBillOfLading(id, updates, currentUser?.name || "Documentation Staff");
-    fetchMenuApi('bills-of-lading');
-    await refreshAll();
+    await fetchMenuApi('bills-of-lading');
     showToast(`Master B/L ${id} updated successfully.`, 'success', 'Master B/L Updated');
     return updated;
   };
@@ -678,8 +632,7 @@ export const AppDataProvider = ({ children }) => {
     setBillsOfLading(prev => prev.filter(b => b.id !== id && b.blNumber !== id));
     const success = await billOfLadingService.deleteBillOfLading(id, currentUser?.name || "Documentation Staff");
     if (success) {
-      fetchMenuApi('bills-of-lading');
-      await refreshAll();
+      await fetchMenuApi('bills-of-lading');
       showToast(`Master B/L ${id} deleted.`, 'info', 'Master B/L Deleted');
     }
     return success;
@@ -687,24 +640,21 @@ export const AppDataProvider = ({ children }) => {
 
   const placeBLHold = async (blId, reason, notes) => {
     const updated = await billOfLadingService.placeHold(blId, reason, notes, currentUser?.name || "Operations Staff");
-    fetchMenuApi('bills-of-lading');
-    await refreshAll();
+    await fetchMenuApi('bills-of-lading');
     showToast(`Master B/L ${blId} has been placed ON HOLD. Document access restricted.`, 'warning', 'B/L Placed On Hold');
     return updated;
   };
 
   const clearBLHold = async (blId, clearNotes) => {
     const updated = await billOfLadingService.clearHold(blId, currentUser?.name || "Operations Staff", clearNotes);
-    fetchMenuApi('bills-of-lading');
-    await refreshAll();
+    await fetchMenuApi('bills-of-lading');
     showToast(`Hold cleared for Master B/L ${blId}. Status is now RELEASED.`, 'success', 'B/L Released');
     return updated;
   };
 
   const updateBLStatus = async (blId, status) => {
     const updated = await billOfLadingService.updateStatus(blId, status, currentUser?.name || "Documentation Staff");
-    fetchMenuApi('bills-of-lading');
-    await refreshAll();
+    await fetchMenuApi('bills-of-lading');
     showToast(`Master B/L ${blId} status updated to ${status}.`, 'info', 'Status Updated');
     return updated;
   };
@@ -714,25 +664,17 @@ export const AppDataProvider = ({ children }) => {
     try {
       const created = await manifestService.generateManifest(manifestData, currentUser?.name || "Documentation Staff");
       await fetchMenuApi('manifests');
-      await refreshAll();
       showToast(`Shipping Manifest ${created.manifestNumber || created.id} generated successfully.`, 'success', 'Manifest Created');
       return created;
     } catch (err) {
       showToast(err?.message || 'Failed to generate manifest', 'error', 'Creation Error');
       throw err;
     }
-    if (!created) {
-      created = await manifestService.generateManifest(manifestData, currentUser?.name || "Documentation Staff");
-    }
-    await refreshAll();
-    showToast(`Shipping Manifest ${created.manifestNumber || created.id} generated successfully.`, 'success', 'Manifest Created');
-    return created;
   };
 
   const updateManifest = async (id, updates) => {
     const updated = await manifestService.updateManifest(id, updates, currentUser?.name || "Documentation Staff");
-    fetchMenuApi('manifests');
-    await refreshAll();
+    await fetchMenuApi('manifests');
     showToast(`Shipping Manifest ${id} updated successfully.`, 'success', 'Manifest Updated');
     return updated;
   };
@@ -741,8 +683,7 @@ export const AppDataProvider = ({ children }) => {
     setManifests(prev => prev.filter(m => m.id !== id && m.manifestNumber !== id));
     const success = await manifestService.deleteManifest(id, currentUser?.name || "Documentation Staff");
     if (success) {
-      fetchMenuApi('manifests');
-      await refreshAll();
+      await fetchMenuApi('manifests');
       showToast(`Shipping Manifest ${id} deleted.`, 'info', 'Manifest Deleted');
     }
     return success;
@@ -753,7 +694,6 @@ export const AppDataProvider = ({ children }) => {
     try {
       const created = await vesselService.createVessel(vesselData, currentUser?.name || "Operations Staff");
       await fetchMenuApi('vessels');
-      await refreshAll();
       showToast(`Vessel ${created.name} added to fleet directory.`, 'success', 'Vessel Registered');
       return created;
     } catch (err) {
@@ -766,7 +706,6 @@ export const AppDataProvider = ({ children }) => {
     try {
       const updated = await vesselService.updateVessel(id, updates, currentUser?.name || "Operations Staff");
       await fetchMenuApi('vessels');
-      await refreshAll();
       showToast(`Vessel ${id} updated successfully.`, 'success', 'Vessel Updated');
       return updated;
     } catch (err) {
@@ -781,7 +720,6 @@ export const AppDataProvider = ({ children }) => {
       const success = await vesselService.deleteVessel(id, currentUser?.name || "Operations Staff");
       if (success) {
         await fetchMenuApi('vessels');
-        await refreshAll();
         showToast(`Vessel ${id} deleted from fleet.`, 'info', 'Vessel Removed');
       }
       return success;
@@ -795,7 +733,6 @@ export const AppDataProvider = ({ children }) => {
     try {
       const created = await vesselService.createVoyage(voyageData, currentUser?.name || "Operations Staff");
       await fetchMenuApi('vessels');
-      await refreshAll();
       showToast(`Voyage ${created.voyageNumber} scheduled successfully.`, 'success', 'Voyage Scheduled');
       return created;
     } catch (err) {
@@ -808,7 +745,6 @@ export const AppDataProvider = ({ children }) => {
     try {
       const updated = await vesselService.updateVoyage(id, updates, currentUser?.name || "Operations Staff");
       await fetchMenuApi('vessels');
-      await refreshAll();
       showToast(`Voyage ${id} updated successfully.`, 'success', 'Voyage Updated');
       return updated;
     } catch (err) {
@@ -823,7 +759,6 @@ export const AppDataProvider = ({ children }) => {
       const success = await vesselService.deleteVoyage(id, currentUser?.name || "Operations Staff");
       if (success) {
         await fetchMenuApi('vessels');
-        await refreshAll();
         showToast(`Voyage ${id} deleted.`, 'info', 'Voyage Deleted');
       }
       return success;
@@ -836,16 +771,14 @@ export const AppDataProvider = ({ children }) => {
   // 10. Containers CRUD
   const createContainer = async (containerData) => {
     const created = await containerService.createContainer(containerData, currentUser?.name || "Operations Staff");
-    fetchMenuApi('containers');
-    await refreshAll();
+    await fetchMenuApi('containers');
     showToast(`Container ${created.containerNumber} registered into equipment fleet.`, 'success', 'Container Added');
     return created;
   };
 
   const updateContainer = async (id, updates) => {
     const updated = await containerService.updateContainer(id, updates, currentUser?.name || "Operations Staff");
-    fetchMenuApi('containers');
-    await refreshAll();
+    await fetchMenuApi('containers');
     showToast(`Container ${id} updated successfully.`, 'success', 'Container Updated');
     return updated;
   };
@@ -854,8 +787,7 @@ export const AppDataProvider = ({ children }) => {
     setContainers(prev => prev.filter(c => c.id !== id && c.containerNumber !== id));
     const success = await containerService.deleteContainer(id, currentUser?.name || "Operations Staff");
     if (success) {
-      fetchMenuApi('containers');
-      await refreshAll();
+      await fetchMenuApi('containers');
       showToast(`Container ${id} deleted.`, 'info', 'Container Removed');
     }
     return success;
@@ -873,15 +805,14 @@ export const AppDataProvider = ({ children }) => {
     if (!created) {
       created = await agentService.createAgent(agentData, currentUser?.name || "Operations Staff");
     }
-    await refreshAll();
+    await fetchMenuApi('agents');
     showToast(`Port Agent ${created.name || created.code} registered.`, 'success', 'Agent Created');
     return created;
   };
 
   const updateAgent = async (id, updates) => {
     const updated = await agentService.updateAgent(id, updates, currentUser?.name || "Operations Staff");
-    fetchMenuApi('agents');
-    await refreshAll();
+    await fetchMenuApi('agents');
     showToast(`Port Agent ${id} updated successfully.`, 'success', 'Agent Updated');
     return updated;
   };
@@ -890,8 +821,7 @@ export const AppDataProvider = ({ children }) => {
     setAgents(prev => prev.filter(a => a.id !== id && a.agentCode !== id));
     const success = await agentService.deleteAgent(id, currentUser?.name || "Operations Staff");
     if (success) {
-      fetchMenuApi('agents');
-      await refreshAll();
+      await fetchMenuApi('agents');
       showToast(`Port Agent ${id} deleted.`, 'info', 'Agent Removed');
     }
     return success;
@@ -900,17 +830,15 @@ export const AppDataProvider = ({ children }) => {
   // 12. Users CRUD
   const createUser = async (userData) => {
     const created = await userService.createUser(userData, currentUser?.name || "Super Admin");
-    fetchMenuApi('users');
-    await refreshAll();
-    showToast(`Staff Account for ${created.name} created.`, 'success', 'User Registered');
+    if (syncUsers) await syncUsers();
+    showToast(`Staff Account for ${created?.name || 'user'} created.`, 'success', 'User Registered');
     return created;
   };
 
   const updateUser = async (id, updates) => {
     const updated = await userService.updateUser(id, updates, currentUser?.name || "Super Admin");
-    fetchMenuApi('users');
-    await refreshAll();
-    showToast(`Staff Account for ${id} updated.`, 'success', 'User Updated');
+    if (syncUsers) await syncUsers();
+    showToast(`Staff Account for ${updated?.name || id} updated.`, 'success', 'User Updated');
     return updated;
   };
 
@@ -918,8 +846,7 @@ export const AppDataProvider = ({ children }) => {
     setUsers(prev => prev.filter(u => u.id !== id && u.email !== id));
     const success = await userService.deleteUser(id, currentUser?.name || "Super Admin");
     if (success) {
-      fetchMenuApi('users');
-      await refreshAll();
+      if (syncUsers) await syncUsers();
       showToast(`Staff Account ${id} deleted.`, 'info', 'User Deleted');
     }
     return success;
@@ -928,8 +855,7 @@ export const AppDataProvider = ({ children }) => {
   // 13. Documents CRUD
   const uploadDocument = async (docData) => {
     const created = await documentService.uploadDocument(docData, currentUser?.name || "Documentation Staff");
-    fetchMenuApi('documents');
-    await refreshAll();
+    await fetchMenuApi('documents');
     showToast(`Document ${created.title} uploaded successfully.`, 'success', 'Document Attached');
     return created;
   };
@@ -938,8 +864,7 @@ export const AppDataProvider = ({ children }) => {
     setCustomDocuments(prev => prev.filter(d => d.id !== id));
     const success = await documentService.deleteDocument(id, currentUser?.name || "Documentation Staff");
     if (success) {
-      fetchMenuApi('documents');
-      await refreshAll();
+      await fetchMenuApi('documents');
       showToast(`Document ${id} removed.`, 'info', 'Document Deleted');
     }
     return success;
@@ -948,16 +873,14 @@ export const AppDataProvider = ({ children }) => {
   // 14. Ports & Island Destinations CRUD
   const createPort = async (portData) => {
     const created = await portService.createPort(portData, currentUser?.name || "Super Admin");
-    fetchMenuApi('ports');
-    await refreshAll();
-    showToast(`Island Port Destination ${created.code} (${created.name}) registered.`, 'success', 'Port Added');
+    await fetchMenuApi('ports');
+    showToast(`Island Port Destination ${created.code || created.portCode} (${created.name}) registered.`, 'success', 'Port Added');
     return created;
   };
 
   const updatePort = async (id, updates) => {
     const updated = await portService.updatePort(id, updates, currentUser?.name || "Super Admin");
-    fetchMenuApi('ports');
-    await refreshAll();
+    await fetchMenuApi('ports');
     showToast(`Island Port ${id} updated successfully.`, 'success', 'Port Updated');
     return updated;
   };
@@ -966,8 +889,7 @@ export const AppDataProvider = ({ children }) => {
     setPorts(prev => prev.filter(p => p.id !== id && p.code !== id));
     const success = await portService.deletePort(id, currentUser?.name || "Super Admin");
     if (success) {
-      fetchMenuApi('ports');
-      await refreshAll();
+      await fetchMenuApi('ports');
       showToast(`Island Port ${id} removed.`, 'info', 'Port Deleted');
     }
     return success;
@@ -1087,6 +1009,11 @@ export const AppDataProvider = ({ children }) => {
       updateSettings,
       clearAllData,
       resetDemoData,
+      // Shipment History & Lifecycle Flow
+      historyData,
+      historySummary,
+      historyLoading,
+      fetchShipmentHistory: historyService.getShipmentHistory,
       // Live Backend State
       isBackendConnected,
       activeMenuTab,

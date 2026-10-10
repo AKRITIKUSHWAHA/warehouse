@@ -9,9 +9,13 @@ export const createUserSchema = z.object({
   department: z.string().optional(),
   phone: z.string().optional(),
   agentId: z.string().uuid().optional(),
+  status: z.string().optional(),
 });
 
-export const updateUserSchema = createUserSchema.partial().omit({ password: true });
+export const updateUserSchema = createUserSchema.partial().extend({
+  password: z.string().min(6, 'Password must be at least 6 characters long').optional(),
+  status: z.string().optional(),
+});
 
 export const userQuerySchema = z.object({
   page: z.coerce.number().optional().default(1),

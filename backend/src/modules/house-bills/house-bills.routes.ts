@@ -17,9 +17,14 @@ export async function houseBillsRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.DOCUMENTATION_STAFF, ROLES.OPERATIONS, ROLES.WAREHOUSE, ROLES.PORT_AGENT)] },
     houseBillsController.create
   );
+  app.put(
+    '/:id',
+    { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.DOCUMENTATION_STAFF, ROLES.OPERATIONS, ROLES.WAREHOUSE)] },
+    houseBillsController.update
+  );
   app.patch(
     '/:id',
-    { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.DOCUMENTATION_STAFF)] },
+    { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.DOCUMENTATION_STAFF, ROLES.OPERATIONS, ROLES.WAREHOUSE)] },
     houseBillsController.update
   );
   app.delete(

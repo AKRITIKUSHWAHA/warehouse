@@ -15,9 +15,14 @@ export async function customersRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.DOCUMENTATION_STAFF, ROLES.OPERATIONS, ROLES.WAREHOUSE)] },
     customersController.create
   );
+  app.put(
+    '/:id',
+    { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.DOCUMENTATION_STAFF, ROLES.OPERATIONS, ROLES.WAREHOUSE)] },
+    customersController.update
+  );
   app.patch(
     '/:id',
-    { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.DOCUMENTATION_STAFF, ROLES.OPERATIONS)] },
+    { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.DOCUMENTATION_STAFF, ROLES.OPERATIONS, ROLES.WAREHOUSE)] },
     customersController.update
   );
   app.delete(

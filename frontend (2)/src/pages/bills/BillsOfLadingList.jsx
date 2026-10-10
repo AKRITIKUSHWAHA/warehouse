@@ -28,7 +28,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 
 export const BillsOfLadingList = ({ onNavigate }) => {
-  const { billsOfLading, clearBLHold, placeBLHold, createBillOfLading, updateBillOfLading, deleteBillOfLading, houseBills, refreshAll } = useAppData();
+  const { billsOfLading, clearBLHold, placeBLHold, createBillOfLading, updateBillOfLading, deleteBillOfLading, houseBills, fetchMenuApi } = useAppData();
   const { isAgent, currentUser } = useAuth();
   const { showToast } = useToast();
 
@@ -40,12 +40,14 @@ export const BillsOfLadingList = ({ onNavigate }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
-    if (refreshAll) refreshAll();
+    if ((!billsOfLading || billsOfLading.length === 0) && fetchMenuApi) {
+      fetchMenuApi('bills-of-lading');
+    }
   }, []);
 
   const handleManualRefresh = async () => {
     setIsRefreshing(true);
-    if (refreshAll) await refreshAll();
+    if (fetchMenuApi) await fetchMenuApi('bills-of-lading');
     setTimeout(() => setIsRefreshing(false), 500);
   };
 

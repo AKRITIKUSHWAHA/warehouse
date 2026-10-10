@@ -3,8 +3,11 @@ import { X, Building2, User, Phone, Mail, MapPin, Anchor, FileText, Check } from
 import { useAppData } from '../../context/AppDataContext';
 
 export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSave }) => {
-  const { ports } = useAppData();
-  const defaultPort = ports[0] ? `${ports[0].code} - ${ports[0].name}` : 'NAS - Nassau Container Port';
+  const { ports = [] } = useAppData();
+  const nasPort = (ports || []).find(p => (p.code || p.portCode) === 'NAS');
+  const defaultPort = nasPort
+    ? `${nasPort.code || nasPort.portCode} - ${nasPort.name}`
+    : (ports[0] ? `${ports[0].code || ports[0].portCode} - ${ports[0].name}` : 'NAS - Nassau Container Port');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -196,6 +199,31 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
                   <option value="Both Shipper &amp; Consignee">Both Shipper &amp; Consignee</option>
                   <option value="Wholesaler / Distributor">Wholesaler / Distributor</option>
                   <option value="Private Consignee">Private Consignee</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Default Destination Port / Hub</label>
+                <select
+                  className="form-select"
+                  value={formData.destinationPort}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const code = val ? val.split(' - ')[0] : 'NAS';
+                    setFormData({ ...formData, destinationPort: val, destinationCode: code });
+                  }}
+                >
+                  {(ports && ports.length > 0 ? ports : [
+                    { code: 'NAS', name: 'Nassau Container Port (Arawak Cay)' },
+                    { code: 'FPO', name: 'Freeport Container Port' },
+                    { code: 'KIN', name: 'Kingston Freeport Terminal (KFTL)' }
+                  ]).map((p) => {
+                    const portStr = `${p.code || p.portCode} - ${p.name}`;
+                    return (
+                      <option key={p.id || p.code || p.portCode} value={portStr}>
+                        {portStr}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
             </div>

@@ -25,11 +25,12 @@ export class UsersService {
       throw new AppError('A user with this email address already exists', 400, true);
     }
 
-    const passwordHash = await bcrypt.hash(input.password, 10);
+    const { password, ...userData } = input;
+    const passwordHash = await bcrypt.hash(password, 10);
     const userCode = `USR-${Math.floor(100 + Math.random() * 900)}`;
 
     return this.repo.create({
-      ...input,
+      ...userData,
       userCode,
       passwordHash,
     });
@@ -37,7 +38,15 @@ export class UsersService {
 
   async updateUser(id: string, input: UpdateUserInput) {
     await this.getUserById(id);
-    return this.repo.update(id, input);
+    const { password, ...updateData } = input;
+    let passwordHash: string | undefined = undefined;
+    if (password && password.trim().length >= 6) {
+      passwordHash = await bcrypt.hash(password.trim(), 10);
+    }
+    return this.repo.update(id, {
+      ...updateData,
+      ...(passwordHash ? { passwordHash } : {}),
+    });
   }
 
   async deleteUser(id: string) {

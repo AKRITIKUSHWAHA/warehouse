@@ -5,6 +5,7 @@ import { ManifestModal } from '../../components/modals/ManifestModal';
 import { DeleteConfirmModal } from '../../components/modals/DeleteConfirmModal';
 import { FileSpreadsheet, ArrowLeft, Printer, FileCode, Download, Edit2, Trash2 } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
+import { manifestService } from '../../services/manifestService';
 
 import { WorkflowIndicator } from '../../components/common/WorkflowIndicator';
 

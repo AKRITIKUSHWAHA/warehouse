@@ -9,7 +9,10 @@ export const agentPortalService = {
   /**
    * Authenticate agent with backend API
    */
-  async login(email = 'operations@caribbeanexpressbahamas.com', password = 'Password123!') {
+  async login(email, password) {
+    if (!email || !password) {
+      throw new Error('Email and password are required');
+    }
     try {
       const res = await apiFetch('/auth/login', {
         method: 'POST',
@@ -30,13 +33,27 @@ export const agentPortalService = {
    * Ensure an active valid token exists
    */
   async ensureAuthenticated(currentUser) {
-    const existingToken = getAuthToken();
-    if (existingToken) return existingToken;
+    const existingToken = getAuthToken() || (typeof localStorage !== 'undefined' ? localStorage.getItem('kers_token') : null);
+    if (existingToken) {
+      setAuthToken(existingToken);
+      return existingToken;
+    }
 
-    // Login default agent user to acquire production JWT token
-    const email = currentUser?.email || 'operations@caribbeanexpressbahamas.com';
-    const loginRes = await this.login(email, 'Password123!');
-    return loginRes?.token;
+    if (currentUser?.id || currentUser?.email) {
+      try {
+        const res = await apiFetch('/auth/switch-user', {
+          method: 'POST',
+          body: JSON.stringify({ userId: currentUser.id, email: currentUser.email }),
+        });
+        if (res?.data?.token) {
+          setAuthToken(res.data.token);
+          return res.data.token;
+        }
+      } catch (err) {
+        console.warn('Agent Portal switch-user failed:', err.message);
+      }
+    }
+    return null;
   },
 
   /**

@@ -86,19 +86,19 @@ export class UsersRepository {
     return result[0] || null;
   }
 
-  async create(data: CreateUserInput & { passwordHash: string; userCode: string }) {
+  async create(data: Omit<CreateUserInput, 'password'> & { passwordHash: string; userCode: string }) {
     const [created] = await db
       .insert(users)
-      .values(data)
+      .values(data as any)
       .returning();
 
     return created;
   }
 
-  async update(id: string, data: UpdateUserInput) {
+  async update(id: string, data: Omit<UpdateUserInput, 'password'> & { passwordHash?: string }) {
     const [updated] = await db
       .update(users)
-      .set({ ...data, updatedAt: new Date() })
+      .set({ ...data, updatedAt: new Date() } as any)
       .where(eq(users.id, id))
       .returning();
 

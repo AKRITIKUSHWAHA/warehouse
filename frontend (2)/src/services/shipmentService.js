@@ -120,7 +120,7 @@ export const shipmentService = {
       currentUser,
       "Shipments",
       "Created Shipment",
-      createdShipment.id,
+      createdShipment.shipmentNumber || createdShipment.id,
       `Created Master Shipment ${createdShipment.shipmentNumber} (${createdShipment.origin} → ${createdShipment.destinationPort}).`
     );
 
@@ -152,12 +152,13 @@ export const shipmentService = {
       updatedShipment = list[index];
     }
 
+    const refNumber = list[index]?.shipmentNumber || updatedShipment?.shipmentNumber || id;
     await auditService.logAction(
       currentUser,
       "Shipments",
       "Updated Shipment",
-      id,
-      `Updated shipment details for ${id}.`
+      refNumber,
+      `Updated shipment details for ${refNumber}.`
     );
 
     return updatedShipment;
@@ -176,12 +177,13 @@ export const shipmentService = {
     setStored(KEYS.SHIPMENTS, filtered);
 
     if (existing) {
+      const refNumber = existing.shipmentNumber || id;
       await auditService.logAction(
         currentUser,
         "Shipments",
         "Deleted Shipment",
-        id,
-        `Deleted Master Shipment ${id} (${existing.shipmentNumber}).`
+        refNumber,
+        `Deleted Master Shipment ${refNumber}.`
       );
     }
 

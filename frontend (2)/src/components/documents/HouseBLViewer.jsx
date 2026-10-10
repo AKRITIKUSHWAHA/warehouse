@@ -1,12 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrandLogo } from '../common/BrandLogo';
 import { StatusBadge } from '../common/StatusBadge';
 import { BarcodeVisual, QrVisual } from '../common/BarcodeVisual';
-import { Printer, Download, Building2, Package, Layers } from 'lucide-react';
+import { Printer, Download, Building2, Package, Layers, Loader2 } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
+import { useAuth } from '../../context/AuthContext';
+import { useAppData } from '../../context/AppDataContext';
+import { downloadPdfFromElement } from '../../services/pdfService';
 
 export const HouseBLViewer = ({ hbl, onNavigate }) => {
   const { showToast } = useToast();
+  const { currentUser } = useAuth() || {};
+  const { settings, warehouseReceipts = [] } = useAppData() || {};
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
   if (!hbl) return null;
 
@@ -14,23 +20,71 @@ export const HouseBLViewer = ({ hbl, onNavigate }) => {
   const isReleased = hbl.status === 'Released' || hbl.status === 'Active';
 
   const handlePrint = () => {
+    const prevTitle = document.title;
+    document.title = `House_Bill_${hbl.hblNumber || 'Document'}`;
     window.print();
+    setTimeout(() => {
+      document.title = prevTitle;
+    }, 1000);
     showToast(`Print layout loaded for House B/L ${hbl.hblNumber}.`, 'info', 'Printing House B/L');
   };
 
-  const handleDownloadMock = () => {
+  const handleDownloadPdf = async () => {
     if (isOnHold) {
       showToast(`Cannot download document: House B/L is currently ON HOLD.`, 'danger', 'Download Restricted');
-      return;
+    try {
+      setIsDownloadingPdf(true);
+      showToast(`Generating official PDF for House B/L ${hbl.hblNumber}...`, 'info', 'Preparing PDF');
+      const filename = `House_Bill_${hbl.hblNumber || 'Document'}.pdf`;
+      const docElement = document.getElementById('printable-house-bl-doc');
+      await downloadPdfFromElement(docElement, filename);
+      showToast(`House Bill of Lading ${hbl.hblNumber}.pdf downloaded successfully.`, 'success', 'Download Complete');
+    } catch (err) {
+      console.error('PDF download error:', err);
+      showToast(`PDF generation error: ${err.message}`, 'danger', 'Download Failed');
+    } finally {
+      setIsDownloadingPdf(false);
     }
-    window.print();
-    showToast(`Opening Print dialog for House Bill of Lading ${hbl.hblNumber}. Choose "Save as PDF" to download.`, 'success', 'PDF Ready');
   };
 
   const packages = hbl.packages && hbl.packages.length > 0 ? hbl.packages : [];
 
+  const carrierDisplayName = settings?.companyProfile?.companyName || settings?.companyProfile?.legalName || 'VI Customs Brokers & Logistics';
+  const resolvedWrNumbers = (hbl.warehouseReceiptIds || []).map(id => {
+    const matched = warehouseReceipts.find(w => w.id === id || w.receiptNumber === id);
+    return matched?.receiptNumber || id;
+  });
+
+  const charges = hbl.freightCharges || hbl.charges || (() => {
+    if (hbl.notes && typeof hbl.notes === 'string' && hbl.notes.includes('---FREIGHT_CHARGES---')) {
+      try {
+        const parts = hbl.notes.split('\n---FREIGHT_CHARGES---\n');
+        return JSON.parse(parts[1]);
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  })();
+
+  const oceanCharge = charges?.oceanFreightAmount !== undefined && charges?.oceanFreightAmount !== null
+    ? Number(charges.oceanFreightAmount).toFixed(2)
+    : (hbl.totalCft ? (Number(hbl.totalCft) * 3.5).toFixed(2) : '150.00');
+
+  const terminalFee = charges?.terminalHandlingFee !== undefined && charges?.terminalHandlingFee !== null
+    ? Number(charges.terminalHandlingFee).toFixed(2)
+    : '35.00';
+
+  const docFee = charges?.documentationFee !== undefined && charges?.documentationFee !== null
+    ? Number(charges.documentationFee).toFixed(2)
+    : '50.00';
+
+  const totalCharge = charges?.totalAmount !== undefined && charges?.totalAmount !== null
+    ? Number(charges.totalAmount).toFixed(2)
+    : (hbl.totalCft ? (Number(oceanCharge) + Number(terminalFee) + Number(docFee)).toFixed(2) : '235.00');
+
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+    <div className="house-bl-viewer-wrapper" style={{ maxWidth: '900px', margin: '0 auto' }}>
       {/* Top Action Bar (hidden in print) */}
       <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', background: '#FFFFFF', padding: '0.75rem 1.25rem', borderRadius: '8px', border: '1px solid #E2E8F0', flexWrap: 'wrap', gap: '0.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -47,12 +101,21 @@ export const HouseBLViewer = ({ hbl, onNavigate }) => {
           </button>
           <button
             className={`btn btn-sm ${isOnHold ? 'btn-secondary disabled' : 'btn-primary'}`}
-            onClick={handleDownloadMock}
-            disabled={isOnHold}
+            onClick={handleDownloadPdf}
+            disabled={isOnHold || isDownloadingPdf}
             title={isOnHold ? 'Locked: HBL is on hold' : 'Download House B/L PDF'}
           >
-            <Download size={15} />
-            <span>Download Official PDF</span>
+            {isDownloadingPdf ? (
+              <>
+                <Loader2 size={15} className="spinner" style={{ animation: 'spin 1s linear infinite' }} />
+                <span>Downloading PDF...</span>
+              </>
+            ) : (
+              <>
+                <Download size={15} />
+                <span>Download Official PDF</span>
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -103,6 +166,7 @@ export const HouseBLViewer = ({ hbl, onNavigate }) => {
 
       {/* Printable Document Container */}
       <div
+        id="printable-house-bl-doc"
         className="printable-document-hbl card"
         style={{
           background: '#FFFFFF',
@@ -142,9 +206,9 @@ export const HouseBLViewer = ({ hbl, onNavigate }) => {
           <div>
             <BrandLogo variant="dark" size="default" />
             <div style={{ fontSize: '0.75rem', color: '#475569', marginTop: '0.4rem', lineHeight: 1.35 }}>
-              <strong>VI Customs Brokers &amp; Logistics</strong><br />
-              8400 NW 36th Street, Suite 500, Miami, FL 33166, USA<br />
-              Tel: +1 (305) 555-5377 | FMC-OTI #028914N
+              <strong>{carrierDisplayName}</strong><br />
+              {settings?.companyProfile?.addressLine1 || '8400 NW 36th Street, Suite 500, Miami, FL 33166, USA'}<br />
+              Tel: {settings?.companyProfile?.phone || '+1 (305) 555-5377'} | {settings?.companyProfile?.fmcNumber || 'FMC-OTI #028914N'}
             </div>
           </div>
 
@@ -181,11 +245,11 @@ export const HouseBLViewer = ({ hbl, onNavigate }) => {
           <div style={{ padding: '0.65rem', borderBottom: '1px solid #0A192F' }}>
             <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>2. CARRIER &amp; ROUTING REFERENCES</div>
             <div style={{ fontWeight: 700, fontSize: '0.85rem', marginTop: '2px' }}>
-              KERS Non-Vessel Operating Common Carrier (NVOCC)
+              {carrierDisplayName} Non-Vessel Operating Common Carrier (NVOCC)
             </div>
             <div style={{ fontSize: '0.75rem', color: '#334155', marginTop: '4px' }}>
               <strong>Terms:</strong> {hbl.freightTerms || 'Freight Prepaid'}<br />
-              <strong>Linked WRs:</strong> {hbl.warehouseReceiptIds?.join(', ') || 'Direct'}
+              <strong>Linked WRs:</strong> {resolvedWrNumbers.length > 0 ? resolvedWrNumbers.join(', ') : 'Direct'}
             </div>
           </div>
 
@@ -280,7 +344,7 @@ export const HouseBLViewer = ({ hbl, onNavigate }) => {
                   <td style={{ padding: '0.75rem 0.5rem', borderRight: '1px solid #E2E8F0' }}>
                     <div style={{ fontWeight: 600 }}>{hbl.cargoDescription}</div>
                     <div style={{ fontSize: '0.7rem', color: '#64748B' }}>
-                      Linked Warehouse Receipts: {hbl.warehouseReceiptIds?.join(', ') || 'N/A'}
+                      Linked Warehouse Receipts: {resolvedWrNumbers.length > 0 ? resolvedWrNumbers.join(', ') : (hbl.warehouseReceiptIds?.join(', ') || 'N/A')}
                     </div>
                   </td>
                   <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right', borderRight: '1px solid #E2E8F0' }}>
@@ -311,25 +375,25 @@ export const HouseBLViewer = ({ hbl, onNavigate }) => {
           <div>
             <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#166534' }}>OCEAN FREIGHT</div>
             <div style={{ fontWeight: 800, color: '#0A192F' }}>
-              ${hbl.freightCharges?.oceanFreightAmount?.toFixed(2) || (hbl.totalCft ? (hbl.totalCft * 3.5).toFixed(2) : '150.00')} USD
+              ${oceanCharge} USD
             </div>
           </div>
           <div>
             <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#166534' }}>CFS &amp; TERMINAL FEE</div>
             <div style={{ fontWeight: 700 }}>
-              ${hbl.freightCharges?.terminalHandlingFee?.toFixed(2) || '35.00'} USD
+              ${terminalFee} USD
             </div>
           </div>
           <div>
             <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#166534' }}>DOCUMENTATION FEE</div>
             <div style={{ fontWeight: 700 }}>
-              ${hbl.freightCharges?.documentationFee?.toFixed(2) || '50.00'} USD
+              ${docFee} USD
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: '0.6rem', fontWeight: 800, color: '#166534' }}>TOTAL CHARGES ({hbl.freightTerms?.toUpperCase() || 'PREPAID'})</div>
             <div style={{ fontWeight: 900, color: '#16A34A', fontSize: '0.95rem', fontFamily: 'JetBrains Mono, monospace' }}>
-              ${hbl.freightCharges?.totalAmount?.toFixed(2) || (hbl.totalCft ? (hbl.totalCft * 3.5 + 85).toFixed(2) : '235.00')} USD
+              ${totalCharge} USD
             </div>
           </div>
         </div>
@@ -347,10 +411,10 @@ export const HouseBLViewer = ({ hbl, onNavigate }) => {
 
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', textAlign: 'center' }}>
             <div style={{ width: '100%', borderBottom: '1px solid #0A192F', paddingBottom: '0.25rem', marginBottom: '0.25rem', fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: '0.85rem', color: '#0284C7' }}>
-              Sarah Jenkins (Documentation Officer)
+              {hbl.issuedBy || (currentUser?.name ? `${currentUser.name} (${currentUser.role || 'Documentation Officer'})` : 'Authorized Documentation Officer')}
             </div>
             <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748B' }}>
-              AUTHORIZED SIGNATURE FOR VI Logistics
+              AUTHORIZED SIGNATURE FOR {carrierDisplayName}
             </div>
           </div>
         </div>

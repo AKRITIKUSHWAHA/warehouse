@@ -6,6 +6,10 @@ import { successResponse } from '../../common/utils/response.js';
 export class TrackingController {
   constructor(private readonly service: TrackingService = trackingService) {}
 
+  list = async (_request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+    reply.send(successResponse({ status: 'active', message: 'Tracking service ready. Pass trackingNumber to query consignment details.' }));
+  };
+
   lookup = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     const { trackingNumber } = trackingLookupSchema.parse(request.params);
     const result = await this.service.track(trackingNumber);
@@ -19,3 +23,4 @@ export class TrackingController {
 }
 
 export const trackingController = new TrackingController();
+

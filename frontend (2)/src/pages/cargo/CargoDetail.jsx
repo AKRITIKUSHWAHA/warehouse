@@ -193,7 +193,7 @@ export const CargoDetail = ({ cargoId, onNavigate }) => {
             </div>
 
             {/* Metrics Breakdown */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', background: '#F8FAFC', padding: '1rem', borderRadius: '8px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', background: '#F8FAFC', padding: '1rem', borderRadius: '8px', border: '1px solid #E2E8F0', textAlign: 'center' }} className="grid-cols-3-mobile">
               <div>
                 <div style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 700 }}>PACKAGES</div>
                 <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0A192F' }}>{activeCargo.packageCount} {activeCargo.packageType}</div>

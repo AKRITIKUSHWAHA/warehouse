@@ -590,10 +590,11 @@ export const userService = {
       const payload = {
         name: data.name,
         email: data.email,
-        password: data.password || 'password123',
+        password: data.password,
         roleKey: data.roleKey || 'operations',
         department: data.department || 'Operations',
         phone: data.phone || '',
+        status: data.status || 'Active',
       };
       const res = await apiClient.post('users', payload);
       if (res && res.data) {
@@ -623,6 +624,7 @@ export const userService = {
       department: data.department || "Operations & Freight Logistics",
       avatar: data.avatar || initials,
       status: data.status || "Active",
+      password: data.password,
       lastLogin: "Never"
     };
 
@@ -644,7 +646,14 @@ export const userService = {
     try {
       const res = await apiClient.patch(`users/${id}`, updates);
       if (res && res.data) {
-        return res.data;
+        const updatedUser = res.data;
+        const list = getStored(KEYS.USERS);
+        const index = list.findIndex(item => item.id === id || item.email === id);
+        if (index !== -1) {
+          list[index] = { ...list[index], ...updatedUser };
+          setStored(KEYS.USERS, list);
+        }
+        return updatedUser;
       }
     } catch (e) {
       console.warn('[userService] API update user failed, using local storage:', e.message);

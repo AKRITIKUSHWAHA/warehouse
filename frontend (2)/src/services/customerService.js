@@ -193,12 +193,13 @@ export const customerService = {
       list[index] = merged;
       setStored(KEYS.CUSTOMERS, list);
 
+      const refNumber = merged.customerNumber || id;
       await auditService.logAction(
         currentUser,
         "Customer",
         "Updated Customer Profile",
-        id,
-        `Updated customer profile for ${merged.name} (${id}).`
+        refNumber,
+        `Updated customer profile for ${merged.name} (${refNumber}).`
       );
 
       return merged;
@@ -223,12 +224,13 @@ export const customerService = {
     const filtered = list.filter(item => item.id !== id && item.customerNumber !== id);
     setStored(KEYS.CUSTOMERS, filtered);
 
+    const refNumber = existing?.customerNumber || id;
     await auditService.logAction(
       currentUser,
       "Customer",
       "Deleted Customer Profile",
-      id,
-      `Deleted customer profile ${existing?.name || id} (${id}).`
+      refNumber,
+      `Deleted customer profile ${existing?.name || refNumber} (${refNumber}).`
     );
 
     return true;

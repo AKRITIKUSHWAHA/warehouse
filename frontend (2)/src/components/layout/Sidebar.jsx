@@ -22,34 +22,37 @@ import {
   Shield,
   Building2,
   Tag,
-  Printer
+  Printer,
+  X
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose }) => {
+export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed = false }) => {
   const { currentUser, isAgent, switchUser, logout, usersList } = useAuth();
 
   const roleKey = currentUser?.roleKey || 'super_admin';
 
-  // Build role-filtered navigation menu
+  // Build role-filtered navigation menu strictly matching client requirements
   const getNavSections = () => {
-    // 1. WAREHOUSE INTAKE SPECIALIST (Carlos Mendez)
+    // 1. WAREHOUSE & OPERATIONS FLOOR (Carlos Mendez)
     if (roleKey === 'warehouse') {
       return [
         {
-          title: 'WAREHOUSE & OPERATIONS',
+          title: 'CARGO INTAKE & INVENTORY',
           items: [
-            { id: 'dashboard', label: 'Operations Dashboard', icon: LayoutDashboard },
-            { id: 'customers', label: 'Customers', icon: Users },
+            { id: 'dashboard', label: 'Overview Dashboard', icon: LayoutDashboard },
+            { id: 'customers', label: 'Customers & Consignees', icon: Users },
             { id: 'warehouse-receipts', label: 'Warehouse Receipts', icon: Package },
             { id: 'cargo', label: 'Cargo Inventory', icon: Box },
-            { id: 'house-bills', label: 'House B/Ls', icon: FileText },
-            { id: 'documents', label: 'Labels & Docs', icon: Tag },
-            { id: 'consolidations', label: 'Consolidations', icon: Layers },
-            { id: 'shipments', label: 'Shipments', icon: Ship },
-            { id: 'containers', label: 'Containers', icon: Box },
-            { id: 'vessels', label: 'Vessels & Voyages', icon: Anchor },
-            { id: 'tracking', label: 'Tracking', icon: Search }
+            { id: 'documents', label: 'Labels & Printouts', icon: Tag }
+          ]
+        },
+        {
+          title: 'PACKING & TRACKING',
+          items: [
+            { id: 'house-bills', label: 'House Bills of Lading', icon: FileText },
+            { id: 'consolidations', label: 'Container Packing', icon: Layers },
+            { id: 'tracking', label: 'Search & Track Cargo', icon: Search }
           ]
         }
       ];
@@ -59,19 +62,25 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose }) => {
     if (roleKey === 'operations') {
       return [
         {
-          title: 'WAREHOUSE & OPERATIONS',
+          title: 'WAREHOUSE & CARGO',
           items: [
-            { id: 'dashboard', label: 'Operations Dashboard', icon: LayoutDashboard },
-            { id: 'customers', label: 'Customers', icon: Users },
+            { id: 'dashboard', label: 'Operations Overview', icon: LayoutDashboard },
+            { id: 'customers', label: 'Customers & Consignees', icon: Users },
             { id: 'warehouse-receipts', label: 'Warehouse Receipts', icon: Package },
             { id: 'cargo', label: 'Cargo Inventory', icon: Box },
-            { id: 'house-bills', label: 'House B/Ls', icon: FileText },
-            { id: 'documents', label: 'Labels & Docs', icon: Tag },
-            { id: 'consolidations', label: 'Consolidations', icon: Layers },
-            { id: 'shipments', label: 'Shipments', icon: Ship },
+            { id: 'documents', label: 'Labels & Printouts', icon: Tag }
+          ]
+        },
+        {
+          title: 'SHIPMENTS & CONSOLIDATION',
+          items: [
+            { id: 'house-bills', label: 'House Bills of Lading', icon: FileText },
+            { id: 'consolidations', label: 'Container Consolidation', icon: Layers },
+            { id: 'shipments', label: 'Ocean Shipments', icon: Ship },
             { id: 'containers', label: 'Containers', icon: Box },
-            { id: 'vessels', label: 'Vessels & Voyages', icon: Anchor },
-            { id: 'tracking', label: 'Tracking', icon: Search }
+            { id: 'vessels', label: 'Vessels & Trips', icon: Anchor },
+            { id: 'tracking', label: 'Cargo Tracking', icon: Search },
+            { id: 'history', label: 'Shipment History', icon: History }
           ]
         }
       ];
@@ -81,67 +90,79 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose }) => {
     if (roleKey === 'documentation') {
       return [
         {
-          title: 'DOCUMENTATION & OPERATIONS',
+          title: 'CARGO & RECEIPTS',
           items: [
             { id: 'dashboard', label: 'Documentation Desk', icon: LayoutDashboard },
-            { id: 'customers', label: 'Customers', icon: Users },
+            { id: 'customers', label: 'Customers & Consignees', icon: Users },
             { id: 'warehouse-receipts', label: 'Warehouse Receipts', icon: Package },
-            { id: 'cargo', label: 'Cargo Inventory', icon: Box },
-            { id: 'bills-of-lading', label: 'Bills of Lading (MBL & HBL)', icon: FileText },
+            { id: 'documents', label: 'PDF Archive & Labels', icon: FileStack }
+          ]
+        },
+        {
+          title: 'BILLS & MANIFESTS',
+          items: [
+            { id: 'house-bills', label: 'House Bills of Lading', icon: FileText },
+            { id: 'bills-of-lading', label: 'Master Bills (MBL)', icon: FileText },
+            { id: 'manifests', label: 'Customs Manifests', icon: FileSpreadsheet },
             { id: 'consolidations', label: 'Consolidations', icon: Layers },
             { id: 'containers', label: 'Containers', icon: Box },
-            { id: 'vessels', label: 'Vessels & Voyages', icon: Anchor },
-            { id: 'manifests', label: 'Manifests', icon: FileSpreadsheet },
-            { id: 'documents', label: 'Documents & Labels', icon: FileStack },
-            { id: 'tracking', label: 'Tracking', icon: Search },
+            { id: 'vessels', label: 'Vessels & Trips', icon: Anchor },
             { id: 'history', label: 'Shipment History', icon: History }
           ]
         }
       ];
     }
 
-    // 4. AGENT PORTAL (David Cartwright - Nassau Hub)
+    // 4. AGENT PORTAL (David Cartwright - Assigned Port Hub)
     if (roleKey === 'agent') {
       return [
         {
-          title: 'AGENT PORTAL (NASSAU HUB)',
+          title: 'AGENT OPERATIONS',
           items: [
             { id: 'agent-dashboard', label: 'Agent Dashboard', icon: LayoutDashboard },
             { id: 'shipments', label: 'My Assigned Shipments', icon: Ship },
-            { id: 'consolidations', label: 'My Consolidations', icon: Layers },
-            { id: 'manifests', label: 'My Ocean Manifests', icon: FileSpreadsheet },
-            { id: 'bills-of-lading', label: 'Documents & B/Ls', icon: FileText },
-            { id: 'cargo', label: 'Cargo Receiving', icon: Box },
+            { id: 'consolidations', label: 'Container Arrivals', icon: Layers },
+            { id: 'manifests', label: 'Port Manifests & Docs', icon: FileSpreadsheet },
+            { id: 'bills-of-lading', label: 'Release Documents & B/Ls', icon: FileText },
+            { id: 'cargo', label: 'Cargo Intake at Port', icon: Box },
             { id: 'tracking', label: 'Port Tracking', icon: Search }
           ]
         }
       ];
     }
 
-    // 5. SUPER ADMIN (Marcus Vance - Full HQ & Global Operations)
+    // 5. SUPER ADMIN (Marcus Vance - Full HQ Access)
     return [
       {
-        title: '',
+        title: 'CARGO & INTAKE',
         items: [
-          { id: 'dashboard', label: 'Admin Dashboard', icon: LayoutDashboard },
-          { id: 'users', label: 'Users & Roles', icon: ShieldCheck },
-          { id: 'audit', label: 'Audit Trail', icon: Activity },
-          { id: 'history', label: 'Shipment History', icon: History },
-          { id: 'settings', label: 'Settings', icon: Settings }
+          { id: 'dashboard', label: 'System Overview', icon: LayoutDashboard },
+          { id: 'customers', label: 'Customers & Consignees', icon: Users },
+          { id: 'warehouse-receipts', label: 'Warehouse Receipts', icon: Package },
+          { id: 'cargo', label: 'Cargo Inventory', icon: Box },
+          { id: 'documents', label: 'Labels & Printouts', icon: FileStack }
         ]
       },
       {
-        title: 'OPERATIONS OVERVIEW',
+        title: 'LOGISTICS & DOCUMENTATION',
         items: [
-          { id: 'customers', label: 'Customers', icon: Users },
-          { id: 'warehouse-receipts', label: 'Warehouse Receipts', icon: Package },
-          { id: 'cargo', label: 'Cargo Inventory', icon: Box },
-          { id: 'consolidations', label: 'Consolidations', icon: Layers },
-          { id: 'shipments', label: 'Shipments', icon: Ship },
-          { id: 'bills-of-lading', label: 'Bills of Lading', icon: FileText },
-          { id: 'manifests', label: 'Manifests', icon: FileText },
+          { id: 'house-bills', label: 'House Bills of Lading', icon: FileText },
+          { id: 'consolidations', label: 'Container Consolidation', icon: Layers },
+          { id: 'shipments', label: 'Ocean Shipments', icon: Ship },
+          { id: 'bills-of-lading', label: 'Master Bills of Lading', icon: FileText },
+          { id: 'manifests', label: 'Customs Manifests', icon: FileSpreadsheet },
           { id: 'containers', label: 'Containers', icon: Box },
-          { id: 'vessels', label: 'Vessels & Voyages', icon: Anchor }
+          { id: 'vessels', label: 'Vessels & Trips', icon: Anchor },
+          { id: 'tracking', label: 'Tracking Portal', icon: Search }
+        ]
+      },
+      {
+        title: 'SYSTEM & GOVERNANCE',
+        items: [
+          { id: 'users', label: 'Users & Roles', icon: ShieldCheck },
+          { id: 'audit', label: 'Activity Logs', icon: Activity },
+          { id: 'history', label: 'Shipment Archive', icon: History },
+          { id: 'settings', label: 'System Settings', icon: Settings }
         ]
       }
     ];
@@ -151,24 +172,33 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose }) => {
 
   return (
     <>
-      {/* Mobile Backdrop */}
+      {/* Mobile Drawer Backdrop */}
       {isOpen && (
         <div
-          className="modal-backdrop no-print"
-          style={{ zIndex: 998, background: 'rgba(10, 25, 47, 0.6)' }}
+          className="sidebar-backdrop no-print"
           onClick={onClose}
         />
       )}
 
       <aside
-        className={`sidebar no-print ${isOpen ? 'open' : ''}`}
+        className={`sidebar no-print ${isOpen ? 'open' : ''} ${isCollapsed ? 'collapsed' : ''}`}
         style={{
           color: '#FFFFFF'
         }}
       >
         {/* Sidebar Header */}
-        <div style={{ padding: '1.25rem 2.5rem 1rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-          <BrandLogo variant="light" size="default" />
+        <div style={{ padding: '1.25rem 1.5rem 1rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <BrandLogo variant="light" size="default" />
+            <button
+              onClick={onClose}
+              className="show-mobile-only btn btn-ghost btn-icon"
+              style={{ color: '#94A3B8', padding: '4px' }}
+              aria-label="Close navigation"
+            >
+              <X size={18} />
+            </button>
+          </div>
           <div style={{
             marginTop: '0.65rem',
             background: 'rgba(56, 189, 248, 0.1)',

@@ -46,8 +46,14 @@ export class BillsOfLadingController {
   clearHold = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     const { id } = request.params as { id: string };
     const currentUser = request.user.name || 'System User';
+    const body = (request.body as any) || {};
 
-    const updated = await this.service.clearHold(id, currentUser);
+    const updated = await this.service.clearHold(
+      id,
+      currentUser,
+      body.notes || body.clearanceNotes,
+      body.authRef || body.reference || body.authorizationReference
+    );
     reply.send(successResponse(updated, 'Hold cleared and Bill of Lading RELEASED successfully'));
   };
 

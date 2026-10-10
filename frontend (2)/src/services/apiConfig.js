@@ -50,22 +50,23 @@ export async function apiFetch(endpoint, options = {}, isRetry = false) {
   try {
     const response = await fetch(url, config);
 
-    // If 401 Unauthorized, automatically re-authenticate once and retry
-    if (response.status === 401 && !isRetry && !endpoint.includes('/auth/login') && typeof window !== 'undefined') {
+    // If 401 Unauthorized, automatically refresh session once using active user session and retry
+    if (response.status === 401 && !isRetry && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/switch-user') && typeof window !== 'undefined') {
       try {
         const activeUserStr = localStorage.getItem('kers_active_user');
         const activeUser = activeUserStr ? JSON.parse(activeUserStr) : null;
-        const email = activeUser?.email || 'operations@caribbeanexpressbahamas.com';
-        const loginRes = await fetch(`${API_BASE_URL}/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password: 'Password123!' })
-        });
-        const loginData = await loginRes.json();
-        const freshToken = loginData?.data?.token || loginData?.data?.accessToken;
-        if (freshToken) {
-          setAuthToken(freshToken);
-          return apiFetch(endpoint, options, true);
+        if (activeUser?.id || activeUser?.email) {
+          const switchRes = await fetch(`${API_BASE_URL}/auth/switch-user`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: activeUser.id, email: activeUser.email })
+          });
+          const switchData = await switchRes.json();
+          const freshToken = switchData?.data?.token;
+          if (freshToken) {
+            setAuthToken(freshToken);
+            return apiFetch(endpoint, options, true);
+          }
         }
       } catch (reAuthErr) {
         // proceed to normal error parsing below

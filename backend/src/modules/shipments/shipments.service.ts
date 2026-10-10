@@ -1,6 +1,6 @@
 import { eq, or } from 'drizzle-orm';
 import { db } from '../../db/index.js';
-import { warehouseReceipts, trackingEvents, TrackingCheckpoint } from '../../db/schema/index.js';
+import { warehouseReceipts, trackingEvents, TrackingCheckpoint, consolidations } from '../../db/schema/index.js';
 import { ShipmentsRepository, shipmentsRepository } from './shipments.repository.js';
 import { ShipmentFilterParams, CreateShipmentInput, UpdateShipmentInput } from './shipments.types.js';
 import { NotFoundError } from '../../common/errors/not-found-error.js';
@@ -201,7 +201,9 @@ export class ShipmentsService {
     }
 
     // Sync tracking checkpoints if status changed
-    if (input.status) {
+    if (input.trackingCheckpoints && Array.isArray(input.trackingCheckpoints)) {
+      updatePayload.trackingCheckpoints = input.trackingCheckpoints;
+    } else if (input.status) {
       const chks = ((existing.trackingCheckpoints as TrackingCheckpoint[]) || []).map(chk => {
         if (chk.stage.toLowerCase() === input.status!.toLowerCase()) {
           return { ...chk, status: 'Completed' as const, date: new Date().toISOString().split('T')[0] };
@@ -221,6 +223,20 @@ export class ShipmentsService {
           )
         )
         .catch(() => {});
+
+      // Sync linked consolidation status
+      if (existing.consolidationId) {
+        const isCnsUuid = UUID_REGEX.test(existing.consolidationId);
+        const cnsCond = isCnsUuid
+          ? or(eq(consolidations.id, existing.consolidationId), eq(consolidations.consolidationNumber, existing.consolidationId))
+          : eq(consolidations.consolidationNumber, existing.consolidationId);
+
+        await db
+          .update(consolidations)
+          .set({ status: input.status, updatedAt: new Date() })
+          .where(cnsCond)
+          .catch(() => {});
+      }
     }
 
     // Link any newly assigned warehouse receipts

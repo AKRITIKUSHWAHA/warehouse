@@ -18,6 +18,11 @@ export async function warehouseRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.DOCUMENTATION_STAFF, ROLES.OPERATIONS, ROLES.WAREHOUSE)] },
     warehouseController.create
   );
+  app.put(
+    '/:id',
+    { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.DOCUMENTATION_STAFF, ROLES.OPERATIONS, ROLES.WAREHOUSE)] },
+    warehouseController.update
+  );
   app.patch(
     '/:id',
     { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.DOCUMENTATION_STAFF, ROLES.OPERATIONS, ROLES.WAREHOUSE)] },

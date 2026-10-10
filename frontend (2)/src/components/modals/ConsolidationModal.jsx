@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Layers, X, Save } from 'lucide-react';
+import { useAppData } from '../../context/AppDataContext';
 
 export const ConsolidationModal = ({
   isOpen,
@@ -7,16 +8,21 @@ export const ConsolidationModal = ({
   onSave,
   consolidation = null
 }) => {
+  const { ports, vessels } = useAppData();
   const hasInitializedRef = useRef(false);
+
+  const getPortCode = (p) => p?.portCode || p?.code || 'PORT';
+  const defaultPort = ports[0] ? `${getPortCode(ports[0])} - ${ports[0].name}` : 'NAS - Nassau, Bahamas';
+
   const [formData, setFormData] = useState({
     title: '',
     containerNumber: '',
     sealNumber: '',
     containerType: '40ft High Cube Dry',
-    vesselName: '',
+    vesselName: vessels[0]?.name || '',
     voyageNumber: '',
     carrier: 'Tropical Shipping',
-    destinationPort: 'NAS - Nassau, Bahamas',
+    destinationPort: defaultPort,
     status: 'Loaded'
   });
 
@@ -34,14 +40,14 @@ export const ConsolidationModal = ({
         containerNumber: consolidation.containerNumber || '',
         sealNumber: consolidation.sealNumber || '',
         containerType: consolidation.containerType || '40ft High Cube Dry',
-        vesselName: consolidation.vesselName || '',
+        vesselName: consolidation.vesselName || (vessels[0]?.name || ''),
         voyageNumber: consolidation.voyageNumber || '',
         carrier: consolidation.carrier || 'Tropical Shipping',
-        destinationPort: consolidation.destinationPort || 'NAS - Nassau, Bahamas',
+        destinationPort: consolidation.destinationPort || defaultPort,
         status: consolidation.status || 'Loaded'
       });
     }
-  }, [consolidation, isOpen]);
+  }, [consolidation, isOpen, defaultPort, vessels]);
 
   if (!isOpen) return null;
 
@@ -161,11 +167,15 @@ export const ConsolidationModal = ({
                   value={formData.destinationPort}
                   onChange={(e) => setFormData({ ...formData, destinationPort: e.target.value })}
                 >
-                  <option value="NAS - Nassau, Bahamas">NAS - Nassau, Bahamas</option>
-                  <option value="FPO - Freeport, Grand Bahama">FPO - Freeport, Grand Bahama</option>
-                  <option value="GCM - George Town, Grand Cayman">GCM - George Town, Grand Cayman</option>
-                  <option value="BGI - Bridgetown, Barbados">BGI - Bridgetown, Barbados</option>
-                  <option value="KIN - Kingston, Jamaica">KIN - Kingston, Jamaica</option>
+                  {ports.map(p => {
+                    const pCode = getPortCode(p);
+                    const val = `${pCode} - ${p.name}`;
+                    return (
+                      <option key={`cns-dest-${p.id || pCode}`} value={val}>
+                        {pCode} — {p.name} ({p.island || p.country || 'Caribbean'})
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
 

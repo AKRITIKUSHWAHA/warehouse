@@ -4,28 +4,33 @@ import { Ship, ArrowLeft, Check } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
 
 export const CreateShipment = ({ onNavigate }) => {
-  const { createShipment, vessels, agents, shipments } = useAppData();
+  const { createShipment, vessels, agents, shipments, ports } = useAppData();
+
+  const getPortCode = (p) => p?.portCode || p?.code || 'PORT';
+  const defaultPortObj = ports.find(p => getPortCode(p) === 'NAS') || ports[0];
+  const defaultPortName = defaultPortObj ? `${defaultPortObj.name} (${getPortCode(defaultPortObj)})` : 'Nassau, Bahamas (BSNAS)';
+  const defaultPortCode = defaultPortObj ? getPortCode(defaultPortObj) : 'NAS';
 
   const [formData, setFormData] = useState({
     type: 'Master Ocean FCL',
     origin: 'Port of Miami (USMIA)',
-    destinationPort: 'Kingston, Jamaica',
-    destinationCode: 'KIN',
-    agentId: 'AGT-002',
-    agentName: 'Kingston Port Logistics Ltd.',
-    vesselName: 'MV Caribbean Carrier',
-    voyageNumber: 'V.2026-20W',
+    destinationPort: defaultPortName,
+    destinationCode: defaultPortCode,
+    agentId: agents[0]?.id || null,
+    agentName: agents[0]?.name || '',
+    vesselName: vessels[0]?.name || 'MV Caribbean Carrier',
+    voyageNumber: `VOY-2026-${Math.floor(100 + Math.random() * 900)}`,
     carrier: 'Tropical Shipping Line',
-    containerNumber: 'MSKU-948291-4',
+    containerNumber: '',
     containerType: "40' High Cube",
     sealNumber: `SEAL-VI-${Math.floor(10000 + Math.random() * 90000)}`,
-    totalPackages: 35,
-    totalWeightLbs: 8200,
-    totalWeightKg: 3719.5,
-    totalCft: 1420.0,
-    totalCbm: 40.21,
+    totalPackages: 1,
+    totalWeightLbs: 0,
+    totalWeightKg: 0,
+    totalCft: 0,
+    totalCbm: 0,
     etd: new Date().toISOString().split('T')[0],
-    eta: '2026-09-08'
+    eta: ''
   });
 
   const handleSubmit = async (e) => {
@@ -77,14 +82,20 @@ export const CreateShipment = ({ onNavigate }) => {
               value={formData.destinationPort}
               onChange={(e) => {
                 const dest = e.target.value;
-                const code = dest.includes('Kingston') ? 'KIN' : dest.includes('Nassau') ? 'NAS' : dest.includes('Bridgetown') ? 'BGI' : 'POS';
+                const matched = ports.find(p => `${p.name} (${getPortCode(p)})` === dest || p.name === dest);
+                const code = matched ? getPortCode(matched) : (dest.includes('(') ? dest.split('(')[1].replace(')', '') : 'NAS');
                 setFormData({ ...formData, destinationPort: dest, destinationCode: code });
               }}
             >
-              <option value="Kingston, Jamaica">Kingston, Jamaica (JMKIN)</option>
-              <option value="Nassau, Bahamas">Nassau, Bahamas (BSNAS)</option>
-              <option value="Bridgetown, Barbados">Bridgetown, Barbados (BBBGI)</option>
-              <option value="Port of Spain, Trinidad">Port of Spain, Trinidad (TTPOS)</option>
+              {ports.map(p => {
+                const pCode = getPortCode(p);
+                const label = `${p.name} (${pCode})`;
+                return (
+                  <option key={`shp-dest-${p.id || pCode}`} value={label}>
+                    {p.name} ({pCode}) — {p.island || p.country || 'Port'}
+                  </option>
+                );
+              })}
             </select>
           </div>
         </div>

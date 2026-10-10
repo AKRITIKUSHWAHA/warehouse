@@ -1,17 +1,94 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { PageHeader } from '../../components/common/PageHeader';
 import { ResponsiveTable } from '../../components/tables/ResponsiveTable';
 import { Activity, ShieldAlert, CheckCircle2, User, Clock, FileText } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const AuditTrailList = () => {
-  const { auditLogs, fetchMenuApi } = useAppData();
+  const {
+    auditLogs = [],
+    warehouseReceipts = [],
+    shipments = [],
+    billsOfLading = [],
+    houseBills = [],
+    customers = [],
+    consolidations = [],
+    manifests = [],
+    fetchMenuApi
+  } = useAppData();
 
   React.useEffect(() => {
-    if (fetchMenuApi) {
+    if ((!auditLogs || auditLogs.length === 0) && fetchMenuApi) {
       fetchMenuApi('audit');
     }
   }, [fetchMenuApi]);
+
+  const resolveRecordRef = (item) => {
+    if (!item?.recordId || item.recordId === 'N/A') return 'N/A';
+    if (!UUID_REGEX.test(item.recordId)) return item.recordId;
+
+    const id = item.recordId;
+    const mod = (item.module || '').toLowerCase();
+
+    if (mod.includes('warehouse')) {
+      const found = warehouseReceipts.find(w => w.id === id || w.receiptNumber === id);
+      if (found?.receiptNumber) return found.receiptNumber;
+      return `WR-${id.slice(0, 8).toUpperCase()}`;
+    }
+    if (mod.includes('bill of lading') || mod === 'bl') {
+      const found = billsOfLading.find(b => b.id === id || b.blNumber === id);
+      if (found?.blNumber) return found.blNumber;
+      return `BL-${id.slice(0, 8).toUpperCase()}`;
+    }
+    if (mod.includes('house bill') || mod === 'hbl') {
+      const found = houseBills.find(h => h.id === id || h.hblNumber === id);
+      if (found?.hblNumber) return found.hblNumber;
+      return `HBL-${id.slice(0, 8).toUpperCase()}`;
+    }
+    if (mod.includes('shipment')) {
+      const found = shipments.find(s => s.id === id || s.shipmentNumber === id);
+      if (found?.shipmentNumber) return found.shipmentNumber;
+      return `SHP-${id.slice(0, 8).toUpperCase()}`;
+    }
+    if (mod.includes('manifest')) {
+      const found = manifests.find(m => m.id === id || m.manifestNumber === id);
+      if (found?.manifestNumber) return found.manifestNumber;
+      return `MNF-${id.slice(0, 8).toUpperCase()}`;
+    }
+    if (mod.includes('consolidation')) {
+      const found = consolidations.find(c => c.id === id || c.consolidationNumber === id);
+      if (found?.consolidationNumber) return found.consolidationNumber;
+      return `CNS-${id.slice(0, 8).toUpperCase()}`;
+    }
+    if (mod.includes('customer')) {
+      const found = customers.find(c => c.id === id || c.customerNumber === id);
+      if (found?.customerNumber) return found.customerNumber;
+      return `CUST-${id.slice(0, 8).toUpperCase()}`;
+    }
+
+    return id.slice(0, 8).toUpperCase();
+  };
+
+  const resolveDescription = (item, cleanRef) => {
+    if (!item?.description) return '';
+    if (!item.recordId || !UUID_REGEX.test(item.recordId)) return item.description;
+
+    return item.description.replace(new RegExp(item.recordId, 'gi'), cleanRef);
+  };
+
+  const enrichedAuditLogs = useMemo(() => {
+    return (auditLogs || []).map(item => {
+      const cleanRef = resolveRecordRef(item);
+      const cleanDesc = resolveDescription(item, cleanRef);
+      return {
+        ...item,
+        recordId: cleanRef,
+        description: cleanDesc
+      };
+    });
+  }, [auditLogs, warehouseReceipts, shipments, billsOfLading, houseBills, customers, consolidations, manifests]);
 
   const columns = [
     {
@@ -89,7 +166,7 @@ export const AuditTrailList = () => {
 
       <ResponsiveTable
         columns={columns}
-        data={auditLogs}
+        data={enrichedAuditLogs}
         searchPlaceholder="Search user, action, module, record ID..."
         filterOptions={['All', 'Bill of Lading', 'Warehouse Receipt', 'Consolidation', 'Shipping Manifest', 'Agent Portal']}
         pageSize={8}

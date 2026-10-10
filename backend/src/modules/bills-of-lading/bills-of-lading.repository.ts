@@ -121,6 +121,37 @@ export class BillsOfLadingRepository {
     return Number(total);
   }
 
+  async getNextBlNumber(): Promise<string> {
+    const existing = await db
+      .select({ blNumber: billsOfLading.blNumber })
+      .from(billsOfLading);
+
+    let maxSeq = 0;
+    const existingSet = new Set<string>();
+
+    for (const row of existing) {
+      if (row.blNumber) {
+        existingSet.add(row.blNumber.trim());
+        const match = row.blNumber.match(/(\d+)$/);
+        if (match) {
+          const num = parseInt(match[1], 10);
+          if (!isNaN(num) && num > maxSeq) {
+            maxSeq = num;
+          }
+        }
+      }
+    }
+
+    let next = maxSeq + 1;
+    let candidate = `BL-VI-2026-${String(next).padStart(4, '0')}`;
+    while (existingSet.has(candidate)) {
+      next++;
+      candidate = `BL-VI-2026-${String(next).padStart(4, '0')}`;
+    }
+
+    return candidate;
+  }
+
 
   async updateHoldStatus(id: string, status: string, holdDetails: HoldDetails) {
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);

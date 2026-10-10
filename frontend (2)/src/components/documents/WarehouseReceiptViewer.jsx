@@ -1,23 +1,45 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrandLogo } from '../common/BrandLogo';
 import { StatusBadge } from '../common/StatusBadge';
 import { BarcodeVisual, QrVisual } from '../common/BarcodeVisual';
-import { Printer, Download, Building2, FileText, Layers } from 'lucide-react';
+import { Printer, Download, Building2, FileText, Layers, Loader2 } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
+import { useAuth } from '../../context/AuthContext';
+import { useAppData } from '../../context/AppDataContext';
+import { downloadPdfFromElement } from '../../services/pdfService';
 
 export const WarehouseReceiptViewer = ({ receipt, onNavigate }) => {
   const { showToast } = useToast();
+  const { currentUser } = useAuth() || {};
+  const { settings } = useAppData() || {};
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
   if (!receipt) return null;
 
   const handlePrint = () => {
+    const prevTitle = document.title;
+    document.title = `Warehouse_Receipt_${receipt.receiptNumber || 'Document'}`;
     window.print();
+    setTimeout(() => {
+      document.title = prevTitle;
+    }, 1000);
     showToast(`Print layout loaded for Warehouse Receipt ${receipt.receiptNumber}.`, 'info', 'Printing Receipt');
   };
 
-  const handleDownloadPDF = () => {
-    window.print();
-    showToast(`Opening Print dialog for Warehouse Receipt ${receipt.receiptNumber}. Choose "Save as PDF" to download.`, 'success', 'Download PDF');
+  const handleDownloadPDF = async () => {
+    try {
+      setIsDownloadingPdf(true);
+      showToast(`Generating official PDF for Warehouse Receipt ${receipt.receiptNumber}...`, 'info', 'Preparing PDF');
+      const filename = `Warehouse_Receipt_${receipt.receiptNumber || 'Document'}.pdf`;
+      const docElement = document.getElementById('printable-warehouse-receipt-doc');
+      await downloadPdfFromElement(docElement, filename);
+      showToast(`Warehouse Receipt ${receipt.receiptNumber}.pdf downloaded successfully.`, 'success', 'Download Complete');
+    } catch (err) {
+      console.error('PDF download error:', err);
+      showToast(`PDF generation error: ${err.message}`, 'danger', 'Download Failed');
+    } finally {
+      setIsDownloadingPdf(false);
+    }
   };
 
   const customerDisplayName = receipt.customerName || receipt.customer || receipt.consignee || 'General Cargo Customer';
@@ -45,7 +67,7 @@ export const WarehouseReceiptViewer = ({ receipt, onNavigate }) => {
   const totalPieces = receipt.totalPieces || receipt.packageCount || 1;
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+    <div className="receipt-viewer-wrapper" style={{ maxWidth: '900px', margin: '0 auto' }}>
       {/* Top Action Bar */}
       <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', background: '#FFFFFF', padding: '0.75rem 1.25rem', borderRadius: '8px', border: '1px solid #E2E8F0', flexWrap: 'wrap', gap: '0.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -60,9 +82,18 @@ export const WarehouseReceiptViewer = ({ receipt, onNavigate }) => {
             <Printer size={15} />
             <span>Print Receipt</span>
           </button>
-          <button className="btn btn-primary btn-sm" onClick={handleDownloadPDF} id="btn-download-receipt-pdf">
-            <Download size={15} />
-            <span>Download PDF</span>
+          <button
+            className="btn btn-primary btn-sm"
+            onClick={handleDownloadPDF}
+            disabled={isDownloadingPdf}
+            id="btn-download-receipt-pdf"
+          >
+            {isDownloadingPdf ? (
+              <Loader2 size={15} className="animate-spin" />
+            ) : (
+              <Download size={15} />
+            )}
+            <span>{isDownloadingPdf ? 'Generating PDF...' : 'Download PDF'}</span>
           </button>
         </div>
       </div>
@@ -122,22 +153,28 @@ export const WarehouseReceiptViewer = ({ receipt, onNavigate }) => {
 
       {/* Printable Receipt Layout */}
       <div
-        className="card print-document-card"
+        id="printable-warehouse-receipt-doc"
+        className="card print-document-card printable-document-receipt"
         style={{
           background: '#FFFFFF',
           border: '2px solid #0A192F',
           borderRadius: '4px',
-          padding: '1.5rem',
+          padding: '1.25rem',
           color: '#0A192F',
-          fontFamily: 'Arial, Helvetica, sans-serif'
+          fontFamily: 'Arial, Helvetica, sans-serif',
+          width: '100%',
+          maxWidth: '820px',
+          margin: '0 auto',
+          boxSizing: 'border-box'
         }}
       >
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', borderBottom: '2px solid #0A192F', paddingBottom: '0.85rem', marginBottom: '0.85rem' }}>
           <div>
             <BrandLogo variant="dark" size="default" />
             <div style={{ fontSize: '0.75rem', color: '#475569', marginTop: '4px' }}>
-              CFS Miami Receiving Facility &amp; Cargo Hub<br />
-              8400 NW 36th Street, Miami, FL 33166 | Tel: +1 (305) 555-5377
+              {settings?.companyProfile?.companyName || 'CFS Miami Receiving Facility & Cargo Hub'}<br />
+              {settings?.companyProfile?.addressLine1 || '8400 NW 36th Street, Miami, FL 33166'}
+              {settings?.companyProfile?.phone ? ` | Tel: ${settings.companyProfile.phone}` : ' | Tel: +1 (305) 555-5377'}
             </div>
           </div>
 
@@ -155,7 +192,7 @@ export const WarehouseReceiptViewer = ({ receipt, onNavigate }) => {
         </div>
 
         {/* Customer & Shipper Box */}
-        <div className="grid grid-cols-2 doc-grid-2" style={{ border: '1px solid #0A192F', marginBottom: '0.85rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', border: '1px solid #0A192F', marginBottom: '0.85rem', width: '100%', boxSizing: 'border-box' }}>
           <div style={{ padding: '0.65rem', borderRight: '1px solid #0A192F' }}>
             <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748B' }}>SHIPPER / SUPPLIER ORIGIN</div>
             <div style={{ fontSize: '0.85rem', fontWeight: 700, marginTop: '2px' }}>{shipperDisplayName}</div>
@@ -164,31 +201,35 @@ export const WarehouseReceiptViewer = ({ receipt, onNavigate }) => {
           <div style={{ padding: '0.65rem' }}>
             <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748B' }}>CONSIGNEE &amp; DESTINATION AGENT</div>
             <div style={{ fontSize: '0.85rem', fontWeight: 700, marginTop: '2px' }}>{consigneeDisplayName}</div>
-            <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px' }}>Assigned Port Agent: <strong>{receipt.agentName || 'Caribbean Express Freight Ltd.'}</strong></div>
+            <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px' }}>Assigned Port Agent: <strong>{
+              (!receipt.agentName || (receipt.agentName === 'Caribbean Express Freight Ltd.' && receipt.destinationCode && receipt.destinationCode !== 'NAS'))
+                ? 'Unassigned (Direct Consignee Delivery)'
+                : receipt.agentName
+            }</strong></div>
           </div>
         </div>
 
         {/* Individual Package-Level Items Table */}
-        <div style={{ border: '1px solid #0A192F', marginBottom: '0.85rem', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <div style={{ border: '1px solid #0A192F', marginBottom: '0.85rem', width: '100%', boxSizing: 'border-box' }}>
           <div style={{ background: '#0A192F', color: '#FFFFFF', padding: '0.4rem 0.6rem', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
             Package-Level Inventory Breakdown ({pkgs.length} Line Items • {totalPieces} Pieces Total)
           </div>
-          <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem', tableLayout: 'fixed' }}>
             <thead>
               <tr style={{ background: '#F1F5F9', color: '#0A192F', textAlign: 'left', fontSize: '0.65rem', textTransform: 'uppercase', borderBottom: '1px solid #CBD5E1' }}>
-                <th style={{ padding: '0.45rem 0.5rem', width: '12%' }}>Pkg ID</th>
-                <th style={{ padding: '0.45rem 0.5rem', width: '15%' }}>Type</th>
-                <th style={{ padding: '0.45rem 0.5rem', width: '33%' }}>Description of Goods</th>
-                <th style={{ padding: '0.45rem 0.5rem', width: '15%' }}>Dimensions (L×W×H)</th>
+                <th style={{ padding: '0.45rem 0.5rem', width: '14%' }}>Pkg ID</th>
+                <th style={{ padding: '0.45rem 0.5rem', width: '13%' }}>Type</th>
+                <th style={{ padding: '0.45rem 0.5rem', width: '30%' }}>Description of Goods</th>
+                <th style={{ padding: '0.45rem 0.5rem', width: '17%' }}>Dimensions (L×W×H)</th>
                 <th style={{ padding: '0.45rem 0.5rem', width: '8%', textAlign: 'center' }}>Pieces</th>
-                <th style={{ padding: '0.45rem 0.5rem', width: '8%', textAlign: 'right' }}>Weight</th>
+                <th style={{ padding: '0.45rem 0.5rem', width: '9%', textAlign: 'right' }}>Weight</th>
                 <th style={{ padding: '0.45rem 0.5rem', width: '9%', textAlign: 'right' }}>Volume</th>
               </tr>
             </thead>
             <tbody>
               {pkgs.map((p, idx) => (
                 <tr key={p.id || idx} style={{ borderBottom: '1px solid #E2E8F0' }}>
-                  <td style={{ padding: '0.5rem', fontWeight: 700, fontFamily: 'JetBrains Mono, monospace' }}>
+                  <td style={{ padding: '0.5rem', fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', wordBreak: 'break-all' }}>
                     {p.id || `PKG-${idx + 1}`}
                   </td>
                   <td style={{ padding: '0.5rem' }}>
@@ -225,7 +266,7 @@ export const WarehouseReceiptViewer = ({ receipt, onNavigate }) => {
         </div>
 
         {/* Cargo Remarks & Barcode Row */}
-        <div className="grid grid-cols-2 doc-grid-2" style={{ border: '1px solid #0A192F', padding: '0.75rem', gap: '1rem', background: '#F8FAFC', marginBottom: '0.85rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', border: '1px solid #0A192F', padding: '0.75rem', gap: '1rem', background: '#F8FAFC', marginBottom: '0.85rem', width: '100%', boxSizing: 'border-box' }}>
           <div>
             <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748B' }}>CARGO INTAKE STATUS &amp; REMARKS</div>
             <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0A192F' }}>{receipt.status || 'Ready for Consolidation'}</div>
@@ -240,10 +281,10 @@ export const WarehouseReceiptViewer = ({ receipt, onNavigate }) => {
         </div>
 
         {/* Receiving Certification Signature */}
-        <div className="grid grid-cols-2 doc-grid-2" style={{ border: '1px solid #0A192F', padding: '0.75rem', gap: '1.5rem', background: '#FFFFFF', fontSize: '0.7rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', border: '1px solid #0A192F', padding: '0.75rem', gap: '1.5rem', background: '#FFFFFF', fontSize: '0.7rem', width: '100%', boxSizing: 'border-box' }}>
           <div>
             <div style={{ borderBottom: '1px solid #0A192F', paddingBottom: '0.4rem', marginBottom: '0.25rem', fontWeight: 700, color: '#0A192F' }}>
-              Carlos Mendez (CFS Receiving Clerk)
+              {receipt.receivedBy || (currentUser?.name ? `${currentUser.name} (${currentUser.role || 'CFS Receiving Operations'})` : 'Authorized CFS Receiving Clerk')}
             </div>
             <div style={{ fontSize: '0.65rem', color: '#64748B' }}>
               RECEIVED BY VI CFS OPERATIONS

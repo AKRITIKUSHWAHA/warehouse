@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrandLogo } from '../components/common/BrandLogo';
 import {
   LayoutDashboard,
@@ -13,7 +13,8 @@ import {
   UserCheck,
   ChevronRight,
   ExternalLink,
-  Layers
+  Layers,
+  X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { QuickSearchModal } from '../components/modals/QuickSearchModal';
@@ -25,8 +26,27 @@ export const AgentLayout = ({
   children
 }) => {
   const { currentUser, switchUser, logout } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 1024) {
+        setMobileDrawerOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleToggleSidebar = () => {
+    if (typeof window !== 'undefined' && window.innerWidth <= 1024) {
+      setMobileDrawerOpen(prev => !prev);
+    } else {
+      setSidebarCollapsed(prev => !prev);
+    }
+  };
 
   const agentTabs = [
     { id: 'agent-dashboard', label: 'Agent Dashboard', icon: LayoutDashboard },
@@ -38,27 +58,36 @@ export const AgentLayout = ({
 
   return (
     <div className="app-container">
-      {/* Mobile Backdrop */}
-      {sidebarOpen && (
+      {/* Mobile Drawer Backdrop */}
+      {mobileDrawerOpen && (
         <div
-          className="modal-backdrop no-print"
-          style={{ zIndex: 998 }}
-          onClick={() => setSidebarOpen(false)}
+          className="sidebar-backdrop no-print"
+          onClick={() => setMobileDrawerOpen(false)}
         />
       )}
 
       {/* Agent Sidebar */}
       <aside
-        className={`sidebar no-print ${sidebarOpen ? 'open' : ''}`}
+        className={`sidebar no-print ${mobileDrawerOpen ? 'open' : ''} ${sidebarCollapsed ? 'collapsed' : ''}`}
         style={{
           backgroundColor: '#0F172A',
           color: '#FFFFFF',
-          borderRight: '1px solid #334155'
+          borderRight: sidebarCollapsed ? 'none' : '1px solid #334155'
         }}
       >
         {/* Agent Header Branding */}
         <div style={{ padding: '1.25rem 1.25rem 1rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-          <BrandLogo variant="light" size="default" />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <BrandLogo variant="light" size="default" />
+            <button
+              onClick={() => setMobileDrawerOpen(false)}
+              className="show-mobile-only btn btn-ghost btn-icon"
+              style={{ color: '#94A3B8', padding: '4px' }}
+              aria-label="Close navigation"
+            >
+              <X size={18} />
+            </button>
+          </div>
           <div style={{
             marginTop: '0.65rem',
             background: 'rgba(217, 119, 6, 0.15)',
@@ -100,7 +129,7 @@ export const AgentLayout = ({
                 key={item.id}
                 onClick={() => {
                   onSelectTab(item.id);
-                  setSidebarOpen(false);
+                  setMobileDrawerOpen(false);
                 }}
                 style={{
                   display: 'flex',
@@ -165,7 +194,7 @@ export const AgentLayout = ({
         <header className="top-header no-print">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: 0 }}>
             <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
+              onClick={handleToggleSidebar}
               className="btn btn-ghost btn-icon"
               aria-label="Toggle agent navigation"
               style={{ flexShrink: 0 }}

@@ -111,13 +111,19 @@ export const portService = {
 
   async updatePort(id, updates, currentUser = "Super Admin") {
     let updatedPort = null;
+    const portCode = (updates.code || updates.portCode || '').toUpperCase().trim();
     try {
       const payload = {
         name: updates.name,
         island: updates.island,
         country: updates.country,
+        defaultAgent: updates.defaultAgent,
         status: updates.status,
       };
+      if (portCode) {
+        payload.portCode = portCode;
+        payload.code = portCode;
+      }
       const res = await apiClient.patch(`ports/${id}`, payload);
       if (res && res.data) {
         updatedPort = {
@@ -131,19 +137,23 @@ export const portService = {
     }
 
     const list = getStored(KEYS.PORTS);
-    const index = list.findIndex(item => item.id === id || item.code === id);
+    const index = list.findIndex(item => item.id === id || item.code === id || item.portCode === id);
     if (index !== -1) {
-      list[index] = updatedPort || {
+      list[index] = {
         ...list[index],
-        ...updates
+        ...updates,
+        ...(updatedPort || {}),
+        code: updatedPort?.code || portCode || list[index].code,
+        portCode: updatedPort?.portCode || portCode || list[index].portCode,
       };
       setStored(KEYS.PORTS, list);
 
+      const refNumber = list[index].code || list[index].portCode || id;
       await auditService.logAction(
         currentUser,
         "Port Management",
         "Updated Island Port Destination",
-        id,
+        refNumber,
         `Updated port destination details for ${list[index].code} - ${list[index].name}.`
       );
 
@@ -166,11 +176,12 @@ export const portService = {
     const filtered = list.filter(item => item.id !== id && item.code !== id);
     setStored(KEYS.PORTS, filtered);
 
+    const refNumber = existing.code || existing.portCode || id;
     await auditService.logAction(
       currentUser,
       "Port Management",
       "Deleted Island Port Destination",
-      id,
+      refNumber,
       `Deleted port destination ${existing.code} - ${existing.name}.`
     );
 

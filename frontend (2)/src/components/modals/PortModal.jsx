@@ -44,7 +44,7 @@ export const PortModal = ({
   useEffect(() => {
     if (port && isEdit) {
       setFormData({
-        code: port.code || '',
+        code: port.code || port.portCode || '',
         name: port.name || '',
         island: port.island || '',
         country: port.country || 'Bahamas',
@@ -83,7 +83,7 @@ export const PortModal = ({
               <Anchor size={20} />
             </div>
             <div>
-              <div className="modal-title">{isEdit ? `Edit Island Port (${formData.code})` : 'Add New Island Port Destination'}</div>
+              <div className="modal-title">{isEdit ? `Edit Island Port (${formData.code || port?.portCode || ''})` : 'Add New Island Port Destination'}</div>
               <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
                 Define island cargo discharge terminal and port code
               </div>

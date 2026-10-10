@@ -2,7 +2,20 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { successResponse } from '../../common/utils/response.js';
 import { db } from '../../db/index.js';
 import { desc } from 'drizzle-orm';
-import { warehouseReceipts, cargo, consolidations, shipments, billsOfLading, manifests, users, auditLogs, settings } from '../../db/schema/index.js';
+import {
+  warehouseReceipts,
+  cargo,
+  consolidations,
+  shipments,
+  billsOfLading,
+  manifests,
+  users,
+  auditLogs,
+  settings,
+  containers,
+  vessels,
+  documents
+} from '../../db/schema/index.js';
 
 export class MenusController {
   // STAGE 1: CFS Dashboard
@@ -19,23 +32,35 @@ export class MenusController {
         totalCbm += Number(w.totalCbm || 0);
       });
 
-      const bayOccupancy = [
-        { bay: 'Bay A-01', rack: 'Rack 1', status: 'Occupied', itemsCount: 4, locationCode: 'A-01-R1' },
-        { bay: 'Bay A-02', rack: 'Rack 3', status: 'Occupied', itemsCount: 2, locationCode: 'A-02-R3' },
-        { bay: 'Bay B-05', rack: 'Rack 2', status: 'Occupied', itemsCount: 3, locationCode: 'B-05-R2' },
-        { bay: 'Bay C-01', rack: 'Rack 4', status: 'Available', itemsCount: 0, locationCode: 'C-01-R4' }
-      ];
+      // Group staged receipts dynamically by warehouse staging location
+      const bayMap: Record<string, { count: number; items: string[] }> = {};
+      allWRs.forEach(w => {
+        const loc = w.warehouseLocation || 'Intake Staging';
+        if (!bayMap[loc]) bayMap[loc] = { count: 0, items: [] };
+        bayMap[loc].count += 1;
+        if (bayMap[loc].items.length < 3) {
+          bayMap[loc].items.push(w.receiptNumber || w.id);
+        }
+      });
+
+      const bayOccupancy = Object.entries(bayMap).map(([loc, data], idx) => ({
+        bay: loc,
+        rack: `Section ${idx + 1}`,
+        status: data.count > 0 ? 'Occupied' : 'Available',
+        itemsCount: data.count,
+        locationCode: loc.replace(/[^A-Za-z0-9]/g, '-').toUpperCase()
+      }));
 
       reply.send(successResponse({
         stageName: 'Stage 1: Cargo Receiving',
-        assignedUser: 'Carlos Mendez (Miami CFS Warehouse)',
+        assignedUser: 'CFS Warehouse Manager',
         menuName: 'CFS Dashboard',
         metrics: {
           totalWarehouseReceipts: totalReceipts,
           stagedCargoCount: stagedItems.length,
           totalVolumeCft: Number(totalCft.toFixed(2)),
           totalVolumeCbm: Number(totalCbm.toFixed(2)),
-          activeStagingBays: 3,
+          activeStagingBays: bayOccupancy.length,
         },
         bayOccupancy,
         recentReceipts: allWRs.slice(0, 5)
@@ -67,25 +92,46 @@ export class MenusController {
       const allWRs = await db.select().from(warehouseReceipts);
       const targetWR = id ? allWRs.find(w => w.id === id || w.receiptNumber === id) : allWRs[0];
 
+      if (!targetWR) {
+        reply.send(successResponse({
+          labelFormat: '4x6 Standard Thermal Barcode Cargo Label (Code 128)',
+          receiptNumber: 'N/A',
+          barcodeFormat: 'Code 128',
+          barcodeValue: '000000000',
+          shipper: 'No warehouse receipt found',
+          consignee: 'N/A',
+          destinationPort: 'N/A',
+          dimensions: { lengthInches: '0', widthInches: '0', heightInches: '0' },
+          weightLbs: '0',
+          weightKg: '0',
+          cft: '0',
+          cbm: '0',
+          stagingLocation: 'N/A',
+          status: 'PENDING',
+          printAlert: 'Create a warehouse receipt to generate labels'
+        }));
+        return;
+      }
+
       const labelData = {
         labelFormat: '4x6 Standard Thermal Barcode Cargo Label (Code 128)',
-        receiptNumber: targetWR?.receiptNumber || 'WR-2026-1041',
+        receiptNumber: targetWR.receiptNumber || targetWR.id,
         barcodeFormat: 'Code 128',
-        barcodeValue: targetWR?.barcode || 'WR994821034',
-        shipper: targetWR?.shipper || 'Global Retail Suppliers Inc, Miami, FL',
-        consignee: targetWR?.consignee || 'Atlantic Trading Co, Nassau, Bahamas',
-        destinationPort: targetWR?.destinationPort || 'NAS - Nassau, Bahamas',
+        barcodeValue: targetWR.barcode || targetWR.receiptNumber || targetWR.id,
+        shipper: targetWR.shipper || targetWR.customerName || 'Shipper',
+        consignee: targetWR.consignee || 'Consignee',
+        destinationPort: targetWR.destinationPort || 'Port of Destination',
         dimensions: {
-          lengthInches: targetWR?.lengthInches || '42',
-          widthInches: targetWR?.widthInches || '38',
-          heightInches: targetWR?.heightInches || '48',
+          lengthInches: String(targetWR.lengthInches || '0'),
+          widthInches: String(targetWR.widthInches || '0'),
+          heightInches: String(targetWR.heightInches || '0'),
         },
-        weightLbs: targetWR?.weightLbs || '1200',
-        weightKg: targetWR?.weightKg || '544.3',
-        cft: targetWR?.totalCft || '44.33',
-        cbm: targetWR?.totalCbm || '1.26',
-        stagingLocation: targetWR?.warehouseLocation || 'Bay A-02, Rack 3',
-        status: targetWR?.status || 'STAGED',
+        weightLbs: String(targetWR.weightLbs || '0'),
+        weightKg: String(targetWR.weightKg || '0'),
+        cft: String(targetWR.totalCft || '0'),
+        cbm: String(targetWR.totalCbm || '0'),
+        stagingLocation: targetWR.warehouseLocation || 'Intake CFS Bay',
+        status: targetWR.status || 'STAGED',
         printAlert: 'Ready for Operations Consolidation'
       };
 
@@ -101,29 +147,46 @@ export class MenusController {
       const allConsolidations = await db.select().from(consolidations);
       const allShipments = await db.select().from(shipments);
       const stagedReceipts = await db.select().from(warehouseReceipts);
+      const allContainers = await db.select().from(containers);
 
       const awaitingConsolidation = stagedReceipts.filter(r => r.status === 'Ready for Consolidation' || r.status === 'STAGED');
 
+      const activeContainerFill = allContainers.slice(0, 10).map(c => {
+        let pct = Number(c.fillPercentage) || 0;
+        if (!pct) {
+          if (c.status === 'LOADED' || c.status === 'Loaded') pct = 85;
+          else if (c.status === 'SEALED' || c.status === 'Sealed') pct = 100;
+          else if (c.status === 'CONSOLIDATING' || c.status === 'In Consolidation') pct = 60;
+          else pct = 25;
+        }
+
+        return {
+          containerNumber: c.containerNumber,
+          type: c.type || 'Standard',
+          fillPercentage: pct,
+          sealNumber: c.sealNumber || 'N/A'
+        };
+      });
+
       reply.send(successResponse({
         stageName: 'Stage 2: Container Consolidation',
-        assignedUser: 'Elena Rostova (Vessel Operations)',
+        assignedUser: 'Vessel Operations Team',
         menuName: 'Operations Dashboard',
         actionableTaskCard: {
-          title: '5 Cargo Items Awaiting Consolidation',
-          description: 'Filter staged Warehouse Receipts by destination port (Nassau) to build new container run.',
-          count: awaitingConsolidation.length || 5,
+          title: `${awaitingConsolidation.length} Cargo Items Awaiting Consolidation`,
+          description: 'Filter staged Warehouse Receipts by destination port to build new container run.',
+          count: awaitingConsolidation.length,
           primaryCTA: '+ Build Consolidation'
         },
         metrics: {
-          awaitingConsolidationCount: awaitingConsolidation.length || 5,
+          awaitingConsolidationCount: awaitingConsolidation.length,
           totalConsolidations: allConsolidations.length,
           activeShipmentsCount: allShipments.length,
-          averageFillPercentage: '85%'
+          averageFillPercentage: activeContainerFill.length > 0
+            ? `${Math.round(activeContainerFill.reduce((a, b) => a + b.fillPercentage, 0) / activeContainerFill.length)}%`
+            : '0%'
         },
-        activeContainerFill: [
-          { containerNumber: 'MEDU7748219', type: '40ft High Cube', fillPercentage: 85, sealNumber: 'SEAL-2026-9941' },
-          { containerNumber: 'TCLU9984120', type: '20ft Standard', fillPercentage: 92, sealNumber: 'SEAL-2026-9942' }
-        ]
+        activeContainerFill
       }));
     } catch (err: any) {
       reply.status(500).send({ success: false, error: err.message });
@@ -133,18 +196,20 @@ export class MenusController {
   // STAGE 2: Containers & Vessels
   getContainersVessels = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     try {
+      const allContainers = await db.select().from(containers);
+      const allVessels = await db.select().from(vessels);
+
+      const containerTypes = Array.from(new Set(allContainers.map(c => c.type).filter(Boolean)));
+      if (containerTypes.length === 0) {
+        containerTypes.push('20ft Standard', '40ft Standard', '40ft High Cube', '45ft High Cube');
+      }
+
       reply.send(successResponse({
         stageName: 'Containers & Vessels',
         menuName: 'Containers & Vessels',
-        containerTypes: ['20ft Standard', '40ft Standard', '40ft High Cube'],
-        containers: [
-          { containerNumber: 'MEDU7748219', type: '40ft High Cube', carrier: 'Tropical Shipping', maxVolumeCbm: 76.2, tareWeightKg: 3900, status: 'Active In Consolidation' },
-          { containerNumber: 'TCLU9984120', type: '20ft Standard', carrier: 'MSC Mediterranean', maxVolumeCbm: 33.2, tareWeightKg: 2200, status: 'Available at Yard' }
-        ],
-        vessels: [
-          { name: 'M/V Tropic Sun', imoNumber: 'IMO-9842103', carrier: 'Tropical Shipping', activeRoute: 'Miami → Nassau' },
-          { name: 'M/V Caribbean Explorer', imoNumber: 'IMO-9481029', carrier: 'Kingston Freight', activeRoute: 'Miami → Kingston' }
-        ]
+        containerTypes,
+        containers: allContainers,
+        vessels: allVessels
       }));
     } catch (err: any) {
       reply.status(500).send({ success: false, error: err.message });
@@ -162,7 +227,7 @@ export class MenusController {
 
       reply.send(successResponse({
         stageName: 'Stage 3: Documentation & Customs Clearance',
-        assignedUser: 'Sarah Jenkins (Documentation Specialist)',
+        assignedUser: 'Documentation Specialist',
         menuName: 'Documentation Desk',
         metrics: {
           totalMasterBLs: blList.length,
@@ -197,14 +262,17 @@ export class MenusController {
   // STAGE 3: Documents Archive
   getDocumentsArchive = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     try {
+      const allDocs = await db.select().from(documents);
+      const docTypes = Array.from(new Set(allDocs.map(d => d.documentType).filter(Boolean)));
+      if (docTypes.length === 0) {
+        docTypes.push('Commercial Invoice', 'Packing List', 'Customs Entry', 'Bill of Lading PDF', 'Delivery Order');
+      }
+
       reply.send(successResponse({
         stageName: 'Documents Archive',
         menuName: 'Documents Archive',
-        documentTypes: ['Commercial Invoice', 'Packing List', 'Customs Entry', 'Bill of Lading PDF', 'Delivery Order'],
-        documents: [
-          { docNumber: 'DOC-2026-101', docType: 'Commercial Invoice', title: 'Nassau Commercial Freight Invoice', status: 'Verified' },
-          { docNumber: 'DOC-2026-102', docType: 'Bill of Lading PDF', title: 'MBL BL-VI-2026-0092 Certified Copy', status: 'RELEASED' }
-        ]
+        documentTypes: docTypes,
+        documents: allDocs
       }));
     } catch (err: any) {
       reply.status(500).send({ success: false, error: err.message });
@@ -214,18 +282,25 @@ export class MenusController {
   // STAGE 4: Agent Dashboard
   getAgentDashboard = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     try {
+      const allShipments = await db.select().from(shipments);
+      const allBLs = await db.select().from(billsOfLading);
+      const allVessels = await db.select().from(vessels);
+
+      const releasedBLs = allBLs.filter(b => b.status === 'Released' || b.status === 'RELEASED');
+      const pendingDOs = allBLs.filter(b => b.status !== 'Released' && b.status !== 'RELEASED');
+
       reply.send(successResponse({
         stageName: 'Stage 4: Destination Port Reception & Delivery',
-        assignedUser: 'David Cartwright (Destination Agent)',
-        portal: 'Restricted Destination Port Portal (Nassau Container Port)',
+        assignedUser: 'Destination Port Agent',
+        portal: 'Restricted Destination Port Portal',
         menuName: 'Agent Dashboard',
         hiddenMenus: ['Internal Warehouse Bays', 'Pricing Settings', 'HQ Administration'],
         accessibleMenus: ['Agent Dashboard', 'My Assigned Shipments', 'Documents & B/Ls', 'Tracking'],
         metrics: {
-          inboundVesselsCount: 2,
-          assignedShipmentsCount: 4,
-          releasedMasterBLsCount: 3,
-          pendingDeliveryOrders: 1
+          inboundVesselsCount: allVessels.length,
+          assignedShipmentsCount: allShipments.length,
+          releasedMasterBLsCount: releasedBLs.length,
+          pendingDeliveryOrders: pendingDOs.length
         },
         primaryCTAs: ['Inspect Shipment', 'Download Delivery Documents']
       }));
@@ -241,7 +316,6 @@ export class MenusController {
       reply.send(successResponse({
         stageName: 'My Assigned Shipments',
         menuName: 'My Assigned Shipments',
-        destinationPort: 'Nassau Container Port (BSNAS)',
         shipments: allShipments
       }));
     } catch (err: any) {
@@ -252,13 +326,28 @@ export class MenusController {
   // STAGE 4: Agent Documents & B/Ls
   getAgentDocuments = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     try {
+      const allBLs = await db.select().from(billsOfLading);
+      const allManifests = await db.select().from(manifests);
+
+      const availableDownloads = [
+        ...allBLs.map(b => ({
+          type: 'Master Bill of Lading (MBL)',
+          blNumber: b.blNumber,
+          holdStatus: b.status,
+          downloadUrl: `/api/v1/bills-of-lading/${b.id}/pdf`
+        })),
+        ...allManifests.map(m => ({
+          type: 'Outward Customs Manifest',
+          manifestNumber: m.manifestNumber,
+          format: 'CSV/XML',
+          downloadUrl: `/api/v1/manifests/${m.id}/export?format=xml`
+        }))
+      ];
+
       reply.send(successResponse({
         stageName: 'Agent Documents & B/Ls',
         menuName: 'Documents & B/Ls',
-        availableDownloads: [
-          { type: 'Master Bill of Lading (MBL)', blNumber: 'BL-VI-2026-0092', holdStatus: 'RELEASED', downloadUrl: '/api/v1/documents/MBL-0092.pdf' },
-          { type: 'Outward Customs Manifest', manifestNumber: 'MNF-2026-044', format: 'CSV/XML', downloadUrl: '/api/v1/manifests/MNF-2026-044/export?format=xml' }
-        ]
+        availableDownloads
       }));
     } catch (err: any) {
       reply.status(500).send({ success: false, error: err.message });

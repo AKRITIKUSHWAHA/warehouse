@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from '../components/layout/Sidebar';
 import { TopHeader } from '../components/layout/TopHeader';
 import { QuickSearchModal } from '../components/modals/QuickSearchModal';
@@ -9,8 +9,27 @@ export const AppLayout = ({
   onNavigateDetail,
   children
 }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 1024) {
+        setMobileDrawerOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleToggleSidebar = () => {
+    if (typeof window !== 'undefined' && window.innerWidth <= 1024) {
+      setMobileDrawerOpen(prev => !prev);
+    } else {
+      setSidebarCollapsed(prev => !prev);
+    }
+  };
 
   return (
     <div className="app-container">
@@ -18,14 +37,15 @@ export const AppLayout = ({
       <Sidebar
         activeTab={activeTab}
         onSelectTab={onSelectTab}
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
+        isOpen={mobileDrawerOpen}
+        isCollapsed={sidebarCollapsed}
+        onClose={() => setMobileDrawerOpen(false)}
       />
 
       {/* Main Wrapper */}
       <div className="main-wrapper">
         <TopHeader
-          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          onToggleSidebar={handleToggleSidebar}
           onOpenSearch={() => setIsSearchOpen(true)}
           onNavigate={(tab, id) => {
             onSelectTab(tab);

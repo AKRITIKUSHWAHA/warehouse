@@ -108,12 +108,13 @@ export const manifestService = {
       updatedManifest = list[index];
     }
 
+    const refNumber = list[index]?.manifestNumber || updatedManifest?.manifestNumber || id;
     await auditService.logAction(
       currentUser,
       "Shipping Manifest",
       "Updated Shipping Manifest",
-      id,
-      `Updated Manifest ${id}.`
+      refNumber,
+      `Updated Manifest ${refNumber}.`
     );
 
     return updatedManifest;
@@ -133,12 +134,13 @@ export const manifestService = {
     setStored(KEYS.MANIFESTS, filtered);
 
     if (existing) {
+      const refNumber = existing.manifestNumber || id;
       await auditService.logAction(
         currentUser,
         "Shipping Manifest",
         "Deleted Shipping Manifest",
-        id,
-        `Deleted Manifest ${id}.`
+        refNumber,
+        `Deleted Manifest ${refNumber}.`
       );
     }
 

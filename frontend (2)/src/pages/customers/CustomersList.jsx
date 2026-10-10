@@ -8,7 +8,7 @@ import { Users, Plus, Eye, Edit2, Trash2, Package, MapPin, Phone, Mail, Building
 import { useAppData } from '../../context/AppDataContext';
 
 export const CustomersList = ({ onNavigate }) => {
-  const { customers, warehouseReceipts, houseBills, createCustomer, updateCustomer, deleteCustomer } = useAppData();
+  const { customers, warehouseReceipts = [], houseBills = [], createCustomer, updateCustomer, deleteCustomer } = useAppData();
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
@@ -73,8 +73,17 @@ export const CustomersList = ({ onNavigate }) => {
       header: 'Linked Cargo & Activity',
       accessor: 'id',
       render: (item) => {
-        const wrCount = warehouseReceipts.filter(w => w.customerId === item.id || w.customerId === item.customerNumber || w.customer === item.name || w.customerName === item.name).length;
-        const hblCount = houseBills.filter(h => h.customerId === item.id || h.customerId === item.customerNumber || h.customerName === item.name || h.consignee?.name === item.name).length;
+        const itemLower = (item.name || '').trim().toLowerCase();
+        const wrCount = (warehouseReceipts || []).filter(w =>
+          (item.id && w.customerId === item.id) ||
+          (item.customerNumber && w.customerId === item.customerNumber) ||
+          (itemLower && (w.customer || w.customerName || '').trim().toLowerCase() === itemLower)
+        ).length;
+        const hblCount = (houseBills || []).filter(h =>
+          (item.id && h.customerId === item.id) ||
+          (item.customerNumber && h.customerId === item.customerNumber) ||
+          (itemLower && (h.customerName || (typeof h.consignee === 'object' ? h.consignee?.name : h.consignee) || '').trim().toLowerCase() === itemLower)
+        ).length;
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '0.75rem' }}>
             <div><strong style={{ color: '#D97706' }}>{wrCount}</strong> Warehouse Receipts</div>

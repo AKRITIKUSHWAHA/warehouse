@@ -11,7 +11,7 @@ import { useAppData } from '../../context/AppDataContext';
 import { useAuth } from '../../context/AuthContext';
 
 export const CargoList = ({ onNavigate }) => {
-  const { cargoItems, createCargo, updateCargo, deleteCargo, refreshAll } = useAppData();
+  const { cargoItems, createCargo, updateCargo, deleteCargo, fetchMenuApi } = useAppData();
   const { isAgent, currentUser } = useAuth();
   const [selectedCargo, setSelectedCargo] = useState(null);
   const [editingCargo, setEditingCargo] = useState(null);
@@ -20,12 +20,14 @@ export const CargoList = ({ onNavigate }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
-    if (refreshAll) refreshAll();
+    if ((!cargoItems || cargoItems.length === 0) && fetchMenuApi) {
+      fetchMenuApi('cargo');
+    }
   }, []);
 
   const handleManualRefresh = async () => {
     setIsRefreshing(true);
-    if (refreshAll) await refreshAll();
+    if (fetchMenuApi) await fetchMenuApi('cargo');
     setTimeout(() => setIsRefreshing(false), 500);
   };
 

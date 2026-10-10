@@ -158,12 +158,13 @@ export const cargoService = {
       };
       setStored(KEYS.CARGO, list);
 
+      const refNumber = list[index]?.cargoNumber || updatedCargo?.cargoNumber || id;
       await auditService.logAction(
         currentUser,
         "Cargo Inventory",
         "Updated Cargo Unit",
-        id,
-        `Updated cargo details for ${id}.`
+        refNumber,
+        `Updated cargo details for ${refNumber}.`
       );
 
       return list[index];
@@ -184,12 +185,13 @@ export const cargoService = {
     setStored(KEYS.CARGO, filtered);
 
     if (existing) {
+      const refNumber = existing.cargoNumber || id;
       await auditService.logAction(
         currentUser,
         "Cargo Inventory",
         "Deleted Cargo Unit",
-        id,
-        `Deleted cargo unit ${id} (${existing?.customer || 'Cargo'}).`
+        refNumber,
+        `Deleted cargo unit ${refNumber} (${existing?.customer || 'Cargo'}).`
       );
     }
 

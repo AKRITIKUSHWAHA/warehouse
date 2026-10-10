@@ -13,6 +13,7 @@ export async function usersRoutes(app: FastifyInstance): Promise<void> {
 
   // User modification requires Super Admin privileges
   app.post('/', { preHandler: [requireRole(ROLES.SUPER_ADMIN)] }, usersController.create);
+  app.put('/:id', { preHandler: [requireRole(ROLES.SUPER_ADMIN)] }, usersController.update);
   app.patch('/:id', { preHandler: [requireRole(ROLES.SUPER_ADMIN)] }, usersController.update);
   app.delete('/:id', { preHandler: [requireRole(ROLES.SUPER_ADMIN)] }, usersController.delete);
 }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, X, Save, Plus } from 'lucide-react';
+import { useAppData } from '../../context/AppDataContext';
 
 export const CargoModal = ({
   isOpen,
@@ -8,7 +9,12 @@ export const CargoModal = ({
   cargo = null,
   isEdit = false
 }) => {
+  const { ports, customers } = useAppData();
   const hasInitializedRef = useRef(false);
+
+  const getPortCode = (p) => p?.portCode || p?.code || 'PORT';
+  const defaultPort = ports[0] ? `${getPortCode(ports[0])} - ${ports[0].name}` : 'NAS - Nassau, Bahamas';
+
   const [formData, setFormData] = useState({
     id: '',
     receiptNumber: '',
@@ -20,7 +26,7 @@ export const CargoModal = ({
     widthInches: 20,
     heightInches: 18,
     weightLbs: 120,
-    destinationPort: 'NAS - Nassau, Bahamas',
+    destinationPort: defaultPort,
     status: 'Ready for Consolidation'
   });
 
@@ -44,7 +50,7 @@ export const CargoModal = ({
         widthInches: cargo.widthInches || 20,
         heightInches: cargo.heightInches || 18,
         weightLbs: cargo.weightLbs || 120,
-        destinationPort: cargo.destinationPort || 'NAS - Nassau, Bahamas',
+        destinationPort: cargo.destinationPort || defaultPort,
         status: cargo.status || 'Ready for Consolidation'
       });
     } else {
@@ -150,11 +156,15 @@ export const CargoModal = ({
                   value={formData.destinationPort}
                   onChange={(e) => setFormData({ ...formData, destinationPort: e.target.value })}
                 >
-                  <option value="NAS - Nassau, Bahamas">NAS - Nassau, Bahamas</option>
-                  <option value="FPO - Freeport, Grand Bahama">FPO - Freeport, Grand Bahama</option>
-                  <option value="GCM - George Town, Grand Cayman">GCM - George Town, Grand Cayman</option>
-                  <option value="BGI - Bridgetown, Barbados">BGI - Bridgetown, Barbados</option>
-                  <option value="KIN - Kingston, Jamaica">KIN - Kingston, Jamaica</option>
+                  {ports.map(p => {
+                    const pCode = getPortCode(p);
+                    const val = `${pCode} - ${p.name}`;
+                    return (
+                      <option key={`crg-dest-${p.id || pCode}`} value={val}>
+                        {pCode} — {p.name} ({p.island || p.country || 'Caribbean'})
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
             </div>

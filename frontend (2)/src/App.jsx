@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { AppDataProvider, useAppData } from './context/AppDataContext';
 import { AppLayout } from './layouts/AppLayout';
 import { AgentLayout } from './layouts/AgentLayout';
+import { hasModulePermission } from './config/rolePermissions';
 
 // Auth Pages
 import { LoginPage } from './pages/auth/LoginPage';
@@ -142,7 +143,7 @@ const getUrlForRoute = (tab, recordIdOrAction) => {
 };
 
 const MainAppRouter = () => {
-  const { isAuthenticated, isAgent } = useAuth();
+  const { isAuthenticated, isAgent, currentUser } = useAuth();
   const { fetchMenuApi } = useAppData();
 
   const [routeState, setRouteState] = useState(() => parseUrlToRoute(isAgent));
@@ -208,18 +209,14 @@ const MainAppRouter = () => {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const agentAllowedTabs = [
-      'agent-dashboard', 'agent-shipments', 'agent-bl-detail', 'agent-documents', 'agent-tracking',
-      'shipments', 'consolidations', 'manifests', 'bills-of-lading', 'cargo', 'tracking',
-      'warehouse-receipts', 'house-bills', 'customers'
-    ];
+    const userRoleKey = currentUser?.roleKey || (isAgent ? 'agent' : 'super_admin');
 
-    if (isAgent && !agentAllowedTabs.includes(activeTab)) {
-      navigateTo('agent-dashboard', null, { replace: true });
-    } else if (!isAgent && activeTab.startsWith('agent-')) {
-      navigateTo('dashboard', null, { replace: true });
+    if (!hasModulePermission(userRoleKey, activeTab)) {
+      const defaultTab = userRoleKey === 'agent' ? 'agent-dashboard' : 'dashboard';
+      console.warn(`[RouteGuard] Role '${userRoleKey}' is restricted from accessing tab '${activeTab}'. Redirecting to ${defaultTab}.`);
+      navigateTo(defaultTab, null, { replace: true });
     }
-  }, [isAuthenticated, isAgent, activeTab, navigateTo]);
+  }, [isAuthenticated, isAgent, currentUser, activeTab, navigateTo]);
 
   // Keep root URL synced when landing on /
   useEffect(() => {
@@ -239,29 +236,15 @@ const MainAppRouter = () => {
     return (
       <LoginPage
         onLoginSuccess={(loggedUser) => {
-          const isUserAgent = loggedUser.roleKey === 'agent';
+          const userRoleKey = loggedUser?.roleKey || 'super_admin';
+          const isUserAgent = userRoleKey === 'agent';
           const parsed = parseUrlToRoute(isUserAgent);
 
-          if (isUserAgent) {
-            // Agent persona: only route to valid agent portal views
-            const agentAllowedTabs = [
-              'agent-dashboard', 'agent-shipments', 'agent-bl-detail', 'agent-documents', 'agent-tracking',
-              'shipments', 'consolidations', 'manifests', 'bills-of-lading', 'cargo', 'tracking',
-              'warehouse-receipts', 'house-bills', 'customers'
-            ];
-
-            if (parsed.tab && agentAllowedTabs.includes(parsed.tab)) {
-              navigateTo(parsed.tab, parsed.selectedRecordId || parsed.subAction, { replace: true });
-            } else {
-              navigateTo('agent-dashboard', null, { replace: true });
-            }
+          if (parsed.tab && hasModulePermission(userRoleKey, parsed.tab)) {
+            navigateTo(parsed.tab, parsed.selectedRecordId || parsed.subAction, { replace: true });
           } else {
-            // Staff / Super Admin persona: only route to standard HQ operations views
-            if (parsed.tab && !parsed.tab.startsWith('agent-') && parsed.tab !== 'dashboard') {
-              navigateTo(parsed.tab, parsed.selectedRecordId || parsed.subAction, { replace: true });
-            } else {
-              navigateTo('dashboard', null, { replace: true });
-            }
+            const defaultTab = isUserAgent ? 'agent-dashboard' : 'dashboard';
+            navigateTo(defaultTab, null, { replace: true });
           }
         }}
       />

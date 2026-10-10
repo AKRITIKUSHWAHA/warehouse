@@ -1,6 +1,6 @@
 import { eq, ilike, or, count, and, desc, sql } from 'drizzle-orm';
 import { db } from '../../db/index.js';
-import { houseBills, NewHouseBill } from '../../db/schema/index.js';
+import { houseBills, NewHouseBill, settings } from '../../db/schema/index.js';
 import { HouseBillFilterParams } from './house-bills.types.js';
 
 export class HouseBillsRepository {
@@ -72,6 +72,41 @@ export class HouseBillsRepository {
   async countTotal() {
     const [{ total }] = await db.select({ total: count() }).from(houseBills);
     return Number(total);
+  }
+
+  async getNextHblNumber(): Promise<string> {
+    const existing = await db
+      .select({ hblNumber: houseBills.hblNumber })
+      .from(houseBills);
+
+    let maxSeq = 0;
+    const existingSet = new Set<string>();
+
+    for (const row of existing) {
+      if (row.hblNumber) {
+        existingSet.add(row.hblNumber.trim());
+        const match = row.hblNumber.match(/(\d+)$/);
+        if (match) {
+          const num = parseInt(match[1], 10);
+          if (!isNaN(num) && num > maxSeq) {
+            maxSeq = num;
+          }
+        }
+      }
+    }
+
+    let next = maxSeq + 1;
+    const setting = await db.select().from(settings).where(eq(settings.key, 'numberingRules')).limit(1);
+    const configuredPrefix = (setting[0]?.value as any)?.houseBillPrefix?.trim() || 'HBL-2026-';
+    const prefix = configuredPrefix.endsWith('-') ? configuredPrefix : `${configuredPrefix}-`;
+
+    let candidate = `${prefix}${String(next).padStart(4, '0')}`;
+    while (existingSet.has(candidate)) {
+      next++;
+      candidate = `${prefix}${String(next).padStart(4, '0')}`;
+    }
+
+    return candidate;
   }
 
   async create(data: NewHouseBill) {

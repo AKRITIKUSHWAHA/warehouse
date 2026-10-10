@@ -9,9 +9,8 @@ export async function voyagesRoutes(app: FastifyInstance): Promise<void> {
 
   app.get('/', voyagesController.list);
   app.get('/:id', voyagesController.getById);
-  app.post('/', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.OPERATIONS)] }, voyagesController.create);
-  app.patch('/:id', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.OPERATIONS)] }, voyagesController.update);
-  app.put('/:id', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.OPERATIONS)] }, voyagesController.update);
-  app.delete('/:id', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.OPERATIONS)] }, voyagesController.delete);
+  app.post('/', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.OPERATIONS, ROLES.DOCUMENTATION_STAFF)] }, voyagesController.create);
+  app.patch('/:id', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.OPERATIONS, ROLES.DOCUMENTATION_STAFF)] }, voyagesController.update);
+  app.put('/:id', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.OPERATIONS, ROLES.DOCUMENTATION_STAFF)] }, voyagesController.update);
+  app.delete('/:id', { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.OPERATIONS, ROLES.DOCUMENTATION_STAFF)] }, voyagesController.delete);
 }
-

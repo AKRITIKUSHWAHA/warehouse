@@ -103,17 +103,23 @@ export const AuthProvider = ({ children }) => {
     }
   }, [currentUser]);
 
-  const login = async (emailOrId, password = 'password123') => {
+  const login = async (emailOrId, password) => {
+    if (!password || !password.trim()) {
+      throw new Error('Please enter your password.');
+    }
+
     const allUsers = getStored(KEYS.USERS, initialUsers);
     let targetUser = allUsers.find(
       u => u.id === emailOrId || u.email?.toLowerCase() === String(emailOrId).toLowerCase()
     );
 
-    const email = targetUser?.email || (String(emailOrId).includes('@') ? emailOrId : 'carlos.m@vicustoms.com');
-    const pwd = password || 'password123';
+    const email = targetUser?.email || (String(emailOrId).includes('@') ? emailOrId : '');
+    if (!email) {
+      throw new Error('Please enter a valid email address.');
+    }
 
     try {
-      const res = await apiClient.post('/auth/login', { email, password: pwd });
+      const res = await apiClient.post('/auth/login', { email, password: password.trim() });
       const authResult = res?.data || res;
       if (authResult && authResult.token) {
         persistToken(authResult.token);
@@ -125,17 +131,11 @@ export const AuthProvider = ({ children }) => {
         return loggedUser;
       }
     } catch (err) {
-      console.warn('[AuthContext] Login notice:', err.message);
+      console.warn('[AuthContext] Login failed:', err.message);
+      throw err;
     }
 
-    // Local fallback for offline/demo resilience
-    const fallbackUser = targetUser || allUsers[0] || initialUsers[0];
-    persistToken('local-session-active');
-    setCurrentUser(fallbackUser);
-    setIsAuthenticated(true);
-    localStorage.setItem('kers_is_authenticated', 'true');
-    localStorage.setItem('kers_active_user', JSON.stringify(fallbackUser));
-    return fallbackUser;
+    throw new Error('Invalid email or password');
   };
 
   const logout = async () => {
@@ -156,10 +156,38 @@ export const AuthProvider = ({ children }) => {
 
   const switchUser = async (userId) => {
     const allUsers = getStored(KEYS.USERS, initialUsers);
-    const found = allUsers.find(u => u.id === userId || u.userCode === userId || u.roleKey === userId);
-    if (found) {
-      await login(found.email, 'password123');
+    const found = allUsers.find(
+      u => u.id === userId || u.userCode === userId || u.roleKey === userId || u.email?.toLowerCase() === String(userId).toLowerCase()
+    );
+
+    if (!found) return null;
+
+    try {
+      const res = await apiClient.post('/auth/switch-user', {
+        userId: found.id,
+        email: found.email,
+      });
+      const authResult = res?.data || res;
+      if (authResult && authResult.token) {
+        persistToken(authResult.token);
+        const loggedUser = authResult.user || found;
+        setCurrentUser(loggedUser);
+        setIsAuthenticated(true);
+        localStorage.setItem('kers_is_authenticated', 'true');
+        localStorage.setItem('kers_active_user', JSON.stringify(loggedUser));
+        return loggedUser;
+      }
+    } catch (err) {
+      console.warn('[AuthContext] /auth/switch-user notice, using local persona:', err.message);
     }
+
+    // Fallback persona switch for offline / mock resilience
+    persistToken('local-session-active');
+    setCurrentUser(found);
+    setIsAuthenticated(true);
+    localStorage.setItem('kers_is_authenticated', 'true');
+    localStorage.setItem('kers_active_user', JSON.stringify(found));
+    return found;
   };
 
   const isAgent = currentUser?.roleKey === 'agent';

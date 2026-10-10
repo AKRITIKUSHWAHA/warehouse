@@ -21,12 +21,14 @@ export interface CreateUserInput {
   roleKey: RoleType;
   department?: string;
   phone?: string;
+  status?: string;
   agentId?: string;
 }
 
 export interface UpdateUserInput {
   name?: string;
   email?: string;
+  password?: string;
   roleKey?: RoleType;
   department?: string;
   phone?: string;

@@ -124,12 +124,13 @@ export const billOfLadingService = {
       setStored(KEYS.BILLS_OF_LADING, [updatedBL, ...list]);
     }
 
+    const refNumber = list[index]?.blNumber || updatedBL?.blNumber || id;
     await auditService.logAction(
       currentUser,
       "Bill of Lading",
       "Updated Master B/L",
-      id,
-      `Updated details for Master Bill of Lading ${id}.`
+      refNumber,
+      `Updated details for Master Bill of Lading ${refNumber}.`
     );
 
     return updatedBL;
@@ -153,12 +154,13 @@ export const billOfLadingService = {
     setStored(KEYS.BILLS_OF_LADING, filtered);
 
     if (existing) {
+      const refNumber = existing.blNumber || id;
       await auditService.logAction(
         currentUser,
         "Bill of Lading",
         "Deleted Master B/L",
-        id,
-        `Deleted Master Bill of Lading ${id} (${existing.blNumber}).`
+        refNumber,
+        `Deleted Master Bill of Lading ${refNumber}.`
       );
     }
 
@@ -217,12 +219,13 @@ export const billOfLadingService = {
 
     setStored(KEYS.BILLS_OF_LADING, list);
 
+    const refNumber = currentBL.blNumber || blId;
     await auditService.logAction(
       currentUser,
       "Bill of Lading",
       "Placed B/L on Hold",
-      blId,
-      `Master B/L ${blId} placed on hold. Reason: ${reason}. Notes: ${notes || 'None'}`
+      refNumber,
+      `Master B/L ${refNumber} placed on hold. Reason: ${reason}. Notes: ${notes || 'None'}`
     );
 
     return list[index];
@@ -283,12 +286,13 @@ export const billOfLadingService = {
 
     setStored(KEYS.BILLS_OF_LADING, list);
 
+    const refNumber = currentBL.blNumber || blId;
     await auditService.logAction(
       currentUser,
       "Bill of Lading",
       "Cleared B/L Hold",
-      blId,
-      `Hold released on Master B/L ${blId} by ${typeof currentUser === 'string' ? currentUser : currentUser?.name || 'Staff'}. Notes: ${clearNotes || 'None'}`
+      refNumber,
+      `Hold released on Master B/L ${refNumber} by ${typeof currentUser === 'string' ? currentUser : currentUser?.name || 'Staff'}. Notes: ${clearNotes || 'None'}`
     );
 
     return list[index];

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PageHeader } from '../../components/common/PageHeader';
 import { ResponsiveTable } from '../../components/tables/ResponsiveTable';
 import { StatusBadge } from '../../components/common/StatusBadge';
@@ -10,7 +10,7 @@ import { useAppData } from '../../context/AppDataContext';
 import { useAuth } from '../../context/AuthContext';
 
 export const ShipmentsList = ({ onNavigate }) => {
-  const { shipments, createShipment, updateShipment, deleteShipment, refreshAll } = useAppData();
+  const { shipments, createShipment, updateShipment, deleteShipment, fetchMenuApi } = useAppData();
   const { isAgent, currentUser } = useAuth();
   const [editingShipment, setEditingShipment] = useState(null);
   const [deletingShipment, setDeletingShipment] = useState(null);
@@ -18,12 +18,14 @@ export const ShipmentsList = ({ onNavigate }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
-    if (refreshAll) refreshAll();
+    if ((!shipments || shipments.length === 0) && fetchMenuApi) {
+      fetchMenuApi('shipments');
+    }
   }, []);
 
   const handleManualRefresh = async () => {
     setIsRefreshing(true);
-    if (refreshAll) await refreshAll();
+    if (fetchMenuApi) await fetchMenuApi('shipments');
     setTimeout(() => setIsRefreshing(false), 500);
   };
 
@@ -232,9 +234,6 @@ export const ShipmentsList = ({ onNavigate }) => {
           const target = deletingShipment;
           if (target) {
             await deleteShipment(target.id || target.shipmentNumber);
-            if (refreshAll) {
-              await refreshAll();
-            }
           }
         }}
       />

@@ -10,6 +10,7 @@ export async function portsRoutes(app: FastifyInstance): Promise<void> {
   app.get('/', portsController.list);
   app.get('/:id', portsController.getById);
   app.post('/', { preHandler: [requireRole(ROLES.SUPER_ADMIN)] }, portsController.create);
+  app.put('/:id', { preHandler: [requireRole(ROLES.SUPER_ADMIN)] }, portsController.update);
   app.patch('/:id', { preHandler: [requireRole(ROLES.SUPER_ADMIN)] }, portsController.update);
   app.delete('/:id', { preHandler: [requireRole(ROLES.SUPER_ADMIN)] }, portsController.delete);
 }

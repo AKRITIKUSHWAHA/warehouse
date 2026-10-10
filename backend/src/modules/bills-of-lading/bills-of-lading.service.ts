@@ -1,6 +1,7 @@
 import { BillsOfLadingRepository, billsOfLadingRepository } from './bills-of-lading.repository.js';
 import { BillOfLadingFilterParams, CreateBillOfLadingInput, UpdateBillOfLadingInput } from './bills-of-lading.types.js';
 import { NotFoundError } from '../../common/errors/not-found-error.js';
+import { BadRequestError } from '../../common/errors/bad-request-error.js';
 import { BL_STATUSES } from '../../common/constants/statuses.js';
 import { convertLbsToKg } from '../../common/utils/calculations.js';
 
@@ -20,11 +21,15 @@ export class BillsOfLadingService {
   }
 
   async createBill(input: CreateBillOfLadingInput) {
-    const totalCount = await this.repo.countTotal();
-    const seq = String(totalCount + 1).padStart(4, '0');
-    const blNumber = input.blNumber && input.blNumber.trim()
-      ? input.blNumber.trim()
-      : `BL-VI-2026-${seq}`;
+    let blNumber = input.blNumber && input.blNumber.trim() ? input.blNumber.trim() : null;
+    if (!blNumber) {
+      blNumber = await this.repo.getNextBlNumber();
+    } else {
+      const existing = await this.repo.findByIdOrNumber(blNumber);
+      if (existing) {
+        blNumber = await this.repo.getNextBlNumber();
+      }
+    }
 
     const createdDate = input.createdDate || new Date().toISOString().split('T')[0];
     const issueDate = input.issueDate || createdDate;
@@ -169,7 +174,17 @@ export class BillsOfLadingService {
       contactPhone?: string;
     }
   ) {
-    await this.getBill(id);
+    const existing = await this.getBill(id);
+    if (existing.status === BL_STATUSES.ON_HOLD) {
+      throw new BadRequestError('Bill of Lading is already on hold.');
+    }
+    if (existing.status === BL_STATUSES.RELEASED) {
+      throw new BadRequestError('Cannot place hold on an already released Bill of Lading.');
+    }
+    if (existing.status === BL_STATUSES.CANCELLED || existing.status === 'Cancelled') {
+      throw new BadRequestError('Cannot place hold on a cancelled Bill of Lading.');
+    }
+
     const holdDetails = {
       isOnHold: true,
       reason: params.reason,
@@ -184,13 +199,19 @@ export class BillsOfLadingService {
     return this.repo.updateHoldStatus(id, BL_STATUSES.ON_HOLD, holdDetails);
   }
 
-  async clearHold(id: string, releasedBy: string) {
-    await this.getBill(id);
+  async clearHold(id: string, releasedBy: string, notes?: string, authRef?: string) {
+    const existing = await this.getBill(id);
+    if (existing.status !== BL_STATUSES.ON_HOLD) {
+      throw new BadRequestError('Bill of Lading is not on hold.');
+    }
+
     const holdDetails = {
       isOnHold: false,
       reason: null,
       releasedBy,
       releasedAt: new Date().toISOString(),
+      clearanceNotes: notes || null,
+      authRef: authRef || null,
     };
 
     return this.repo.updateHoldStatus(id, BL_STATUSES.RELEASED, holdDetails);

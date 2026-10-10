@@ -56,9 +56,15 @@ export class HouseBillsService {
       }
     }
 
-    const totalCount = await this.repo.countTotal();
-    const seq = String(totalCount + 1).padStart(4, '0');
-    const hblNumber = input.hblNumber?.trim() || `HBL-2026-${seq}`;
+    let hblNumber = input.hblNumber?.trim();
+    if (!hblNumber) {
+      hblNumber = await this.repo.getNextHblNumber();
+    } else {
+      const existing = await this.repo.findByIdOrHblNumber(hblNumber);
+      if (existing) {
+        hblNumber = await this.repo.getNextHblNumber();
+      }
+    }
     const createdDate = input.createdDate || new Date().toISOString().split('T')[0];
     const issueDate = input.issueDate || createdDate;
 

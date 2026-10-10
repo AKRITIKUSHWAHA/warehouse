@@ -4,7 +4,7 @@ import { NotFoundError } from '../../common/errors/not-found-error.js';
 import { ForbiddenError } from '../../common/errors/forbidden-error.js';
 import { calculateDimensions, convertLbsToKg } from '../../common/utils/calculations.js';
 import { db } from '../../db/index.js';
-import { cargo, customers } from '../../db/schema/index.js';
+import { cargo, customers, settings } from '../../db/schema/index.js';
 import { eq, or } from 'drizzle-orm';
 
 
@@ -37,7 +37,16 @@ export class WarehouseService {
       nextSeq = await this.repo.getNextSequenceNumber();
     }
 
-    const receiptNumber = input.receiptNumber || String(nextSeq);
+    let receiptNumber = input.receiptNumber;
+    if (!receiptNumber) {
+      const setting = await db.select().from(settings).where(eq(settings.key, 'numberingRules')).limit(1);
+      const configuredPrefix = (setting[0]?.value as any)?.warehouseReceiptPrefix?.trim();
+      if (configuredPrefix) {
+        receiptNumber = configuredPrefix.endsWith('-') ? `${configuredPrefix}${nextSeq}` : `${configuredPrefix}-${nextSeq}`;
+      } else {
+        receiptNumber = String(nextSeq);
+      }
+    }
 
     let packages = input.packages ?? [];
     if (packages.length === 0) {
@@ -69,8 +78,9 @@ export class WarehouseService {
     let totalCbm = 0;
 
     for (const pkg of packages) {
-      totalPieces += Number(pkg.pieces) || 1;
-      totalWeightLbs += Number(pkg.weightLbs) || 0;
+      const pcs = Number(pkg.pieces) || 1;
+      totalPieces += pcs;
+      totalWeightLbs += (Number(pkg.weightLbs) || 0) * pcs;
       totalCft += Number(pkg.cft) || 0;
       totalCbm += Number(pkg.cbm) || 0;
     }
