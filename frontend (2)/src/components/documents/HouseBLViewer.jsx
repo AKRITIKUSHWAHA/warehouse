@@ -32,6 +32,8 @@ export const HouseBLViewer = ({ hbl, onNavigate }) => {
   const handleDownloadPdf = async () => {
     if (isOnHold) {
       showToast(`Cannot download document: House B/L is currently ON HOLD.`, 'danger', 'Download Restricted');
+      return;
+    }
     try {
       setIsDownloadingPdf(true);
       showToast(`Generating official PDF for House B/L ${hbl.hblNumber}...`, 'info', 'Preparing PDF');

@@ -3,6 +3,13 @@ import { initialUsers, initialRolesPermissions } from '../data/mock/usersData';
 import { getStored, setStored, KEYS, initializeStorage } from '../services/storageService';
 import { apiClient } from '../services/apiClient';
 import { setAuthToken } from '../services/apiConfig';
+import {
+  DEFAULT_ROLE_PERMISSIONS_MAP,
+  SYSTEM_MODULES,
+  getStoredPermissionsMap,
+  saveStoredPermissionsMap,
+  hasModulePermission
+} from '../config/rolePermissions';
 
 const AuthContext = createContext(null);
 
@@ -190,6 +197,101 @@ export const AuthProvider = ({ children }) => {
     return found;
   };
 
+  const [rolePermissionsMap, setRolePermissionsMap] = useState(() => {
+    return getStoredPermissionsMap();
+  });
+
+  // Sync role permissions from backend settings if available
+  useEffect(() => {
+    const fetchBackendPermissions = async () => {
+      try {
+        const res = await apiClient.get('settings/role_permissions');
+        if (res && res.data && typeof res.data === 'object' && (res.data.value || res.data.super_admin)) {
+          const remoteMap = res.data.value || res.data;
+          setRolePermissionsMap(remoteMap);
+          saveStoredPermissionsMap(remoteMap);
+        }
+      } catch {
+        // Fallback to localStorage
+      }
+    };
+    fetchBackendPermissions();
+  }, []);
+
+  const updateRolePermissionsMap = useCallback(async (newMap) => {
+    setRolePermissionsMap(newMap);
+    saveStoredPermissionsMap(newMap);
+    try {
+      await apiClient.put('settings/role_permissions', {
+        value: newMap,
+        description: 'Updated system role permissions matrix'
+      });
+    } catch (err) {
+      console.warn('[AuthContext] Backend settings sync failed:', err.message);
+    }
+  }, []);
+
+  const toggleRoleModule = useCallback(async (roleKey, moduleId) => {
+    if (!roleKey || !moduleId) return;
+
+    setRolePermissionsMap(prev => {
+      const currentList = prev[roleKey] || DEFAULT_ROLE_PERMISSIONS_MAP[roleKey] || [];
+      let updatedList;
+      if (currentList.includes(moduleId)) {
+        // Protect super_admin from losing critical administrative modules
+        if (roleKey === 'super_admin' && (moduleId === 'users' || moduleId === 'settings')) {
+          return prev;
+        }
+        updatedList = currentList.filter(id => id !== moduleId);
+      } else {
+        updatedList = [...currentList, moduleId];
+      }
+
+      const nextMap = {
+        ...prev,
+        [roleKey]: updatedList
+      };
+
+      saveStoredPermissionsMap(nextMap);
+
+      // Async persist to backend in background
+      apiClient.put('settings/role_permissions', {
+        value: nextMap,
+        description: `Toggled module ${moduleId} for role ${roleKey}`
+      }).catch(e => console.warn('[AuthContext] Persist error:', e));
+
+      return nextMap;
+    });
+  }, []);
+
+  const resetRolePermissions = useCallback(async () => {
+    setRolePermissionsMap(DEFAULT_ROLE_PERMISSIONS_MAP);
+    saveStoredPermissionsMap(DEFAULT_ROLE_PERMISSIONS_MAP);
+    try {
+      await apiClient.put('settings/role_permissions', {
+        value: DEFAULT_ROLE_PERMISSIONS_MAP,
+        description: 'Restored default role permissions matrix'
+      });
+    } catch (err) {
+      console.warn('[AuthContext] Reset persist error:', err.message);
+    }
+  }, []);
+
+  const isMenuAllowed = useCallback((roleKey, moduleIdOrTab) => {
+    if (!roleKey) return false;
+    if (roleKey === 'super_admin') return true;
+
+    const allowedList = rolePermissionsMap[roleKey] || DEFAULT_ROLE_PERMISSIONS_MAP[roleKey] || [];
+    if (allowedList.includes('*') || allowedList.includes(moduleIdOrTab)) return true;
+
+    // Check if matching module contains this tab
+    const matched = SYSTEM_MODULES.find(m => m.id === moduleIdOrTab || (m.tabs && m.tabs.includes(moduleIdOrTab)));
+    if (matched) {
+      return allowedList.includes(matched.id);
+    }
+    return false;
+  }, [rolePermissionsMap]);
+
   const isAgent = currentUser?.roleKey === 'agent';
   const isSuperAdmin = currentUser?.roleKey === 'super_admin';
   const isOps = currentUser?.roleKey === 'operations' || isSuperAdmin;
@@ -220,6 +322,12 @@ export const AuthProvider = ({ children }) => {
       isDocs,
       usersList,
       rolesList: initialRolesPermissions,
+      rolePermissionsMap,
+      systemModules: SYSTEM_MODULES,
+      updateRolePermissionsMap,
+      toggleRoleModule,
+      resetRolePermissions,
+      isMenuAllowed,
       syncUsers,
       login,
       logout,

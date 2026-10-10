@@ -25,7 +25,7 @@ export const AgentLayout = ({
   onNavigateDetail,
   children
 }) => {
-  const { currentUser, switchUser, logout } = useAuth();
+  const { currentUser, switchUser, logout, isMenuAllowed } = useAuth();
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -49,12 +49,15 @@ export const AgentLayout = ({
   };
 
   const agentTabs = [
-    { id: 'agent-dashboard', label: 'Agent Dashboard', icon: LayoutDashboard },
-    { id: 'agent-shipments', label: 'My Assigned Shipments', icon: Ship },
-    { id: 'my-consolidations', label: 'My Consolidations', icon: Layers },
-    { id: 'agent-documents', label: 'Documents & B/Ls', icon: FileStack },
-    { id: 'agent-tracking', label: 'Cargo Tracking', icon: Search }
-  ];
+    { id: 'agent-dashboard', label: 'Agent Dashboard', icon: LayoutDashboard, moduleId: 'dashboard' },
+    { id: 'agent-shipments', label: 'My Assigned Shipments', icon: Ship, moduleId: 'shipments' },
+    { id: 'my-consolidations', label: 'My Consolidations', icon: Layers, moduleId: 'consolidations' },
+    { id: 'agent-documents', label: 'Documents & B/Ls', icon: FileStack, moduleId: 'documents' },
+    { id: 'agent-tracking', label: 'Cargo Tracking', icon: Search, moduleId: 'tracking' }
+  ].filter(item => {
+    if (!isMenuAllowed) return true;
+    return isMenuAllowed('agent', item.moduleId || item.id);
+  });
 
   return (
     <div className="app-container">
