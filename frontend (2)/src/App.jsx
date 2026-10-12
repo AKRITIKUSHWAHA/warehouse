@@ -77,9 +77,26 @@ const VALID_TABS = [
   'agent-tracking'
 ];
 
-const parseUrlToRoute = (isAgent) => {
+export const ROLE_PREFIX_MAP = {
+  super_admin: 'superadmin',
+  operations: 'operations',
+  documentation: 'documentation',
+  warehouse: 'warehouse',
+  agent: 'agent'
+};
+
+export const VALID_ROLE_PREFIXES = ['superadmin', 'operations', 'documentation', 'warehouse', 'agent'];
+
+export const getPrefixForRole = (roleKey) => {
+  return ROLE_PREFIX_MAP[roleKey] || 'superadmin';
+};
+
+const parseUrlToRoute = (isAgent, currentRoleKey = null) => {
+  const defaultPrefix = getPrefixForRole(currentRoleKey || (isAgent ? 'agent' : 'super_admin'));
+  const defaultTab = isAgent ? 'agent-dashboard' : 'dashboard';
+
   if (typeof window === 'undefined') {
-    return { tab: isAgent ? 'agent-dashboard' : 'dashboard', selectedRecordId: null, subAction: null };
+    return { tab: defaultTab, selectedRecordId: null, subAction: null, detectedPrefix: defaultPrefix };
   }
 
   let path = window.location.pathname || '';
@@ -90,16 +107,34 @@ const parseUrlToRoute = (isAgent) => {
   const segments = path.split('/').filter(Boolean);
   if (segments.length === 0) {
     return {
-      tab: isAgent ? 'agent-dashboard' : 'dashboard',
+      tab: defaultTab,
       selectedRecordId: null,
-      subAction: null
+      subAction: null,
+      detectedPrefix: defaultPrefix
     };
   }
 
-  const [tab, second, ...rest] = segments;
+  let detectedPrefix = null;
+  let remainingSegments = segments;
+
+  if (VALID_ROLE_PREFIXES.includes(segments[0])) {
+    detectedPrefix = segments[0];
+    remainingSegments = segments.slice(1);
+  }
+
+  if (remainingSegments.length === 0) {
+    return {
+      tab: defaultTab,
+      selectedRecordId: null,
+      subAction: null,
+      detectedPrefix: detectedPrefix || defaultPrefix
+    };
+  }
+
+  const [tab, second, ...rest] = remainingSegments;
 
   if (tab === 'login') {
-    return { tab: isAgent ? 'agent-dashboard' : 'dashboard', selectedRecordId: null, subAction: null };
+    return { tab: defaultTab, selectedRecordId: null, subAction: null, detectedPrefix };
   }
 
   if (VALID_TABS.includes(tab)) {
@@ -111,42 +146,54 @@ const parseUrlToRoute = (isAgent) => {
     ];
 
     if (isAgent && !agentAllowedTabs.includes(tab)) {
-      return { tab: 'agent-dashboard', selectedRecordId: null, subAction: null };
+      return { tab: 'agent-dashboard', selectedRecordId: null, subAction: null, detectedPrefix };
     }
     // Role protection: Staff/Super Admin cannot be trapped in agent portal tabs
     if (!isAgent && tab.startsWith('agent-')) {
-      return { tab: 'dashboard', selectedRecordId: null, subAction: null };
+      return { tab: 'dashboard', selectedRecordId: null, subAction: null, detectedPrefix };
     }
 
     if (second === 'create') {
-      return { tab, selectedRecordId: null, subAction: 'create' };
+      return { tab, selectedRecordId: null, subAction: 'create', detectedPrefix };
     }
     if (second) {
       const recordId = decodeURIComponent([second, ...rest].join('/'));
-      return { tab, selectedRecordId: recordId, subAction: 'detail' };
+      return { tab, selectedRecordId: recordId, subAction: 'detail', detectedPrefix };
     }
-    return { tab, selectedRecordId: null, subAction: null };
+    return { tab, selectedRecordId: null, subAction: null, detectedPrefix };
   }
 
   return {
-    tab: isAgent ? 'agent-dashboard' : 'dashboard',
+    tab: defaultTab,
     selectedRecordId: null,
-    subAction: null
+    subAction: null,
+    detectedPrefix
   };
 };
 
-const getUrlForRoute = (tab, recordIdOrAction) => {
-  if (!tab || tab === 'dashboard') return '/dashboard';
-  if (recordIdOrAction === 'create') return `/${tab}/create`;
-  if (recordIdOrAction) return `/${tab}/${encodeURIComponent(recordIdOrAction)}`;
-  return `/${tab}`;
+const getUrlForRoute = (tab, recordIdOrAction, roleKey = 'super_admin') => {
+  const prefix = getPrefixForRole(roleKey);
+  const cleanTab = (!tab || tab === 'dashboard' || tab === 'agent-dashboard') ? 'dashboard' : tab;
+
+  if (cleanTab === 'dashboard') {
+    return `/${prefix}/dashboard`;
+  }
+  if (recordIdOrAction === 'create') {
+    return `/${prefix}/${cleanTab}/create`;
+  }
+  if (recordIdOrAction) {
+    return `/${prefix}/${cleanTab}/${encodeURIComponent(recordIdOrAction)}`;
+  }
+  return `/${prefix}/${cleanTab}`;
 };
 
 const MainAppRouter = () => {
   const { isAuthenticated, isAgent, currentUser } = useAuth();
   const { fetchMenuApi } = useAppData();
 
-  const [routeState, setRouteState] = useState(() => parseUrlToRoute(isAgent));
+  const userRoleKey = currentUser?.roleKey || (isAgent ? 'agent' : 'super_admin');
+
+  const [routeState, setRouteState] = useState(() => parseUrlToRoute(isAgent, userRoleKey));
   const { tab: activeTab, selectedRecordId, subAction } = routeState;
 
   // On activeTab change, trigger ONLY the clicked menu's API
@@ -172,11 +219,12 @@ const MainAppRouter = () => {
     setRouteState({
       tab,
       selectedRecordId: newId,
-      subAction: newAction
+      subAction: newAction,
+      detectedPrefix: getPrefixForRole(userRoleKey)
     });
 
     if (!skipHistory && typeof window !== 'undefined') {
-      const newUrl = getUrlForRoute(tab, recordIdOrAction);
+      const newUrl = getUrlForRoute(tab, recordIdOrAction, userRoleKey);
       if (window.location.pathname !== newUrl) {
         if (replace) {
           window.history.replaceState({ tab, recordIdOrAction }, '', newUrl);
@@ -192,41 +240,38 @@ const MainAppRouter = () => {
     } else {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, []);
+  }, [userRoleKey]);
 
   // Sync state on browser back/forward buttons
   useEffect(() => {
     const handlePopState = () => {
-      const parsed = parseUrlToRoute(isAgent);
+      const parsed = parseUrlToRoute(isAgent, userRoleKey);
       setRouteState(parsed);
     };
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [isAgent]);
+  }, [isAgent, userRoleKey]);
 
-  // Role-based route guard: keep activeTab strictly aligned with user role
+  // Role-based route guard: keep activeTab strictly aligned with user role & sync namespaced URL
   useEffect(() => {
     if (!isAuthenticated) return;
-
-    const userRoleKey = currentUser?.roleKey || (isAgent ? 'agent' : 'super_admin');
 
     if (!hasModulePermission(userRoleKey, activeTab)) {
       const defaultTab = userRoleKey === 'agent' ? 'agent-dashboard' : 'dashboard';
       console.warn(`[RouteGuard] Role '${userRoleKey}' is restricted from accessing tab '${activeTab}'. Redirecting to ${defaultTab}.`);
       navigateTo(defaultTab, null, { replace: true });
+      return;
     }
-  }, [isAuthenticated, isAgent, currentUser, activeTab, navigateTo]);
 
-  // Keep root URL synced when landing on /
-  useEffect(() => {
-    if (isAuthenticated && typeof window !== 'undefined') {
-      if (window.location.pathname === '/' || window.location.pathname === '') {
-        const targetUrl = getUrlForRoute(activeTab, subAction === 'create' ? 'create' : selectedRecordId);
-        window.history.replaceState({ tab: activeTab }, '', targetUrl);
+    // Keep browser URL aligned with namespaced role route
+    if (typeof window !== 'undefined') {
+      const expectedUrl = getUrlForRoute(activeTab, subAction === 'create' ? 'create' : selectedRecordId, userRoleKey);
+      if (window.location.pathname !== expectedUrl) {
+        window.history.replaceState({ tab: activeTab, recordIdOrAction: selectedRecordId }, '', expectedUrl);
       }
     }
-  }, [isAuthenticated, activeTab, selectedRecordId, subAction]);
+  }, [isAuthenticated, isAgent, userRoleKey, activeTab, selectedRecordId, subAction, navigateTo]);
 
   // If user is not authenticated, show the Login Page
   if (!isAuthenticated) {
@@ -236,11 +281,11 @@ const MainAppRouter = () => {
     return (
       <LoginPage
         onLoginSuccess={(loggedUser) => {
-          const userRoleKey = loggedUser?.roleKey || 'super_admin';
-          const isUserAgent = userRoleKey === 'agent';
-          const parsed = parseUrlToRoute(isUserAgent);
+          const roleKey = loggedUser?.roleKey || 'super_admin';
+          const isUserAgent = roleKey === 'agent';
+          const parsed = parseUrlToRoute(isUserAgent, roleKey);
 
-          if (parsed.tab && hasModulePermission(userRoleKey, parsed.tab)) {
+          if (parsed.tab && hasModulePermission(roleKey, parsed.tab)) {
             navigateTo(parsed.tab, parsed.selectedRecordId || parsed.subAction, { replace: true });
           } else {
             const defaultTab = isUserAgent ? 'agent-dashboard' : 'dashboard';

@@ -13,6 +13,23 @@ import {
 
 const AuthContext = createContext(null);
 
+export const ROLE_TITLES = {
+  super_admin: 'Super Admin',
+  operations: 'Operations Coordinator',
+  documentation: 'Documentation Staff',
+  warehouse: 'Warehouse Staff',
+  agent: 'Destination Agent',
+};
+
+export const normalizeUser = (user) => {
+  if (!user) return null;
+  const roleTitle = user.role || ROLE_TITLES[user.roleKey] || 'Staff';
+  return {
+    ...user,
+    role: roleTitle,
+  };
+};
+
 export const AuthProvider = ({ children }) => {
   const [usersList, setUsersList] = useState(() => {
     initializeStorage();
@@ -41,7 +58,7 @@ export const AuthProvider = ({ children }) => {
     const saved = localStorage.getItem('kers_active_user');
     if (isAuth && token && saved) {
       try {
-        return JSON.parse(saved);
+        return normalizeUser(JSON.parse(saved));
       } catch {
         return null;
       }
@@ -83,7 +100,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const res = await apiClient.get('/auth/me');
         if (res && res.data) {
-          const user = res.data.user || res.data;
+          const user = normalizeUser(res.data.user || res.data);
           setCurrentUser(user);
           setIsAuthenticated(true);
           localStorage.setItem('kers_active_user', JSON.stringify(user));
@@ -130,7 +147,7 @@ export const AuthProvider = ({ children }) => {
       const authResult = res?.data || res;
       if (authResult && authResult.token) {
         persistToken(authResult.token);
-        const loggedUser = authResult.user || targetUser;
+        const loggedUser = normalizeUser(authResult.user || targetUser);
         setCurrentUser(loggedUser);
         setIsAuthenticated(true);
         localStorage.setItem('kers_is_authenticated', 'true');
@@ -177,7 +194,7 @@ export const AuthProvider = ({ children }) => {
       const authResult = res?.data || res;
       if (authResult && authResult.token) {
         persistToken(authResult.token);
-        const loggedUser = authResult.user || found;
+        const loggedUser = normalizeUser(authResult.user || found);
         setCurrentUser(loggedUser);
         setIsAuthenticated(true);
         localStorage.setItem('kers_is_authenticated', 'true');
@@ -190,11 +207,12 @@ export const AuthProvider = ({ children }) => {
 
     // Fallback persona switch for offline / mock resilience
     persistToken('local-session-active');
-    setCurrentUser(found);
+    const normalizedFound = normalizeUser(found);
+    setCurrentUser(normalizedFound);
     setIsAuthenticated(true);
     localStorage.setItem('kers_is_authenticated', 'true');
-    localStorage.setItem('kers_active_user', JSON.stringify(found));
-    return found;
+    localStorage.setItem('kers_active_user', JSON.stringify(normalizedFound));
+    return normalizedFound;
   };
 
   const [rolePermissionsMap, setRolePermissionsMap] = useState(() => {

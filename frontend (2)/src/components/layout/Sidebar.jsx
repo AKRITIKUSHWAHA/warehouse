@@ -235,10 +235,24 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#FFFFFF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {currentUser?.name}
+                {currentUser?.name || 'Staff User'}
               </div>
-              <div style={{ fontSize: '0.68rem', color: '#64748B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div style={{ fontSize: '0.68rem', color: '#94A3B8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {currentUser?.email}
+              </div>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                padding: '1px 6px',
+                borderRadius: '4px',
+                fontSize: '0.63rem',
+                fontWeight: 600,
+                background: 'rgba(56, 189, 248, 0.12)',
+                color: '#38BDF8',
+                marginTop: '3px',
+                width: 'fit-content'
+              }}>
+                {currentUser?.role || (currentUser?.roleKey === 'super_admin' ? 'Super Admin' : currentUser?.roleKey === 'warehouse' ? 'Warehouse Staff' : currentUser?.roleKey === 'documentation' ? 'Documentation Staff' : currentUser?.roleKey === 'operations' ? 'Operations Coordinator' : currentUser?.roleKey === 'agent' ? 'Destination Agent' : 'Staff')}
               </div>
             </div>
           </div>

@@ -455,7 +455,7 @@ export async function seedDatabase(): Promise<void> {
       userCode: 'USR-005',
       name: 'Elena Rostova',
       email: 'elena.r@vicustoms.com',
-      roleKey: ROLES.WAREHOUSE_STAFF,
+      roleKey: ROLES.OPERATIONS,
       department: 'Vessel Operations & Consolidations',
       passwordHash: defaultPasswordHash,
       status: 'Active',

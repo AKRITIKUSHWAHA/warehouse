@@ -292,10 +292,10 @@ export const TopHeader = ({
 
             <div className="hide-mobile" style={{ display: 'flex', flexDirection: 'column', textAlign: 'left', lineHeight: 1.15 }}>
               <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#0A192F' }}>
-                {currentUser?.name}
+                {currentUser?.name || 'Staff User'}
               </span>
-              <span style={{ fontSize: '0.68rem', color: '#64748B' }}>
-                {currentUser?.role}
+              <span style={{ fontSize: '0.68rem', color: '#0284C7', fontWeight: 600 }}>
+                {currentUser?.role || (currentUser?.roleKey === 'super_admin' ? 'Super Admin' : currentUser?.roleKey === 'warehouse' ? 'Warehouse Staff' : currentUser?.roleKey === 'documentation' ? 'Documentation Staff' : currentUser?.roleKey === 'operations' ? 'Operations Coordinator' : currentUser?.roleKey === 'agent' ? 'Destination Agent' : 'Staff')}
               </span>
             </div>
 
