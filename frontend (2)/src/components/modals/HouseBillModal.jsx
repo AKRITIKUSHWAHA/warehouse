@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, FileText, Check } from 'lucide-react';
+import { useAppData } from '../../context/AppDataContext';
 
 export const HouseBillModal = ({
   isOpen,
@@ -7,6 +8,7 @@ export const HouseBillModal = ({
   hbl = null,
   onSave
 }) => {
+  const { customers = [] } = useAppData();
   const hasInitializedRef = useRef(false);
   const [formData, setFormData] = useState({
     cargoDescription: '',
@@ -141,7 +143,28 @@ export const HouseBillModal = ({
 
             <div className="grid grid-cols-2 gap-3">
               <div className="form-group">
-                <label className="form-label">Shipper Name</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <label className="form-label" style={{ margin: 0 }}>Shipper Name</label>
+                  <select
+                    style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', maxWidth: '170px' }}
+                    defaultValue=""
+                    onChange={(e) => {
+                      const c = customers.find(cust => cust.id === e.target.value);
+                      if (c) {
+                        setFormData(prev => ({
+                          ...prev,
+                          shipperName: c.name,
+                          shipperAddress: c.address || prev.shipperAddress
+                        }));
+                      }
+                    }}
+                  >
+                    <option value="" disabled>From Customers...</option>
+                    {customers.map(c => (
+                      <option key={`hb-m-shipper-${c.id}`} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
                 <input
                   type="text"
                   className="form-control"
@@ -150,7 +173,28 @@ export const HouseBillModal = ({
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">Consignee Name</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <label className="form-label" style={{ margin: 0 }}>Consignee Name</label>
+                  <select
+                    style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', maxWidth: '170px' }}
+                    defaultValue=""
+                    onChange={(e) => {
+                      const c = customers.find(cust => cust.id === e.target.value);
+                      if (c) {
+                        setFormData(prev => ({
+                          ...prev,
+                          consigneeName: c.name,
+                          consigneeAddress: c.address || prev.consigneeAddress
+                        }));
+                      }
+                    }}
+                  >
+                    <option value="" disabled>From Customers...</option>
+                    {customers.map(c => (
+                      <option key={`hb-m-consignee-${c.id}`} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
                 <input
                   type="text"
                   className="form-control"

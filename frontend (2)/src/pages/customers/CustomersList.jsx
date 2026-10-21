@@ -77,12 +77,20 @@ export const CustomersList = ({ onNavigate }) => {
         const wrCount = (warehouseReceipts || []).filter(w =>
           (item.id && w.customerId === item.id) ||
           (item.customerNumber && w.customerId === item.customerNumber) ||
-          (itemLower && (w.customer || w.customerName || '').trim().toLowerCase() === itemLower)
+          (itemLower && (
+            (w.customer || w.customerName || '').trim().toLowerCase() === itemLower ||
+            (w.shipper || '').toLowerCase().includes(itemLower) ||
+            (w.consignee || '').toLowerCase().includes(itemLower)
+          ))
         ).length;
         const hblCount = (houseBills || []).filter(h =>
           (item.id && h.customerId === item.id) ||
           (item.customerNumber && h.customerId === item.customerNumber) ||
-          (itemLower && (h.customerName || (typeof h.consignee === 'object' ? h.consignee?.name : h.consignee) || '').trim().toLowerCase() === itemLower)
+          (itemLower && (
+            (h.customerName || '').trim().toLowerCase() === itemLower ||
+            (typeof h.consignee === 'object' ? h.consignee?.name : h.consignee || '').toLowerCase().includes(itemLower) ||
+            (typeof h.shipper === 'object' ? h.shipper?.name : h.shipper || '').toLowerCase().includes(itemLower)
+          ))
         ).length;
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '0.75rem' }}>
@@ -161,8 +169,8 @@ export const CustomersList = ({ onNavigate }) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       <PageHeader
-        title="Customer Profiles & Consignees"
-        subtitle="Manage master shipping clients, contact directories, tax identifiers, and default destination ports."
+        title="Customers"
+        subtitle="Manage master shipping customer profiles. The same customer can act as Shipper or Consignee across all shipments and documentation."
         icon={Building2}
         breadcrumbs={[
           { label: 'Management', href: '#' },

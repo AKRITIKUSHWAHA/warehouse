@@ -10,7 +10,7 @@ export const houseBillService = {
       if (Array.isArray(apiData) && apiData.length > 0) {
         const mapped = apiData.map(item => ({
           ...item,
-          customerName: item.customerName || (typeof item.consignee === 'object' ? item.consignee.name : item.consignee) || '',
+          customerName: item.customerName || item.customer || '',
           totalCft: item.totalCft !== undefined ? Number(item.totalCft) : 0,
           totalCbm: item.totalCbm !== undefined ? Number(item.totalCbm) : 0,
           totalWeightLbs: item.totalWeightLbs !== undefined ? Number(item.totalWeightLbs) : 0,
@@ -58,7 +58,7 @@ export const houseBillService = {
       if (item) {
         return {
           ...item,
-          customerName: item.customerName || (typeof item.consignee === 'object' ? item.consignee.name : item.consignee) || '',
+          customerName: item.customerName || item.customer || '',
           totalCft: item.totalCft !== undefined ? Number(item.totalCft) : 0,
           totalCbm: item.totalCbm !== undefined ? Number(item.totalCbm) : 0,
           totalWeightLbs: item.totalWeightLbs !== undefined ? Number(item.totalWeightLbs) : 0,
@@ -211,8 +211,8 @@ export const houseBillService = {
         address: "Miami CFS Logistics Hub, FL"
       },
       consignee: data.consignee || {
-        name: data.customerName || linkedWrs[0]?.customer || "Consignee",
-        address: linkedWrs[0]?.consignee || "Destination Port Area"
+        name: data.consigneeName || linkedWrs[0]?.consignee || "Consignee",
+        address: linkedWrs[0]?.destinationPort || "Destination Port Area"
       },
       notifyParty: data.notifyParty || {
         name: linkedWrs[0]?.agentName || "Caribbean Express Freight Ltd.",

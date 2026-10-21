@@ -9,7 +9,7 @@ export const ManifestModal = ({
   manifest = null,
   isEdit = false
 }) => {
-  const { billsOfLading, ports, vessels, houseBills } = useAppData();
+  const { billsOfLading, ports, vessels, houseBills, customers = [] } = useAppData();
   const hasInitializedRef = useRef(false);
 
   const getPortCode = (p) => p?.portCode || p?.code || 'NAS';
@@ -135,7 +135,7 @@ export const ManifestModal = ({
             hblNumber: h.hblNumber,
             blNumber: bl.blNumber,
             shipper: typeof h.shipper === 'object' ? h.shipper.name : h.shipper || 'CFS Miami Hub',
-            consignee: typeof h.consignee === 'object' ? h.consignee.name : h.consignee || h.customerName || 'Consignee',
+            consignee: typeof h.consignee === 'object' ? h.consignee.name : h.consignee || 'Consignee',
             notifyParty: typeof h.notifyParty === 'object' ? h.notifyParty.name : h.notifyParty || bl.agentName || 'Port Destination Agent',
             containerNumber: bl.containerNumber || 'MSKU-829104-5',
             sealNumber: bl.sealNumber || 'SEAL-VI-8821',

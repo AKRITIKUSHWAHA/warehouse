@@ -117,7 +117,7 @@ Destination port partner agencies (e.g. Caribbean Express Freight Ltd.).
 ---
 
 ### 6. `customers`
-Commercial and personal freight shippers/importers.
+Commercial and personal freight customers (act as shippers and/or consignees).
 - `id` (UUID, PK)
 - `customer_number` (TEXT, NOT NULL, UNIQUE) — e.g. `'CUS-2026-0001'`
 - `name` (TEXT, NOT NULL)
@@ -129,7 +129,7 @@ Commercial and personal freight shippers/importers.
 - `destination_port` (TEXT)
 - `destination_code` (TEXT) — Links to port code e.g. `'NAS'`
 - `tax_id` (TEXT) — e.g. `'TIN-BS-994821'`
-- `account_type` (TEXT, DEFAULT `'Commercial Importer'`)
+- `account_type` (TEXT, DEFAULT `'Commercial Customer'`)
 - `credit_terms` (TEXT, DEFAULT `'Net 30'`)
 - `status` (TEXT, DEFAULT `'Active'`, NOT NULL)
 - `created_at` (TIMESTAMPTZ, DEFAULT `now()`, NOT NULL)

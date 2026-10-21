@@ -72,18 +72,26 @@ export const CustomerDetail = ({ customerId, onNavigate }) => {
   const custId = customer.id;
   const custNum = customer.customerNumber;
 
-  // Linked Warehouse Receipts
+  // Linked Warehouse Receipts (As Customer Account, Shipper, or Consignee)
   const linkedWrs = (warehouseReceipts || []).filter(
     w => (custId && w.customerId === custId) ||
          (custNum && w.customerId === custNum) ||
-         (custNameLower && (w.customer || w.customerName || '').trim().toLowerCase() === custNameLower)
+         (custNameLower && (
+           (w.customer || w.customerName || '').trim().toLowerCase() === custNameLower ||
+           (w.shipper || '').toLowerCase().includes(custNameLower) ||
+           (w.consignee || '').toLowerCase().includes(custNameLower)
+         ))
   );
 
-  // Linked House Bills
+  // Linked House Bills (As Customer Account, Shipper, or Consignee)
   const linkedHbls = (houseBills || []).filter(
     h => (custId && h.customerId === custId) ||
          (custNum && h.customerId === custNum) ||
-         (custNameLower && (h.customerName || (typeof h.consignee === 'object' ? h.consignee?.name : h.consignee) || '').trim().toLowerCase() === custNameLower)
+         (custNameLower && (
+           (h.customerName || '').trim().toLowerCase() === custNameLower ||
+           (typeof h.consignee === 'object' ? h.consignee?.name : h.consignee || '').toLowerCase().includes(custNameLower) ||
+           (typeof h.shipper === 'object' ? h.shipper?.name : h.shipper || '').toLowerCase().includes(custNameLower)
+         ))
   );
 
   return (

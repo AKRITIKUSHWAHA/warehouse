@@ -13,7 +13,7 @@ export const customers = pgTable('customers', {
   destinationPort: text('destination_port'), // 'NAS - Nassau, Bahamas'
   destinationCode: text('destination_code'), // 'NAS'
   taxId: text('tax_id'),
-  accountType: text('account_type'), // 'Commercial Importer' | 'Wholesaler' | etc.
+  accountType: text('account_type').default('Commercial Customer'), // 'Commercial Customer' | 'Wholesaler' | 'Retail' | 'Corporate'
   creditTerms: text('credit_terms'), // 'Net 30' | 'Net 15' | 'Prepaid'
   notes: text('notes'),
   status: text('status').default('Active').notNull(),

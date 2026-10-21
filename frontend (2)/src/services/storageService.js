@@ -37,9 +37,9 @@ const KEYS = {
 
 // Initialize localStorage with mock seed data if empty
 export const initializeStorage = () => {
-  const CLEAN_SLATE_KEY = 'kers_clean_slate_v6';
+  const CLEAN_SLATE_KEY = 'kers_clean_slate_v7';
   if (!localStorage.getItem(CLEAN_SLATE_KEY)) {
-    // Clear all transactional collections so UI strictly mirrors live database
+    // Clear all transactional and test collections so UI strictly mirrors live clean database
     localStorage.setItem(KEYS.CONTAINERS, JSON.stringify([]));
     localStorage.setItem(KEYS.VESSELS, JSON.stringify([]));
     localStorage.setItem(KEYS.VOYAGES, JSON.stringify([]));
@@ -52,12 +52,13 @@ export const initializeStorage = () => {
     localStorage.setItem(KEYS.CUSTOMERS, JSON.stringify([]));
     localStorage.setItem(KEYS.MANIFESTS, JSON.stringify([]));
     localStorage.setItem(KEYS.DOCUMENTS, JSON.stringify([]));
+    localStorage.setItem(KEYS.AUDIT_LOGS, JSON.stringify([]));
+    localStorage.setItem(KEYS.AGENTS, JSON.stringify([]));
+    localStorage.setItem(KEYS.PORTS, JSON.stringify([]));
 
     // Master configuration
     localStorage.setItem(KEYS.USERS, JSON.stringify(initialUsers));
     localStorage.setItem(KEYS.ROLES, JSON.stringify(initialRolesPermissions));
-    localStorage.setItem(KEYS.AGENTS, JSON.stringify(initialAgents));
-    localStorage.setItem(KEYS.PORTS, JSON.stringify(initialPorts));
     localStorage.setItem(KEYS.SETTINGS, JSON.stringify(initialSettings));
     localStorage.setItem(CLEAN_SLATE_KEY, 'true');
   }

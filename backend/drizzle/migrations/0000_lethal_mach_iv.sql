@@ -86,7 +86,7 @@ CREATE TABLE "customers" (
 	"destination_port" text,
 	"destination_code" text,
 	"tax_id" text,
-	"account_type" text,
+	"account_type" text DEFAULT 'Commercial Customer',
 	"credit_terms" text,
 	"notes" text,
 	"status" text DEFAULT 'Active' NOT NULL,

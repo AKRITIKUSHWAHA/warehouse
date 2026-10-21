@@ -2,7 +2,7 @@
  * API Configuration & Base Fetch Client for VI Customs Backend
  */
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.port === '5173' ? '/api/v1' : 'http://127.0.0.1:5000/api/v1');
+export const API_BASE_URL = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.port === '5173' ? '/api/v1' : 'http://127.0.0.1:5001/api/v1');
 export const TOKEN_STORAGE_KEY = 'kers_token';
 
 /**

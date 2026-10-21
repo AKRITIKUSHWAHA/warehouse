@@ -17,6 +17,9 @@ export const portService = {
           }));
           setStored(KEYS.PORTS, mapped);
           return mapped;
+        } else {
+          setStored(KEYS.PORTS, []);
+          return [];
         }
       }
     } catch (e) {

@@ -10,7 +10,7 @@ const API_BASE_URL = isRemoteUrl
   ? ENV_API_URL
   : (typeof window !== 'undefined' && window.location.port === '5173'
       ? '/api/v1'
-      : (ENV_API_URL || 'http://127.0.0.1:5000/api/v1'));
+      : (ENV_API_URL || 'http://127.0.0.1:5001/api/v1'));
 
 export const apiClient = {
   getToken() {

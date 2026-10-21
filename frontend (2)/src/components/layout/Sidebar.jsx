@@ -55,7 +55,7 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
             icon: LayoutDashboard,
             moduleId: 'dashboard'
           },
-          { id: 'customers', label: 'Customers & Consignees', icon: Users, moduleId: 'customers' },
+          { id: 'customers', label: 'Customers', icon: Users, moduleId: 'customers' },
           { id: 'warehouse-receipts', label: 'Warehouse Receipts', icon: Package, moduleId: 'warehouse-receipts' },
           { id: 'cargo', label: 'Cargo Inventory', icon: Box, moduleId: 'cargo' },
           { id: 'documents', label: roleKey === 'documentation' ? 'PDF Archive & Labels' : 'Labels & Printouts', icon: roleKey === 'documentation' ? FileStack : Tag, moduleId: 'documents' }

@@ -99,7 +99,7 @@ export const customerService = {
       destinationPort: data.destinationPort || "Port of Nassau (BSNAS)",
       destinationCode: data.destinationCode || "NAS",
       taxId: data.taxId || "",
-      accountType: data.accountType || "Commercial Importer",
+      accountType: data.accountType || "Commercial Customer",
       creditTerms: data.creditTerms || "Net 30",
       notes: data.notes || "",
       status: data.status || "Active"

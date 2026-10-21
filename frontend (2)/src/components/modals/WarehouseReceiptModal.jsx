@@ -8,11 +8,13 @@ export const WarehouseReceiptModal = ({
   onSave,
   receipt = null
 }) => {
-  const { ports, agents } = useAppData();
+  const { ports, agents, customers = [] } = useAppData();
   const hasInitializedRef = useRef(false);
 
   const [formData, setFormData] = useState({
+    customerId: '',
     customer: '',
+    customerName: '',
     consignee: '',
     shipper: '',
     packageCount: 1,
@@ -38,7 +40,9 @@ export const WarehouseReceiptModal = ({
 
     if (receipt) {
       setFormData({
-        customer: receipt.customer || '',
+        customerId: receipt.customerId || '',
+        customer: receipt.customer || receipt.customerName || '',
+        customerName: receipt.customerName || receipt.customer || '',
         consignee: receipt.consignee || '',
         shipper: receipt.shipper || '',
         packageCount: receipt.packageCount || 1,
@@ -95,8 +99,9 @@ export const WarehouseReceiptModal = ({
 
     onSave({
       ...formData,
-      customerName: formData.customer || formData.shipper || formData.consignee || 'General Cargo',
-      customer: formData.customer || formData.shipper || formData.consignee || 'General Cargo',
+      customerId: formData.customerId || receipt?.customerId || null,
+      customerName: formData.customerName || formData.customer || receipt?.customerName || receipt?.customer || 'General Cargo',
+      customer: formData.customer || formData.customerName || receipt?.customer || 'General Cargo',
       consignee: formData.consignee,
       shipper: formData.shipper,
       cargoDescription: formData.cargoDescription,
@@ -149,20 +154,87 @@ export const WarehouseReceiptModal = ({
           }}
         >
           <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '72vh', overflowY: 'auto' }}>
+            <div className="form-group">
+              <label className="form-label">Customer Account Profile</label>
+              <select
+                className="form-select"
+                value={formData.customerId || ''}
+                onChange={(e) => {
+                  const cust = customers.find(c => c.id === e.target.value);
+                  if (cust) {
+                    setFormData(prev => ({
+                      ...prev,
+                      customerId: cust.id,
+                      customer: cust.name,
+                      customerName: cust.name
+                    }));
+                  } else {
+                    setFormData(prev => ({
+                      ...prev,
+                      customerId: '',
+                      customer: e.target.value,
+                      customerName: e.target.value
+                    }));
+                  }
+                }}
+              >
+                <option value="">{formData.customer ? `Current: ${formData.customer}` : '-- Select Customer --'}</option>
+                {customers.map(c => (
+                  <option key={c.id} value={c.id}>
+                    {c.name} ({c.customerNumber || c.id})
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="form-group">
-                <label className="form-label">Shipper / Supplier Name</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <label className="form-label" style={{ margin: 0 }}>Shipper / Supplier Name</label>
+                  <select
+                    style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', maxWidth: '170px' }}
+                    defaultValue=""
+                    onChange={(e) => {
+                      const c = customers.find(cust => cust.id === e.target.value);
+                      if (c) {
+                        setFormData(prev => ({ ...prev, shipper: c.name }));
+                      }
+                    }}
+                  >
+                    <option value="" disabled>From Customers...</option>
+                    {customers.map(c => (
+                      <option key={`shipper-${c.id}`} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
                 <input
                   type="text"
                   placeholder="e.g. Amazon Fulfillment, Supplier LLC"
                   className="form-control"
-                  value={formData.shipper || formData.customer}
-                  onChange={(e) => setFormData({ ...formData, shipper: e.target.value, customer: e.target.value })}
+                  value={formData.shipper}
+                  onChange={(e) => setFormData({ ...formData, shipper: e.target.value })}
                 />
               </div>
 
               <div className="form-group">
-                <label className="form-label">Consignee / Destination Importer <span className="required">*</span></label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <label className="form-label" style={{ margin: 0 }}>Consignee <span className="required">*</span></label>
+                  <select
+                    style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', maxWidth: '170px' }}
+                    defaultValue=""
+                    onChange={(e) => {
+                      const c = customers.find(cust => cust.id === e.target.value);
+                      if (c) {
+                        setFormData(prev => ({ ...prev, consignee: c.name }));
+                      }
+                    }}
+                  >
+                    <option value="" disabled>From Customers...</option>
+                    {customers.map(c => (
+                      <option key={`consignee-${c.id}`} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
                 <input
                   type="text"
                   required

@@ -109,7 +109,7 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
     }
   };
 
-  // Quick fill Consignee from registered accounts
+  // Quick fill Consignee from registered accounts (Independent: does NOT overwrite customer profile)
   const handleConsigneeSelect = (custId) => {
     if (!custId) return;
     if (custId === 'CREATE_NEW') {
@@ -119,23 +119,9 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
     }
     const selected = customers.find(c => c.id === custId);
     if (selected) {
-      const destP = selected.destinationPort || formData.destinationPort;
-      const destC = selected.destinationCode || (destP && destP.includes(' - ') ? destP.split(' - ')[0].trim() : formData.destinationCode);
-      const portObj = ports.find(p => getPortCode(p) === destC);
-      const matchedAgent = agents.find(a => a.assignedPortCode === destC);
-      const matchedAgentName = matchedAgent?.name || portObj?.defaultAgent || '';
-      const matchedAgentId = matchedAgent?.id || null;
-
       setFormData(prev => ({
         ...prev,
-        customerId: selected.id,
-        customer: selected.name,
-        customerName: selected.name,
-        consignee: `${selected.name}\n${selected.address || ''}\nAttn: ${selected.contactPerson || ''} (${selected.telephone || ''})`.trim(),
-        destinationPort: destP,
-        destinationCode: destC,
-        agentId: matchedAgentId,
-        agentName: matchedAgentName
+        consignee: `${selected.name}\n${selected.address || ''}\nAttn: ${selected.contactPerson || ''} (${selected.telephone || ''})`.trim()
       }));
     }
   };
@@ -270,8 +256,8 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
       ...formData,
       receivedBy: currentUser?.name ? `${currentUser.name} (${currentUser.role || 'Super Administrator'})` : 'CFS Receiving Operations',
       receivedByRole: currentUser?.role || 'Receiving Officer',
-      customer: formData.customer || formData.customerName || (formData.consignee ? formData.consignee.split('\n')[0] : 'General Consignee'),
-      customerName: formData.customerName || formData.customer || (formData.consignee ? formData.consignee.split('\n')[0] : 'General Consignee'),
+      customer: formData.customer || formData.customerName || (formData.customerId ? customers.find(c => c.id === formData.customerId)?.name : '') || (formData.shipper ? formData.shipper.split('\n')[0] : '') || 'General Cargo',
+      customerName: formData.customerName || formData.customer || (formData.customerId ? customers.find(c => c.id === formData.customerId)?.name : '') || (formData.shipper ? formData.shipper.split('\n')[0] : '') || 'General Cargo',
       packages,
       packageCount: packages.length,
       totalPieces: totals.totalPieces || 1,
@@ -458,7 +444,7 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
 
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                    <label className="form-label" style={{ margin: 0 }}>Consignee / Destination Importer <span className="required">*</span></label>
+                    <label className="form-label" style={{ margin: 0 }}>Consignee / Destination Receiver <span className="required">*</span></label>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <select
                         style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', maxWidth: '170px' }}

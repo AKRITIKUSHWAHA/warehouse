@@ -30,7 +30,7 @@ export const ManifestViewer = ({ manifest }) => {
             hblNumber: h.hblNumber,
             blNumber: bl.blNumber,
             shipper: typeof h.shipper === 'object' ? h.shipper.name : h.shipper || 'Miami CFS Hub',
-            consignee: typeof h.consignee === 'object' ? h.consignee.name : h.consignee || h.customerName || 'Consignee',
+            consignee: typeof h.consignee === 'object' ? h.consignee.name : h.consignee || 'Consignee',
             notifyParty: typeof h.notifyParty === 'object' ? h.notifyParty.name : h.notifyParty || bl.agentName || 'Port Destination Agent',
             containerNumber: bl.containerNumber || 'MSKU-829104-5',
             sealNumber: bl.sealNumber || 'SEAL-VI-8821',

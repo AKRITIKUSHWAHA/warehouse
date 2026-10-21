@@ -17,7 +17,7 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
     telephone: '',
     address: '',
     taxId: '',
-    accountType: 'Commercial Importer',
+    accountType: 'Commercial Customer',
     creditTerms: 'Net 30',
     notes: '',
     status: 'Active'
@@ -33,7 +33,7 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
         telephone: customer.telephone || customer.phone || '',
         address: customer.address || '',
         taxId: customer.taxId || '',
-        accountType: customer.accountType || 'Commercial Importer',
+        accountType: customer.accountType || 'Commercial Customer',
         creditTerms: customer.creditTerms || 'Net 30',
         notes: customer.notes || '',
         status: customer.status || 'Active',
@@ -49,7 +49,7 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
         telephone: '',
         address: '',
         taxId: '',
-        accountType: 'Commercial Importer',
+        accountType: 'Commercial Customer',
         creditTerms: 'Net 30',
         notes: '',
         status: 'Active',
@@ -188,17 +188,16 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
 
             <div className="grid grid-cols-2 gap-3">
               <div className="form-group">
-                <label className="form-label">Party Role / Account Classification</label>
+                <label className="form-label">Customer Account Classification</label>
                 <select
                   className="form-select"
                   value={formData.accountType}
                   onChange={(e) => setFormData({ ...formData, accountType: e.target.value })}
                 >
-                  <option value="Commercial Importer (Consignee)">Commercial Importer (Consignee)</option>
-                  <option value="Supplier / Vendor (Shipper)">Supplier / Vendor (Shipper)</option>
-                  <option value="Both Shipper &amp; Consignee">Both Shipper &amp; Consignee</option>
+                  <option value="Commercial Customer">Commercial Customer</option>
                   <option value="Wholesaler / Distributor">Wholesaler / Distributor</option>
-                  <option value="Private Consignee">Private Consignee</option>
+                  <option value="Retail / Personal">Retail / Personal</option>
+                  <option value="Corporate / Enterprise">Corporate / Enterprise</option>
                 </select>
               </div>
               <div className="form-group">

@@ -81,7 +81,7 @@
 
 | Method | Endpoint | Allowed Roles | Description |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/customers` | All Roles | Lists all commercial/personal importer profiles |
+| `GET` | `/customers` | All Roles | Lists all master customer profiles (shippers & consignees) |
 | `GET` | `/customers/:id` | All Roles | Gets customer details, tax ID, and default destination port |
 | `POST` | `/customers` | `super_admin`, `operations`, `documentation` | Creates new customer record |
 | `PATCH` | `/customers/:id` | `super_admin`, `operations`, `documentation` | Updates address, credit terms, notes |
@@ -99,7 +99,7 @@
   "destinationPort": "NAS - Nassau, Bahamas",
   "destinationCode": "NAS",
   "taxId": "TIN-BS-994821",
-  "accountType": "Commercial Importer",
+  "accountType": "Commercial Customer",
   "creditTerms": "Net 30"
 }
 ```

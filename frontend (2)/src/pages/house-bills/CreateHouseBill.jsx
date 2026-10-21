@@ -85,6 +85,43 @@ export const CreateHouseBill = ({ onNavigate }) => {
     customsAdminFee: 0.00
   });
 
+  // Parties state (Shipper & Consignee decoupled from customer profile)
+  const [shipperParty, setShipperParty] = useState({
+    name: 'Global Retail Suppliers Inc.',
+    address: 'Miami CFS Cargo Hub, FL'
+  });
+
+  const [consigneeParty, setConsigneeParty] = useState({
+    name: '',
+    address: '',
+    taxId: ''
+  });
+
+  React.useEffect(() => {
+    if (selectedCustomer) {
+      setConsigneeParty(prev => ({
+        name: prev.name || selectedCustomer.name || '',
+        address: prev.address || selectedCustomer.address || '',
+        taxId: prev.taxId || selectedCustomer.taxId || ''
+      }));
+    }
+  }, [selectedCustomer]);
+
+  React.useEffect(() => {
+    if (selectedWrs.length > 0 && selectedWrs[0]?.shipper) {
+      setShipperParty(prev => {
+        if (prev.name === 'Global Retail Suppliers Inc.' && selectedWrs[0].shipper) {
+          const sLines = selectedWrs[0].shipper.split('\n');
+          return {
+            name: sLines[0],
+            address: sLines.slice(1).join(', ') || 'Miami CFS Cargo Hub, FL'
+          };
+        }
+        return prev;
+      });
+    }
+  }, [selectedWrs]);
+
   // Calculate combined totals from selected WRs
   const combinedTotals = useMemo(() => {
     let totalPieces = 0;
@@ -166,20 +203,20 @@ export const CreateHouseBill = ({ onNavigate }) => {
 
   const handleCreate = async () => {
     const firstWr = selectedWrs[0];
-    const customerName = selectedCustomer?.name || selectedCustomer?.companyName || firstWr?.consignee || firstWr?.customer || firstWr?.customerName || "Consignee Importer";
+    const customerName = selectedCustomer?.name || selectedCustomer?.companyName || "Valued Customer";
 
     const payload = {
       hblNumber: formData.hblNumber,
-      customerId: selectedCustomer?.id,
+      customerId: selectedCustomer?.id || null,
       customerName: customerName,
       shipper: {
-        name: firstWr?.shipper || "Global Retail Suppliers Inc.",
-        address: "Miami CFS Cargo Hub, FL"
+        name: shipperParty.name || firstWr?.shipper || "Global Retail Suppliers Inc.",
+        address: shipperParty.address || "Miami CFS Cargo Hub, FL"
       },
       consignee: {
-        name: customerName,
-        address: selectedCustomer?.address || firstWr?.destinationPort || "Destination Port Area",
-        taxId: selectedCustomer?.taxId || ""
+        name: consigneeParty.name || customerName,
+        address: consigneeParty.address || selectedCustomer?.address || firstWr?.destinationPort || "Destination Port Area",
+        taxId: consigneeParty.taxId || selectedCustomer?.taxId || ""
       },
       notifyParty: {
         name: firstWr?.agentName || selectedCustomer?.agentName || (selectedCustomer?.destinationCode === 'NAS' ? "Caribbean Express Freight Ltd." : "Direct Consignee Delivery"),
@@ -617,6 +654,105 @@ export const CreateHouseBill = ({ onNavigate }) => {
             </div>
           </div>
 
+          {/* Transport Parties: Shipper & Consignee selected from Customers list */}
+          <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '1.25rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+              <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0A192F', margin: 0 }}>
+                Transport Parties (Shipper &amp; Consignee)
+              </h4>
+              <span style={{ fontSize: '0.75rem', color: '#64748B' }}>
+                Both selectable from the master Customers directory
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div style={{ background: '#FFFFFF', padding: '0.85rem', borderRadius: '6px', border: '1px solid #CBD5E1' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <label className="form-label" style={{ margin: 0, fontWeight: 700 }}>Shipper / Supplier</label>
+                  <select
+                    style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', maxWidth: '180px' }}
+                    defaultValue=""
+                    onChange={(e) => {
+                      const c = customers.find(cust => cust.id === e.target.value);
+                      if (c) {
+                        setShipperParty({
+                          name: c.name,
+                          address: c.address || 'Miami CFS Cargo Hub, FL'
+                        });
+                      }
+                    }}
+                  >
+                    <option value="" disabled>Select from Customers...</option>
+                    {customers.map(c => (
+                      <option key={`hb-shipper-${c.id}`} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group" style={{ marginBottom: '0.5rem' }}>
+                  <label style={{ fontSize: '0.75rem', color: '#64748B' }}>Shipper Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={shipperParty.name}
+                    onChange={(e) => setShipperParty(prev => ({ ...prev, name: e.target.value }))}
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label style={{ fontSize: '0.75rem', color: '#64748B' }}>Shipper Address</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={shipperParty.address}
+                    onChange={(e) => setShipperParty(prev => ({ ...prev, address: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <div style={{ background: '#FFFFFF', padding: '0.85rem', borderRadius: '6px', border: '1px solid #CBD5E1' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <label className="form-label" style={{ margin: 0, fontWeight: 700 }}>Consignee <span className="required">*</span></label>
+                  <select
+                    style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', maxWidth: '180px' }}
+                    defaultValue=""
+                    onChange={(e) => {
+                      const c = customers.find(cust => cust.id === e.target.value);
+                      if (c) {
+                        setConsigneeParty({
+                          name: c.name,
+                          address: c.address || 'Destination Port Area',
+                          taxId: c.taxId || ''
+                        });
+                      }
+                    }}
+                  >
+                    <option value="" disabled>Select from Customers...</option>
+                    {customers.map(c => (
+                      <option key={`hb-consignee-${c.id}`} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group" style={{ marginBottom: '0.5rem' }}>
+                  <label style={{ fontSize: '0.75rem', color: '#64748B' }}>Consignee Name</label>
+                  <input
+                    type="text"
+                    required
+                    className="form-control"
+                    value={consigneeParty.name}
+                    onChange={(e) => setConsigneeParty(prev => ({ ...prev, name: e.target.value }))}
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label style={{ fontSize: '0.75rem', color: '#64748B' }}>Delivery Address / Area</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={consigneeParty.address}
+                    onChange={(e) => setConsigneeParty(prev => ({ ...prev, address: e.target.value }))}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* ⭐ FREIGHT RATES & CHARGES ENTRY CARD ⭐ */}
           <div style={{ background: '#F0FDF4', border: '2px solid #86EFAC', borderRadius: '8px', padding: '1.25rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
@@ -703,7 +839,9 @@ export const CreateHouseBill = ({ onNavigate }) => {
           <div className="grid grid-cols-2 gap-4" style={{ fontSize: '0.85rem' }}>
             <div style={{ background: '#F8FAFC', padding: '1rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
               <h4 style={{ fontSize: '0.85rem', color: '#0A192F', marginBottom: '0.5rem' }}>Party Information</h4>
-              <div><strong>Consignee:</strong> {selectedCustomer?.name}</div>
+              <div><strong>Customer Profile:</strong> {selectedCustomer?.name}</div>
+              <div><strong>Shipper:</strong> {shipperParty.name}</div>
+              <div><strong>Consignee:</strong> {consigneeParty.name}</div>
               <div><strong>Destination Port:</strong> {selectedCustomer?.destinationPort}</div>
               <div><strong>Terms:</strong> <span style={{ color: '#0284C7', fontWeight: 700 }}>{formData.freightTerms}</span></div>
             </div>

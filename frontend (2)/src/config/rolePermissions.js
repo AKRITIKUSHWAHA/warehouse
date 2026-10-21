@@ -16,9 +16,9 @@ export const SYSTEM_MODULES = [
   },
   {
     id: 'customers',
-    label: 'Customers & Consignees',
+    label: 'Customers',
     category: 'Intake & Core',
-    description: 'Customer directory, account details, linked consignees and shippers',
+    description: 'Master customer directory (shippers & consignees), contact details and destination ports',
     icon: 'Users',
     tabs: ['customers']
   },

@@ -70,7 +70,7 @@ export const WarehouseReceiptDetail = ({ receiptId, onNavigate }) => {
       <div className="no-print" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
         <PageHeader
           title={`Warehouse Receipt ${receipt.receiptNumber}`}
-          subtitle={`Intake on ${receipt.date || new Date().toISOString().slice(0, 10)} for ${receipt.customerName || receipt.customer || receipt.consignee || 'General Cargo'} (${receipt.destinationPort || 'NAS'})`}
+          subtitle={`Intake on ${receipt.date || new Date().toISOString().slice(0, 10)} for ${receipt.customerName || receipt.customer || 'General Cargo'} (${receipt.destinationPort || 'NAS'})`}
           icon={Package}
           breadcrumbs={[
             { label: 'Warehouse Receipts', href: '#' },
