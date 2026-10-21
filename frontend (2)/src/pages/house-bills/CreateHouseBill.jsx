@@ -418,7 +418,7 @@ export const CreateHouseBill = ({ onNavigate }) => {
                 <span>Step 2: Link Warehouse Receipts for {selectedCustomer?.name}</span>
               </h3>
               <p style={{ fontSize: '0.8rem', color: '#64748B', margin: 0 }}>
-                Select staged receipts in warehouse stock destined for <strong>{selectedCustomer?.destinationPort}</strong>.
+                Select staged receipts in warehouse stock destined for <strong>{selectedCustomer?.destinationPort || eligibleWrs[0]?.destinationPort || 'Eastern Caribbean Ports'}</strong>.
               </p>
             </div>
 
