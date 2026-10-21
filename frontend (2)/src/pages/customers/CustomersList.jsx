@@ -62,7 +62,11 @@ export const CustomersList = ({ onNavigate }) => {
       accessor: 'destinationPort',
       render: (item) => (
         <div>
-          <span style={{ fontWeight: 700, color: '#0284C7' }}>{item.destinationPort}</span>
+          {item.destinationPort ? (
+            <span style={{ fontWeight: 700, color: '#0284C7' }}>{item.destinationPort}</span>
+          ) : (
+            <span style={{ color: '#64748B', fontSize: '0.8rem' }}>All Ports</span>
+          )}
           {item.taxId && (
             <div style={{ fontSize: '0.7rem', color: '#64748B' }}>TIN: {item.taxId}</div>
           )}

@@ -96,10 +96,10 @@ export const customerService = {
       telephone: data.telephone || data.phone || "",
       phone: data.telephone || data.phone || "",
       address: data.address || "",
-      destinationPort: data.destinationPort || "Port of Nassau (BSNAS)",
-      destinationCode: data.destinationCode || "NAS",
+      destinationPort: data.destinationPort || "",
+      destinationCode: data.destinationCode || "",
       taxId: data.taxId || "",
-      accountType: data.accountType || "Commercial Customer",
+      accountType: data.accountType || "Customer",
       creditTerms: data.creditTerms || "Net 30",
       notes: data.notes || "",
       status: data.status || "Active"

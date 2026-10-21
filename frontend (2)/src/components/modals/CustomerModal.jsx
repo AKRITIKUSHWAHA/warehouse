@@ -1,14 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, Building2, User, Phone, Mail, MapPin, Anchor, FileText, Check } from 'lucide-react';
-import { useAppData } from '../../context/AppDataContext';
+import { X, Building2, User, Phone, Mail, MapPin, Check } from 'lucide-react';
 
 export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSave }) => {
-  const { ports = [] } = useAppData();
-  const firstPort = (ports && ports.length > 0) ? ports[0] : null;
-  const defaultPort = firstPort
-    ? `${firstPort.code || firstPort.portCode} - ${firstPort.name}`
-    : '';
-
   const [formData, setFormData] = useState({
     name: '',
     companyName: '',
@@ -17,10 +10,12 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
     telephone: '',
     address: '',
     taxId: '',
-    accountType: 'Commercial Customer',
+    accountType: 'Customer',
     creditTerms: 'Net 30',
     notes: '',
-    status: 'Active'
+    status: 'Active',
+    destinationPort: '',
+    destinationCode: ''
   });
 
   useEffect(() => {
@@ -33,12 +28,12 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
         telephone: customer.telephone || customer.phone || '',
         address: customer.address || '',
         taxId: customer.taxId || '',
-        accountType: customer.accountType || 'Commercial Customer',
+        accountType: 'Customer',
         creditTerms: customer.creditTerms || 'Net 30',
         notes: customer.notes || '',
         status: customer.status || 'Active',
-        destinationPort: customer.destinationPort || defaultPort,
-        destinationCode: customer.destinationCode || (customer.destinationPort ? customer.destinationPort.split(' - ')[0] : ''),
+        destinationPort: customer.destinationPort || '',
+        destinationCode: customer.destinationCode || '',
       });
     } else {
       setFormData({
@@ -49,15 +44,15 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
         telephone: '',
         address: '',
         taxId: '',
-        accountType: 'Commercial Customer',
+        accountType: 'Customer',
         creditTerms: 'Net 30',
         notes: '',
         status: 'Active',
-        destinationPort: defaultPort,
-        destinationCode: defaultPort ? defaultPort.split(' - ')[0] : '',
+        destinationPort: '',
+        destinationCode: '',
       });
     }
-  }, [customer, isEdit, isOpen, defaultPort]);
+  }, [customer, isEdit, isOpen]);
 
   if (!isOpen) return null;
 
@@ -66,8 +61,9 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
     const payload = {
       ...formData,
       companyName: formData.name,
-      destinationPort: formData.destinationPort || customer?.destinationPort || defaultPort,
-      destinationCode: formData.destinationCode || customer?.destinationCode || (defaultPort ? defaultPort.split(' - ')[0] : ''),
+      accountType: 'Customer',
+      destinationPort: formData.destinationPort || customer?.destinationPort || '',
+      destinationCode: formData.destinationCode || customer?.destinationCode || '',
     };
     try {
       await onSave(payload);
@@ -95,7 +91,7 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
             <div>
               <div className="modal-title">{isEdit ? 'Edit Customer Profile' : 'New Customer Registration'}</div>
               <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
-                {isEdit ? `Update profile for ${customer?.name}` : 'Register a commercial or retail shipping client'}
+                {isEdit ? `Update profile for ${customer?.name}` : 'Register a customer (Shipper or Consignee)'}
               </div>
             </div>
           </div>
@@ -118,7 +114,7 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
               <input
                 type="text"
                 className="form-control"
-                placeholder="e.g. Atlantic Trading Co."
+                placeholder="e.g. St. Thomas Grocery Distributors"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value, companyName: e.target.value })}
                 required
@@ -127,43 +123,40 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
 
             <div className="grid grid-cols-2 gap-3">
               <div className="form-group">
-                <label className="form-label">Contact Person <span className="required">*</span></label>
+                <label className="form-label">Contact Person</label>
                 <input
                   type="text"
                   className="form-control"
                   placeholder="e.g. Marcus Vance"
                   value={formData.contactPerson}
                   onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
-                  required
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">Telephone / WhatsApp <span className="required">*</span></label>
+                <label className="form-label">Telephone / WhatsApp</label>
                 <input
                   type="text"
                   className="form-control"
                   placeholder="e.g. +1 (340) 555-0144"
                   value={formData.telephone}
                   onChange={(e) => setFormData({ ...formData, telephone: e.target.value })}
-                  required
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="form-group">
-                <label className="form-label">Email Address <span className="required">*</span></label>
+                <label className="form-label">Email Address</label>
                 <input
                   type="email"
                   className="form-control"
-                  placeholder="e.g. orders@islandtrading.vi"
+                  placeholder="e.g. orders@stthomasgrocery.vi"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">Tax ID / TIN / VAT #</label>
+                <label className="form-label">Tax ID / TIN / VAT # (Optional)</label>
                 <input
                   type="text"
                   className="form-control"
@@ -175,7 +168,7 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
             </div>
 
             <div className="form-group">
-              <label className="form-label">Delivery Address / Destination Headquarters <span className="required">*</span></label>
+              <label className="form-label">Delivery Address / Headquarters <span className="required">*</span></label>
               <textarea
                 className="form-textarea"
                 rows={2}
@@ -186,46 +179,8 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="form-group">
-                <label className="form-label">Customer Account Classification</label>
-                <select
-                  className="form-select"
-                  value={formData.accountType}
-                  onChange={(e) => setFormData({ ...formData, accountType: e.target.value })}
-                >
-                  <option value="Commercial Customer">Commercial Customer</option>
-                  <option value="Wholesaler / Distributor">Wholesaler / Distributor</option>
-                  <option value="Retail / Personal">Retail / Personal</option>
-                  <option value="Corporate / Enterprise">Corporate / Enterprise</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label className="form-label">Default Destination Port / Hub</label>
-                <select
-                  className="form-select"
-                  value={formData.destinationPort}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    const code = val ? val.split(' - ')[0] : '';
-                    setFormData({ ...formData, destinationPort: val, destinationCode: code });
-                  }}
-                >
-                  <option value="">Select Destination Port...</option>
-                  {(ports || []).map((p) => {
-                    const portStr = `${p.code || p.portCode} - ${p.name}`;
-                    return (
-                      <option key={p.id || p.code || p.portCode} value={portStr}>
-                        {portStr}
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
-            </div>
-
             <div className="form-group">
-              <label className="form-label">Client Notes &amp; Customs Instructions</label>
+              <label className="form-label">Client Notes &amp; Customs Instructions (Optional)</label>
               <textarea
                 className="form-textarea"
                 rows={2}
@@ -242,7 +197,7 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
             </button>
             <button type="submit" className="btn btn-primary btn-sm">
               <Check size={15} />
-              <span>{isEdit ? 'Save Profile Changes' : 'Register Customer Profile'}</span>
+              <span>{isEdit ? 'Save Changes' : 'Save Customer'}</span>
             </button>
           </div>
         </form>
@@ -250,3 +205,4 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
     </div>
   );
 };
+
