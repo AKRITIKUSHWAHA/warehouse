@@ -553,44 +553,44 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
 
               {/* Package Rows Table (High Visibility & Responsiveness) */}
               <div style={{ overflowX: 'auto', border: '1px solid #CBD5E1', borderRadius: '6px', background: '#FFFFFF', marginBottom: '1rem' }}>
-                <table className="data-table" style={{ fontSize: '0.82rem', minWidth: '850px' }}>
+                <table className="data-table" style={{ fontSize: '0.82rem', minWidth: '980px', width: '100%' }}>
                   <thead>
                     <tr style={{ background: '#0A192F', color: '#FFFFFF', textAlign: 'left' }}>
-                      <th style={{ width: '85px', padding: '0.6rem 0.5rem' }}>Pkg #</th>
-                      <th style={{ width: '130px', padding: '0.6rem 0.5rem' }}>Pkg Type</th>
-                      <th style={{ minWidth: '180px', padding: '0.6rem 0.5rem' }}>Description of Contents</th>
-                      <th style={{ width: '85px', textAlign: 'center', padding: '0.6rem 0.4rem', background: '#0F2744' }}>
+                      <th style={{ width: '85px', minWidth: '85px', padding: '0.6rem 0.5rem', whiteSpace: 'nowrap' }}>Pkg #</th>
+                      <th style={{ width: '150px', minWidth: '150px', padding: '0.6rem 0.5rem', whiteSpace: 'nowrap' }}>Pkg Type</th>
+                      <th style={{ minWidth: '200px', padding: '0.6rem 0.5rem', whiteSpace: 'nowrap' }}>Description of Contents</th>
+                      <th style={{ width: '80px', minWidth: '80px', textAlign: 'center', padding: '0.6rem 0.4rem', background: '#0F2744', whiteSpace: 'nowrap' }}>
                         Length ({formData.unitType === 'inches' ? 'in' : 'cm'})
                       </th>
-                      <th style={{ width: '85px', textAlign: 'center', padding: '0.6rem 0.4rem', background: '#0F2744' }}>
+                      <th style={{ width: '80px', minWidth: '80px', textAlign: 'center', padding: '0.6rem 0.4rem', background: '#0F2744', whiteSpace: 'nowrap' }}>
                         Width ({formData.unitType === 'inches' ? 'in' : 'cm'})
                       </th>
-                      <th style={{ width: '85px', textAlign: 'center', padding: '0.6rem 0.4rem', background: '#0F2744' }}>
+                      <th style={{ width: '80px', minWidth: '80px', textAlign: 'center', padding: '0.6rem 0.4rem', background: '#0F2744', whiteSpace: 'nowrap' }}>
                         Height ({formData.unitType === 'inches' ? 'in' : 'cm'})
                       </th>
-                      <th style={{ width: '90px', textAlign: 'center', padding: '0.6rem 0.4rem' }}>
+                      <th style={{ width: '90px', minWidth: '90px', textAlign: 'center', padding: '0.6rem 0.4rem', whiteSpace: 'nowrap' }}>
                         Weight ({formData.unitType === 'inches' ? 'lbs' : 'kg'})
                       </th>
-                      <th style={{ width: '70px', textAlign: 'center', padding: '0.6rem 0.4rem' }}>Pieces</th>
-                      <th style={{ width: '85px', textAlign: 'right', padding: '0.6rem 0.5rem', color: '#FBBF24' }}>
+                      <th style={{ width: '75px', minWidth: '75px', textAlign: 'center', padding: '0.6rem 0.4rem', whiteSpace: 'nowrap' }}>Pieces</th>
+                      <th style={{ width: '95px', minWidth: '95px', textAlign: 'right', padding: '0.6rem 0.5rem', color: '#FBBF24', whiteSpace: 'nowrap' }}>
                         CFT (Primary)
                       </th>
-                      <th style={{ width: '75px', textAlign: 'right', padding: '0.6rem 0.5rem', color: '#38BDF8' }}>
+                      <th style={{ width: '85px', minWidth: '85px', textAlign: 'right', padding: '0.6rem 0.5rem', color: '#38BDF8', whiteSpace: 'nowrap' }}>
                         CBM
                       </th>
-                      <th style={{ width: '40px', textAlign: 'center' }}></th>
+                      <th style={{ width: '40px', minWidth: '40px', textAlign: 'center' }}></th>
                     </tr>
                   </thead>
                   <tbody>
                     {packages.map((pkg, idx) => (
                       <tr key={pkg.id || idx} style={{ borderBottom: '1px solid #E2E8F0' }}>
-                        <td style={{ fontWeight: 800, fontFamily: 'JetBrains Mono, monospace', color: '#0A192F', padding: '0.5rem' }}>
+                        <td style={{ fontWeight: 800, fontFamily: 'JetBrains Mono, monospace', color: '#0A192F', padding: '0.5rem', whiteSpace: 'nowrap' }}>
                           {pkg.id}
                         </td>
-                        <td style={{ padding: '0.5rem' }}>
+                        <td style={{ padding: '0.5rem', minWidth: '150px' }}>
                           <select
                             className="form-select"
-                            style={{ padding: '0.35rem 0.5rem', fontSize: '0.8rem' }}
+                            style={{ padding: '0.35rem 1.6rem 0.35rem 0.6rem', fontSize: '0.82rem', minWidth: '135px', width: '100%' }}
                             value={pkg.packageType}
                             onChange={(e) => updatePackageRow(idx, 'packageType', e.target.value)}
                           >
