@@ -34,8 +34,10 @@ export const BillOfLadingModal = ({
   const [formData, setFormData] = useState({
     blNumber: '',
     issueDate: '',
+    shipperId: '',
     shipperName: '',
     shipperAddress: '',
+    consigneeId: '',
     consigneeName: '',
     consigneeAddress: '',
     notifyPartyName: '',
@@ -109,8 +111,10 @@ export const BillOfLadingModal = ({
       setFormData({
         blNumber: bl.blNumber || '',
         issueDate: bl.issueDate || bl.createdDate || new Date().toISOString().split('T')[0],
+        shipperId: bl.shipperId || (typeof bl.shipper === 'object' ? bl.shipper?.id : '') || '',
         shipperName: bl.shipper?.name || 'KERS Global Freight Forwarding Inc.',
         shipperAddress: bl.shipper?.address || '8200 NW 33rd Street, Miami, FL 33122 USA',
+        consigneeId: bl.consigneeId || (typeof bl.consignee === 'object' ? bl.consignee?.id : '') || '',
         consigneeName: bl.consignee?.name || '',
         consigneeAddress: bl.consignee?.address || '',
         notifyPartyName: bl.notifyParty?.name || '',
@@ -341,11 +345,15 @@ export const BillOfLadingModal = ({
       agentId: bl?.agentId || currentUser?.agentId || null,
       agentName: bl?.agentName || (currentUser?.roleKey === 'agent' ? currentUser.name : ''),
       destinationPortCode: formData.portOfDischarge?.split(' - ')[0]?.trim() || '',
+      shipperId: formData.shipperId || undefined,
+      consigneeId: formData.consigneeId || undefined,
       shipper: {
+        id: formData.shipperId || undefined,
         name: formData.shipperName,
         address: formData.shipperAddress
       },
       consignee: {
+        id: formData.consigneeId || undefined,
         name: formData.consigneeName,
         address: formData.consigneeAddress
       },
@@ -614,6 +622,7 @@ export const BillOfLadingModal = ({
                         if (c) {
                           setFormData(prev => ({
                             ...prev,
+                            shipperId: c.id,
                             shipperName: c.name,
                             shipperAddress: c.address || prev.shipperAddress
                           }));
@@ -659,6 +668,7 @@ export const BillOfLadingModal = ({
                         if (c) {
                           setFormData(prev => ({
                             ...prev,
+                            consigneeId: c.id,
                             consigneeName: c.name,
                             consigneeAddress: c.address || prev.consigneeAddress
                           }));

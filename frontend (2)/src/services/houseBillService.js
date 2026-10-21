@@ -80,6 +80,8 @@ export const houseBillService = {
         hblNumber: data.hblNumber || undefined,
         customerId: data.customerId || undefined,
         customerName: data.customerName || data.customer || 'Valued Customer',
+        shipperId: data.shipperId || (typeof data.shipper === 'object' ? data.shipper?.id : undefined) || undefined,
+        consigneeId: data.consigneeId || (typeof data.consignee === 'object' ? data.consignee?.id : undefined) || undefined,
         shipper: typeof data.shipper === 'object' ? data.shipper : { name: data.shipper || data.customerName || 'General Shipper', address: 'Miami, FL' },
         consignee: typeof data.consignee === 'object' ? data.consignee : { name: data.consignee || 'Consignee', address: data.destinationPort || 'Destination Port Area' },
         notifyParty: data.notifyParty ? (typeof data.notifyParty === 'object' ? data.notifyParty : { name: data.notifyParty, address: 'Destination Port' }) : undefined,

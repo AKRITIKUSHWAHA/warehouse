@@ -91,6 +91,8 @@ export class WarehouseService {
 
     const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
     const validCustomerId = input.customerId && UUID_REGEX.test(input.customerId) ? input.customerId : null;
+    const validShipperId = (input as any).shipperId && UUID_REGEX.test((input as any).shipperId) ? (input as any).shipperId : null;
+    const validConsigneeId = (input as any).consigneeId && UUID_REGEX.test((input as any).consigneeId) ? (input as any).consigneeId : null;
     const validAgentId = input.agentId && UUID_REGEX.test(input.agentId) ? input.agentId : null;
 
     const totalWeightKg = Number((totalWeightLbs * 0.453592).toFixed(1));
@@ -104,7 +106,9 @@ export class WarehouseService {
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       customerId: validCustomerId,
       customerName: customerDisplayName,
+      shipperId: validShipperId,
       shipper: input.shipper || '',
+      consigneeId: validConsigneeId,
       consignee: input.consignee || '',
       agentId: validAgentId,
       agentName: input.agentName || '',

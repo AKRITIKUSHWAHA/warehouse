@@ -68,6 +68,9 @@ export class BillsOfLadingService {
     const cbm = Number(input.cbm) || 0;
     const cft = input.cft ? Number(input.cft) : Number((cbm * 35.3147).toFixed(2));
 
+    const validShipperId = (input as any).shipperId && UUID_REGEX.test((input as any).shipperId) ? (input as any).shipperId : null;
+    const validConsigneeId = (input as any).consigneeId && UUID_REGEX.test((input as any).consigneeId) ? (input as any).consigneeId : null;
+
     const createdBL = await this.repo.create({
       blNumber,
       type: input.type || 'Master Ocean Bill of Lading',
@@ -78,7 +81,9 @@ export class BillsOfLadingService {
       houseBillIds: input.houseBillIds || [],
       createdDate,
       issueDate,
+      shipperId: validShipperId,
       shipper: shipperObj,
+      consigneeId: validConsigneeId,
       consignee: consigneeObj,
       notifyParty: notifyObj,
       agentId: validAgentId,

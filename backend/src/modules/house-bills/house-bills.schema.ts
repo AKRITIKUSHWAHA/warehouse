@@ -34,7 +34,17 @@ export const createHouseBillSchema = z.object({
     if (typeof val === 'string' && val.trim().length > 0) return val.trim();
     return 'General Customer';
   }, z.string().min(1)),
+  shipperId: z
+    .string()
+    .optional()
+    .nullable()
+    .transform(val => (val && val.includes('-') && val.length === 36 ? val : undefined)),
   shipper: contactObjectSchema,
+  consigneeId: z
+    .string()
+    .optional()
+    .nullable()
+    .transform(val => (val && val.includes('-') && val.length === 36 ? val : undefined)),
   consignee: contactObjectSchema,
   notifyParty: contactObjectSchema.optional(),
   agentId: z

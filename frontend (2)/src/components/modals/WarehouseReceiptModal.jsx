@@ -15,14 +15,17 @@ export const WarehouseReceiptModal = ({
     customerId: '',
     customer: '',
     customerName: '',
-    consignee: '',
+    shipperId: '',
     shipper: '',
+    consigneeId: '',
+    consignee: '',
     packageCount: 1,
     packageType: 'Cartons',
     cargoDescription: '',
     lengthInches: 24,
     widthInches: 20,
     heightInches: 18,
+    weightLbs: 150,
     destinationCode: ports[0]?.code || ports[0]?.portCode || '',
     destinationPort: ports[0] ? `${ports[0].code || ports[0].portCode} - ${ports[0].name}` : '',
     status: 'Ready for Consolidation',
@@ -42,8 +45,10 @@ export const WarehouseReceiptModal = ({
         customerId: receipt.customerId || '',
         customer: receipt.customer || receipt.customerName || '',
         customerName: receipt.customerName || receipt.customer || '',
-        consignee: receipt.consignee || '',
+        shipperId: receipt.shipperId || '',
         shipper: receipt.shipper || '',
+        consigneeId: receipt.consigneeId || '',
+        consignee: receipt.consignee || '',
         packageCount: receipt.packageCount || 1,
         packageType: receipt.packageType || 'Cartons',
         cargoDescription: receipt.cargoDescription || '',
@@ -51,13 +56,13 @@ export const WarehouseReceiptModal = ({
         widthInches: receipt.widthInches || 20,
         heightInches: receipt.heightInches || 18,
         weightLbs: receipt.weightLbs || 150,
-        destinationCode: receipt.destinationCode || 'NAS',
-        destinationPort: receipt.destinationPort || 'NAS - Nassau, Bahamas',
+        destinationCode: receipt.destinationCode || ports[0]?.code || '',
+        destinationPort: receipt.destinationPort || (ports[0] ? `${ports[0].code || ports[0].portCode} - ${ports[0].name}` : ''),
         status: receipt.status || 'Ready for Consolidation',
         agentId: receipt.agentId || (agents[0]?.id || null)
       });
     }
-  }, [receipt, isOpen, agents]);
+  }, [receipt, isOpen, agents, ports]);
 
   if (!isOpen) return null;
 
@@ -99,6 +104,8 @@ export const WarehouseReceiptModal = ({
     onSave({
       ...formData,
       customerId: formData.customerId || receipt?.customerId || null,
+      shipperId: formData.shipperId || receipt?.shipperId || null,
+      consigneeId: formData.consigneeId || receipt?.consigneeId || null,
       customerName: formData.customerName || formData.customer || receipt?.customerName || receipt?.customer || 'General Cargo',
       customer: formData.customer || formData.customerName || receipt?.customer || 'General Cargo',
       consignee: formData.consignee,
@@ -196,7 +203,7 @@ export const WarehouseReceiptModal = ({
                     onChange={(e) => {
                       const c = customers.find(cust => cust.id === e.target.value);
                       if (c) {
-                        setFormData(prev => ({ ...prev, shipper: c.name }));
+                        setFormData(prev => ({ ...prev, shipperId: c.id, shipper: c.name }));
                       }
                     }}
                   >
@@ -224,7 +231,7 @@ export const WarehouseReceiptModal = ({
                     onChange={(e) => {
                       const c = customers.find(cust => cust.id === e.target.value);
                       if (c) {
-                        setFormData(prev => ({ ...prev, consignee: c.name }));
+                        setFormData(prev => ({ ...prev, consigneeId: c.id, consignee: c.name }));
                       }
                     }}
                   >

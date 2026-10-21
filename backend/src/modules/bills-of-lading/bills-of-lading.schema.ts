@@ -30,7 +30,9 @@ export const createBillOfLadingSchema = z.object({
   createdDate: z.string().optional(),
   issueDate: z.string().optional(),
 
+  shipperId: z.string().nullish(),
   shipper: z.any().default({ name: 'KERS Global Freight Forwarding Inc.', address: '8200 NW 33rd Street, Miami, FL 33122 USA' }),
+  consigneeId: z.string().nullish(),
   consignee: z.any().default({ name: 'General Consignee', address: '' }),
   notifyParty: z.any().optional(),
 

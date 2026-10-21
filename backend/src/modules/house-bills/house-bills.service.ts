@@ -91,12 +91,16 @@ export class HouseBillsService {
       notes = `${notes}\n---FREIGHT_CHARGES---\n${JSON.stringify(chargesPayload)}`;
     }
 
+    const validShipperId = (input as any).shipperId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test((input as any).shipperId) ? (input as any).shipperId : undefined;
+    const validConsigneeId = (input as any).consigneeId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test((input as any).consigneeId) ? (input as any).consigneeId : undefined;
+
     const created = await this.repo.create({
       hblNumber,
       customerId: resolvedCustomerId,
       customerName: input.customerName,
-
+      shipperId: validShipperId,
       shipper: typeof input.shipper === 'string' ? { name: input.shipper, address: 'Miami, FL' } : input.shipper,
+      consigneeId: validConsigneeId,
       consignee: typeof input.consignee === 'string' ? { name: input.consignee, address: input.destinationPort || 'Destination Port' } : input.consignee,
       notifyParty: typeof input.notifyParty === 'string' ? { name: input.notifyParty, address: 'Destination Port' } : input.notifyParty,
       agentId: input.agentId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(input.agentId) ? input.agentId : undefined,
