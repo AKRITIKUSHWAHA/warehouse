@@ -39,7 +39,17 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
     : String(nextSeq);
 
   const getPortCode = (p) => p?.portCode || p?.code || '';
-  const firstPort = ports && ports.length > 0 ? ports[0] : null;
+  const fallbackEasternCaribbeanPorts = [
+    { code: 'STT', portCode: 'STT', name: 'Port of Charlotte Amalie', island: 'St. Thomas', country: 'U.S. Virgin Islands' },
+    { code: 'STX', portCode: 'STX', name: 'Port of Christiansted', island: 'St. Croix', country: 'U.S. Virgin Islands' },
+    { code: 'STJ', portCode: 'STJ', name: 'Cruz Bay Port', island: 'St. John', country: 'U.S. Virgin Islands' },
+    { code: 'TOR', portCode: 'TOR', name: 'Port Purcell, Road Town', island: 'Tortola', country: 'British Virgin Islands' },
+    { code: 'VG', portCode: 'VG', name: 'Spanish Town Port', island: 'Virgin Gorda', country: 'British Virgin Islands' },
+    { code: 'SXM', portCode: 'SXM', name: 'Port of Philipsburg', island: 'St. Maarten', country: 'Sint Maarten' },
+    { code: 'AXA', portCode: 'AXA', name: 'Road Bay Port', island: 'Anguilla', country: 'Anguilla' }
+  ];
+  const effectivePorts = (ports && ports.length > 0) ? ports : fallbackEasternCaribbeanPorts;
+  const firstPort = effectivePorts[0];
   const defaultPort = firstPort ? `${getPortCode(firstPort)} - ${firstPort.name}` : '';
   const defaultPortCode = firstPort ? getPortCode(firstPort) : '';
   const initialAgent = defaultPortCode ? agents.find(a => a.assignedPortCode === defaultPortCode) : null;
@@ -67,6 +77,18 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
     fragile: false,
     notes: ''
   });
+
+  useEffect(() => {
+    if (!formData.destinationPort && defaultPort) {
+      setFormData(prev => ({
+        ...prev,
+        destinationPort: defaultPort,
+        destinationCode: defaultPortCode,
+        agentId: initialAgent?.id || prev.agentId,
+        agentName: initialAgentName || prev.agentName
+      }));
+    }
+  }, [defaultPort, defaultPortCode]);
 
   // Package Level Rows State (Starts Fresh with 1 Clean Row)
   const [packages, setPackages] = useState([
@@ -330,7 +352,7 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
                     <option value="">-- Select Customer Account (Optional) --</option>
                     {customers.map(c => (
                       <option key={c.id} value={c.id}>
-                        {c.name} ({c.customerNumber || c.id}) — {c.destinationCode}
+                        {c.name} ({c.customerNumber || c.id}){c.destinationCode ? ` — ${c.destinationCode}` : ''}
                       </option>
                     ))}
                   </select>
@@ -347,7 +369,7 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
                     onChange={(e) => {
                       const dest = e.target.value;
                       const code = dest.includes(' - ') ? dest.split(' - ')[0].trim() : dest;
-                      const portObj = ports.find(p => getPortCode(p) === code);
+                      const portObj = effectivePorts.find(p => getPortCode(p) === code);
                       const matchedAgent = agents.find(a => a.assignedPortCode === code);
                       const matchedAgentName = matchedAgent?.name || portObj?.defaultAgent || '';
                       const matchedAgentId = matchedAgent?.id || null;
@@ -361,7 +383,8 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
                     }}
                     required
                   >
-                    {ports.map(p => {
+                    <option value="">Select Destination Port...</option>
+                    {effectivePorts.map(p => {
                       const pCode = getPortCode(p);
                       return (
                         <option key={p.id || pCode} value={`${pCode} - ${p.name}`}>

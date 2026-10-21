@@ -4,6 +4,7 @@ import {
   roles,
   users,
   settings,
+  ports,
 } from './schema/index.js';
 import { ROLES, ROLE_DISPLAY_NAMES } from '../common/constants/roles.js';
 import { fileURLToPath } from 'url';
@@ -170,7 +171,23 @@ export async function seedDatabase(): Promise<void> {
     await db.insert(settings).values(setting).onConflictDoNothing();
   }
 
-  console.log('✅ Clean-slate system seed completed: Roles, Settings, and Staff Users only. Ports table starts empty.');
+  console.log('🌱 Seeding official Eastern Caribbean ports...');
+  const easternCaribbeanPorts = [
+    { portCode: 'STT', name: 'Port of Charlotte Amalie', island: 'St. Thomas', country: 'U.S. Virgin Islands', defaultAgent: 'VI Customs St. Thomas Agency' },
+    { portCode: 'STX', name: 'Port of Christiansted', island: 'St. Croix', country: 'U.S. Virgin Islands', defaultAgent: 'St. Croix Marine Logistics' },
+    { portCode: 'STJ', name: 'Cruz Bay Port', island: 'St. John', country: 'U.S. Virgin Islands', defaultAgent: 'Love City Cargo Services' },
+    { portCode: 'TOR', name: 'Port Purcell, Road Town', island: 'Tortola', country: 'British Virgin Islands', defaultAgent: 'Tortola Freight Agency' },
+    { portCode: 'VG', name: 'Spanish Town Port', island: 'Virgin Gorda', country: 'British Virgin Islands', defaultAgent: 'Virgin Gorda Agency' },
+    { portCode: 'SXM', name: 'Port of Philipsburg', island: 'St. Maarten', country: 'Sint Maarten', defaultAgent: 'Caribbean Island Logistics' },
+    { portCode: 'AXA', name: 'Road Bay Port', island: 'Anguilla', country: 'Anguilla', defaultAgent: 'Anguilla Port Services' },
+    { portCode: 'MIA', name: 'Port of Miami (Miami CFS)', island: 'Florida', country: 'United States', defaultAgent: 'VI Customs Brokers Miami CFS' },
+  ];
+
+  for (const p of easternCaribbeanPorts) {
+    await db.insert(ports).values(p).onConflictDoNothing();
+  }
+
+  console.log('✅ Clean-slate system seed completed: Roles, Settings, Staff Users, and Eastern Caribbean Ports.');
 }
 
 // Allow direct execution
