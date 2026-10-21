@@ -26,34 +26,26 @@ $$\text{Customer} \longrightarrow \text{Warehouse Receipt (WR)} \longrightarrow 
    - Startup Console: Explicitly logs both Fastify API server status and PostgreSQL database connection state (`PostgreSQL: wereHouseDb`).
 
 2. **PostgreSQL 18 Database Setup (`wereHouseDb`):**
-   - Connected via `pg.Pool` & Drizzle ORM at `localhost:5432`.
-   - All **20 tables migrated** with foreign keys, indexes, and cascades.
-   - Migration file: `backend/drizzle/migrations/0000_lethal_mach_iv.sql`.
+   - Connected via `pg.Pool` & Drizzle ORM.
+   - All **18 active tables migrated** with foreign keys, indexes, and cascades (containers & voyages modules removed per NVOCC agent scope).
+   - Migration files: `backend/drizzle/migrations/`.
 
 3. **Complete Dummy Data Removal (Database Clean Slate):**
-   - **16 tables zeroed / clean:** `customers`, `warehouse_receipts`, `cargo`, `house_bills`, `consolidations`, `shipments`, `bills_of_lading`, `manifests`, `containers`, `vessels`, `voyages`, `agents`, `documents`, `tracking_events`, `audit_logs`, `permissions` = **0 rows**.
-   - **4 core system tables preserved:**
+   - **15 tables zeroed / clean:** `ports`, `customers`, `vessels`, `warehouse_receipts`, `cargo`, `house_bills`, `consolidations`, `shipments`, `bills_of_lading`, `manifests`, `agents`, `documents`, `tracking_events`, `audit_logs`, `permissions` = **0 rows**.
+   - **3 core system tables preserved:**
      - `users` (5 workflow login personas)
      - `roles` (5 system roles)
-     - `ports` (11 master Caribbean port terminals)
      - `settings` (numbering rules & company profile)
 
 4. **Frontend Mock & Fallback Data Handled:**
-   - Location: `e:\KiyaanProject\WereHousePRoject\frontend (2)`
-   - Storage service auto-purge (`kers_clean_slate_v5`) implemented to ensure browser refresh flushes client cache and loads modern roles.
-   - Frontend build tested: `npm run build` succeeds in `< 1s` with 0 errors.
+   - Location: `frontend (2)`
+   - Storage service clean-slate auto-purge (`kers_clean_slate_v8`) implemented.
+   - Frontend build tested: `npm run build` succeeds cleanly with 0 errors.
 
-5. **5-Stage Enterprise Workflow & Scoped Navigation Synchronized:**
-   - Role isolation strictly configured: Carlos Mendez (`warehouse`), Elena Rostova (`operations`), Sarah Jenkins (`documentation`), David Cartwright (`agent`), Marcus Vance (`super_admin`).
+5. **5-Stage Workflow & Scoped Navigation Synchronized:**
+   - Role isolation strictly configured: Carlos Mendez (`warehouse`), Elena Rostova (`operations`), Sarah Jenkins (`documentation`), Destination Agent Staff (`agent`), Marcus Vance (`super_admin`).
    - Sidebar menus strictly scoped per persona.
    - Authoritative manual updated in `frontend (2)/workflow.md`.
-
-6. **Complete Documentation Created in `backend/`:**
-   - [API_MAP.md](file:///e:/KiyaanProject/WereHousePRoject/backend/API_MAP.md) — 19 module endpoints catalog with payloads.
-   - [DATABASE_SCHEMA.md](file:///e:/KiyaanProject/WereHousePRoject/backend/DATABASE_SCHEMA.md) — 20 PostgreSQL tables schema specification.
-   - [A_TO_Z_DATA_FLOW_MANUAL.md](file:///e:/KiyaanProject/WereHousePRoject/backend/A_TO_Z_DATA_FLOW_MANUAL.md) — End-to-end multi-persona operational manual.
-   - [IMPLEMENTATION_MAP.md](file:///e:/KiyaanProject/WereHousePRoject/backend/IMPLEMENTATION_MAP.md) — Server architecture and plugin structure.
-   - [FULL_SYSTEM_VALIDATION.md](file:///e:/KiyaanProject/WereHousePRoject/backend/FULL_SYSTEM_VALIDATION.md) — Persona QA matrix and test cases.
 
 ---
 
@@ -61,11 +53,11 @@ $$\text{Customer} \longrightarrow \text{Warehouse Receipt (WR)} \longrightarrow 
 
 | Persona Name | System Role | Email | Password | Primary Interface |
 | :--- | :--- | :--- | :--- | :--- |
-| **Carlos Mendez** | `warehouse` | `carlos.m@vicustoms.com` | `password123` | Miami CFS Intake, WRs, Cargo, 4x6 Roll Labels |
-| **Elena Rostova** | `operations` | `elena.r@vicustoms.com` | `password123` | 4-Step Consolidation Wizard, Container Packing, Shipments |
-| **Sarah Jenkins** | `documentation` | `sarah.j@vicustoms.com` | `password123` | Maritime Docs, HBL Issuance, Holds & Ocean Manifests |
-| **David Cartwright** | `agent` | `operations@caribbeanexpressbahamas.com` | `password123` | Secure Nassau Port Agent Hub, Cargo Release |
-| **Marcus Vance** | `super_admin` | `marcus.vance@vicustoms.com` | `password123` | Full HQ Console, RBAC Matrix, Audit Trail, Settings |
+| **Carlos Mendez** | `warehouse` | `carlos.m@vicustoms.com` | `<CONFIGURED_IN_SEED_OR_ENV>` | Miami CFS Intake, WRs, Cargo, 4x6 Roll Labels |
+| **Elena Rostova** | `operations` | `elena.r@vicustoms.com` | `<CONFIGURED_IN_SEED_OR_ENV>` | Consolidation Wizard, Master Shipments |
+| **Sarah Jenkins** | `documentation` | `sarah.j@vicustoms.com` | `<CONFIGURED_IN_SEED_OR_ENV>` | Maritime Docs, HBL Issuance, Holds & Ocean Manifests |
+| **Destination Agent Staff** | `agent` | `agent@vicustoms.com` | `<CONFIGURED_IN_SEED_OR_ENV>` | Secure Port Agent Hub, Cargo Release |
+| **Marcus Vance** | `super_admin` | `marcus.vance@vicustoms.com` | `<CONFIGURED_IN_SEED_OR_ENV>` | Full HQ Console, RBAC Matrix, Audit Trail, Settings |
 
 ---
 

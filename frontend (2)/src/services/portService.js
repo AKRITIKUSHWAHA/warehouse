@@ -67,7 +67,7 @@ export const portService = {
         portCode: code,
         name: data.name || `${code} Commercial Port`,
         island: data.island || 'Island',
-        country: data.country || 'Bahamas',
+        country: data.country || 'US Virgin Islands',
         defaultAgent: data.defaultAgent || 'Local Port Agency',
         status: data.status || 'Active',
       };
@@ -93,7 +93,7 @@ export const portService = {
       code,
       name: data.name || `${code} Commercial Port`,
       island: data.island || 'Island',
-      country: data.country || 'Bahamas',
+      country: data.country || 'US Virgin Islands',
       status: data.status || 'Active',
       defaultAgent: data.defaultAgent || 'Local Port Agency'
     };

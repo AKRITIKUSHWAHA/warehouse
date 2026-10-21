@@ -25,15 +25,6 @@ export const VesselsList = ({ onNavigate }) => {
       )
     },
     {
-      header: 'Classification / Type',
-      accessor: 'type',
-      render: (item) => (
-        <div style={{ fontWeight: 500, color: '#334155' }}>
-          {item.type || 'Container Vessel'}
-        </div>
-      )
-    },
-    {
       header: 'Carrier / Line',
       accessor: 'carrier',
       render: (item) => (
@@ -119,7 +110,7 @@ export const VesselsList = ({ onNavigate }) => {
         <ResponsiveTable
           columns={vesselColumns}
           data={vessels}
-          searchPlaceholder="Search vessel name, carrier, type..."
+          searchPlaceholder="Search vessel name, carrier, notes..."
           pageSize={10}
         />
       </div>

@@ -15,6 +15,13 @@
       "when": 1792559842390,
       "tag": "0001_bright_black_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792569000000,
+      "tag": "0002_clean_slate_simplification",
+      "breakpoints": true
     }
   ]
 }

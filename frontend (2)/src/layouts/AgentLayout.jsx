@@ -115,10 +115,10 @@ export const AgentLayout = ({
             AUTHENTICATED AGENT
           </div>
           <div style={{ fontWeight: 700, fontSize: '0.875rem', color: '#FFFFFF', marginTop: '2px' }}>
-            Caribbean Express Freight Ltd.
+            Destination Agency Hub
           </div>
           <div style={{ fontSize: '0.72rem', color: '#38BDF8' }}>
-            Territory: Nassau &amp; Freeport (Bahamas)
+            Territory: Eastern Caribbean Hub
           </div>
         </div>
 

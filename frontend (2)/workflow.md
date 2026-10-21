@@ -58,7 +58,7 @@ The application implements a strict **5-Role Enterprise Separation of Concerns**
 
 ### 1.1 How to Sign In:
 * Click the **Warehouse** quick-select button on the login screen (or click *Sign In →* on Carlos Mendez's persona card).
-* **Credentials:** `carlos.m@vicustoms.com` / `password123`
+* **Credentials:** `carlos.m@vicustoms.com` / `<PASSWORD>`
 * **Role Badge:** `📦 CFS Warehouse Intake`
 
 ### 1.2 Landing Page & Scoped Navigation:
@@ -108,7 +108,7 @@ The application implements a strict **5-Role Enterprise Separation of Concerns**
 
 ### 2.1 How to Sign In:
 * Click the **Operations** quick-select button on the login screen (or click *Sign In →* on Elena Rostova's card).
-* **Credentials:** `elena.r@vicustoms.com` / `password123`
+* **Credentials:** `elena.r@vicustoms.com` / `<PASSWORD>`
 * **Role Badge:** `🚢 Operations Coordinator`
 
 ### 2.2 Landing Page & Scoped Navigation:
@@ -155,7 +155,7 @@ The application implements a strict **5-Role Enterprise Separation of Concerns**
 
 ### 3.1 How to Sign In:
 * Click the **Documentation** quick-select button on the login screen (or click *Sign In →* on Sarah Jenkins's card).
-* **Credentials:** `sarah.j@vicustoms.com` / `password123`
+* **Credentials:** `sarah.j@vicustoms.com` / `<CONFIGURED_IN_SEED_OR_ENV>`
 * **Role Badge:** `📄 Documentation Specialist`
 
 ### 3.2 Landing Page & Scoped Navigation:
@@ -196,15 +196,15 @@ The application implements a strict **5-Role Enterprise Separation of Concerns**
 
 ---
 
-## 🛡️ STAGE 4: Port Reception & Delivery Clearance ➔ 🏝️ DESTINATION AGENT (David Cartwright)
+## 🛡️ STAGE 4: Port Reception & Delivery Clearance ➔ 🏝️ DESTINATION AGENT (Destination Agent Staff)
 
 ### 4.1 How to Sign In:
-* Click the **Destination Agent** quick-select button on the login screen (or click *Sign In →* on David Cartwright's card).
-* **Credentials:** `operations@caribbeanexpressbahamas.com` / `password123`
-* **Role Badge:** `🛡️ Destination Agent (Nassau Hub)`
+* Click the **Destination Agent** quick-select button on the login screen.
+* **Credentials:** `agent@vicustoms.com` / `<PASSWORD>`
+* **Role Badge:** `🛡️ Destination Agent`
 
 ### 4.2 Landing Page & Scoped Navigation:
-* **Landing Page:** Dedicated **Agent Portal (Nassau Hub)** showing assigned incoming cargo.
+* **Landing Page:** Dedicated **Agent Portal** showing assigned incoming shipments.
 * **Strict Regional Scoping:** David cannot see Miami warehouse internal files; he only sees Bahamas-bound shipments.
 * **Navigation Items:**
   * `Agent Dashboard`
@@ -234,7 +234,7 @@ The application implements a strict **5-Role Enterprise Separation of Concerns**
 
 ### 5.1 How to Sign In:
 * Click the **Super Admin** quick-select button on the login screen (or click *Sign In →* on Marcus Vance's card).
-* **Credentials:** `marcus.vance@vicustoms.com` / `password123`
+* **Credentials:** `marcus.vance@vicustoms.com` / `<PASSWORD>`
 * **Role Badge:** `⚡ Super Admin (Global HQ)`
 
 ### 5.2 Command Center Features:

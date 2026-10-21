@@ -67,7 +67,7 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
       ...formData,
       companyName: formData.name,
       destinationPort: formData.destinationPort || customer?.destinationPort || defaultPort,
-      destinationCode: formData.destinationCode || customer?.destinationCode || (defaultPort ? defaultPort.split(' - ')[0] : 'NAS'),
+      destinationCode: formData.destinationCode || customer?.destinationCode || (defaultPort ? defaultPort.split(' - ')[0] : ''),
     };
     try {
       await onSave(payload);
@@ -142,7 +142,7 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="e.g. +1 (242) 555-0144"
+                  placeholder="e.g. +1 (340) 555-0144"
                   value={formData.telephone}
                   onChange={(e) => setFormData({ ...formData, telephone: e.target.value })}
                   required
@@ -156,7 +156,7 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
                 <input
                   type="email"
                   className="form-control"
-                  placeholder="e.g. orders@atlantictradingbahamas.com"
+                  placeholder="e.g. orders@islandtrading.vi"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
@@ -167,7 +167,7 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="e.g. TIN-BS-994821"
+                  placeholder="e.g. TIN-VI-994821"
                   value={formData.taxId}
                   onChange={(e) => setFormData({ ...formData, taxId: e.target.value })}
                 />
@@ -179,7 +179,7 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
               <textarea
                 className="form-textarea"
                 rows={2}
-                placeholder="e.g. Bay Street Commercial Centre, Suite 300, Nassau, Bahamas"
+                placeholder="e.g. Veterans Drive, Suite 300, Charlotte Amalie, St. Thomas"
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 required

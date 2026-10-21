@@ -43,7 +43,7 @@
 ```json
 {
   "email": "carlos.m@vicustoms.com",
-  "password": "Password123!"
+  "password": "<STAFF_PASSWORD>"
 }
 ```
 #### Response (`200 OK`):

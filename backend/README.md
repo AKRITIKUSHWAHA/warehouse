@@ -221,10 +221,10 @@ npm run db:seed
 
 | Name | Role | Email | Password |
 |---|---|---|---|
-| Marcus Vance | `super_admin` | `marcus.vance@vicustoms.com` | `Password123!` |
-| Sarah Jenkins | `documentation` | `sarah.j@vicustoms.com` | `Password123!` |
-| Carlos Mendez | `operations` | `carlos.m@vicustoms.com` | `Password123!` |
-| David Cartwright | `agent` (Nassau) | `operations@caribbeanexpressbahamas.com` | `Password123!` |
+| Marcus Vance | `super_admin` | `marcus.vance@vicustoms.com` | `<CONFIGURED_IN_SEED_OR_ENV>` |
+| Sarah Jenkins | `documentation` | `sarah.j@vicustoms.com` | `<CONFIGURED_IN_SEED_OR_ENV>` |
+| Carlos Mendez | `operations` | `carlos.m@vicustoms.com` | `<CONFIGURED_IN_SEED_OR_ENV>` |
+| Destination Agent | `agent` | `agent@vicustoms.com` | `<CONFIGURED_IN_SEED_OR_ENV>` |
 
 ---
 

@@ -9,10 +9,10 @@
 
 | Persona | Login Email | Default Password | Role Key | Permitted Operations | Restricted Operations |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Carlos Mendez** | `carlos.m@vicustoms.com` | `Password123!` | `operations` | Customers, WR Intake, Cargo Staging, 4x6 Label Print, Container Fleet | Issuing HBLs, Master Consolidations, B/L Hold/Release |
-| **Sarah Jenkins** | `sarah.j@vicustoms.com` | `Password123!` | `documentation` | Customers, House B/L Issuance, Ocean Manifests, Voyage Reviews | B/L Hold/Release, User Management, Warehouse Staging |
-| **Marcus Vance** | `marcus.vance@vicustoms.com` | `Password123!` | `super_admin` | **Unrestricted HQ Console:** All Modules, Consolidations, B/L Hold/Release, Settings, Users | None (Full Access) |
-| **David Cartwright** | `operations@caribbeanexpressbahamas.com` | `Password123!` | `agent` | **Secure Agent Portal:** Inbound Nassau Shipments, Released B/Ls, Delivery Orders | Editing WRs, Placing Holds, Viewing Other Territory Ports |
+| **Carlos Mendez** | `carlos.m@vicustoms.com` | `<CONFIGURED_IN_SEED_OR_ENV>` | `warehouse` | Customers, WR Intake, Cargo Staging, 4x6 Label Print | Issuing HBLs, Master Consolidations, B/L Hold/Release |
+| **Sarah Jenkins** | `sarah.j@vicustoms.com` | `<CONFIGURED_IN_SEED_OR_ENV>` | `documentation` | Customers, House B/L Issuance, Ocean Manifests | B/L Hold/Release, User Management, Warehouse Staging |
+| **Marcus Vance** | `marcus.vance@vicustoms.com` | `<CONFIGURED_IN_SEED_OR_ENV>` | `super_admin` | **Unrestricted HQ Console:** All Modules, Consolidations, B/L Hold/Release, Settings, Users | None (Full Access) |
+| **Destination Agent** | `agent@vicustoms.com` | `<CONFIGURED_IN_SEED_OR_ENV>` | `agent` | **Secure Agent Portal:** Inbound Destination Shipments, Released B/Ls, Delivery Orders | Editing WRs, Placing Holds |
 
 ---
 

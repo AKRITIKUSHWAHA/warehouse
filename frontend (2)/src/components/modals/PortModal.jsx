@@ -36,7 +36,7 @@ export const PortModal = ({
     code: '',
     name: '',
     island: '',
-    country: 'Bahamas',
+    country: 'US Virgin Islands',
     defaultAgent: '',
     status: 'Active'
   });
@@ -47,7 +47,7 @@ export const PortModal = ({
         code: port.code || port.portCode || '',
         name: port.name || '',
         island: port.island || '',
-        country: port.country || 'Bahamas',
+        country: port.country || 'US Virgin Islands',
         defaultAgent: port.defaultAgent || '',
         status: port.status || 'Active'
       });
@@ -56,7 +56,7 @@ export const PortModal = ({
         code: '',
         name: '',
         island: '',
-        country: 'Bahamas',
+        country: 'US Virgin Islands',
         defaultAgent: '',
         status: 'Active'
       });
@@ -144,12 +144,10 @@ export const PortModal = ({
                   value={formData.country}
                   onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                 >
-                  <option value="Bahamas">Bahamas</option>
-                  <option value="Turks & Caicos">Turks & Caicos</option>
-                  <option value="Cayman Islands">Cayman Islands</option>
-                  <option value="Jamaica">Jamaica</option>
-                  <option value="Barbados">Barbados</option>
-                  <option value="Trinidad & Tobago">Trinidad & Tobago</option>
+                  <option value="US Virgin Islands">US Virgin Islands</option>
+                  <option value="British Virgin Islands">British Virgin Islands</option>
+                  <option value="Eastern Caribbean">Eastern Caribbean</option>
+                  <option value="Puerto Rico">Puerto Rico</option>
                   <option value="United States">United States</option>
                   <option value="Other Caribbean">Other Caribbean</option>
                 </select>

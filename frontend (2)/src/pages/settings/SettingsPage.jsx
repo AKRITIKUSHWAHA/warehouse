@@ -425,7 +425,7 @@ export const SettingsPage = () => {
                   Option B: Reset Demo Datasets to Factory Defaults
                 </h3>
                 <p style={{ fontSize: '0.85rem', color: '#475569', margin: '6px 0 1rem 0' }}>
-                  Restores the full pre-populated mock dataset (sample Bahamas cargo, Caribbean Express shipments, demo House B/Ls, and manifests) if you want to inspect example records.
+                  Restores the full pre-populated mock dataset (sample cargo, Caribbean shipments, demo House B/Ls, and manifests) if you want to inspect example records.
                 </p>
                 <button
                   type="button"

@@ -34,7 +34,7 @@ const KEYS = {
 
 // Initialize localStorage with mock seed data if empty
 export const initializeStorage = () => {
-  const CLEAN_SLATE_KEY = 'kers_clean_slate_v7';
+  const CLEAN_SLATE_KEY = 'kers_clean_slate_v8';
   if (!localStorage.getItem(CLEAN_SLATE_KEY)) {
     localStorage.setItem(KEYS.VESSELS, JSON.stringify([]));
     localStorage.setItem(KEYS.SHIPMENTS, JSON.stringify([]));

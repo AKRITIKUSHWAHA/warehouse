@@ -217,14 +217,14 @@ export const houseBillService = {
         address: linkedWrs[0]?.destinationPort || "Destination Port Area"
       },
       notifyParty: data.notifyParty || {
-        name: linkedWrs[0]?.agentName || "Caribbean Express Freight Ltd.",
+        name: linkedWrs[0]?.agentName || "Destination Port Agency Hub",
         address: "Destination Port Cargo Terminal"
       },
       agentId: data.agentId || (linkedWrs[0]?.agentId || "AGT-001"),
-      agentName: data.agentName || (linkedWrs[0]?.agentName || "Caribbean Express Freight Ltd."),
+      agentName: data.agentName || (linkedWrs[0]?.agentName || "Destination Port Agency Hub"),
       originPort: data.originPort || "Port of Miami (USMIA), FL",
-      destinationPort: data.destinationPort || (linkedWrs[0]?.destinationPort || "NAS - Nassau, Bahamas"),
-      destinationCode: data.destinationCode || (linkedWrs[0]?.destinationCode || "NAS"),
+      destinationPort: data.destinationPort || (linkedWrs[0]?.destinationPort || "STT - Charlotte Amalie, St. Thomas"),
+      destinationCode: data.destinationCode || (linkedWrs[0]?.destinationCode || "STT"),
       warehouseReceiptIds: linkedWrIds,
       cargoDescription: data.cargoDescription || linkedWrs.map(w => w.cargoDescription).filter(Boolean).join('; ') || "Consolidated Freight",
       packages,

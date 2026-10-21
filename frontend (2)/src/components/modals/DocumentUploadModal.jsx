@@ -92,7 +92,7 @@ export const DocumentUploadModal = ({
               <input
                 type="text"
                 className="form-control"
-                placeholder="e.g. Bahamas Retail Distribution Corp"
+                placeholder="e.g. Island Retail Distribution Corp"
                 value={formData.party}
                 onChange={(e) => setFormData({ ...formData, party: e.target.value })}
               />

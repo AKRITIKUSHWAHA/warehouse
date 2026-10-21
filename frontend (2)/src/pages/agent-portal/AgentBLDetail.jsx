@@ -121,20 +121,20 @@ export const AgentBLDetail = ({ blId, onNavigate }) => {
             contact: "+1 (305) 555-5377"
           },
           consignee: {
-            name: shipment.agentName || "Caribbean Express Freight Ltd.",
-            address: `Port Area, ${shipment.destinationPort || 'Nassau, Bahamas'}`,
-            contact: "+1 (242) 393-4555"
+            name: shipment.agentName || "Destination Agency Hub",
+            address: `Port Area, ${shipment.destinationPort || 'Charlotte Amalie, St. Thomas'}`,
+            contact: "+1 (340) 774-4555"
           },
           notifyParty: {
-            name: shipment.agentName || "Caribbean Express Freight Ltd. (Notify On Arrival)",
-            address: `Customs Brokerage Hub, ${shipment.destinationPort || 'Nassau, Bahamas'}`,
-            contact: "+1 (242) 393-4555"
+            name: shipment.agentName || "Destination Agency Hub (Notify On Arrival)",
+            address: `Customs Brokerage Hub, ${shipment.destinationPort || 'Charlotte Amalie, St. Thomas'}`,
+            contact: "+1 (340) 774-4555"
           },
-          vesselName: shipment.vesselName || "MV Caribbean Carrier",
+          vesselName: shipment.vesselName || "Ocean Vessel",
           portOfLoading: shipment.origin || "Port of Miami (USMIA)",
-          portOfDischarge: shipment.destinationPort || "Nassau Container Port (NAS)",
-          destinationPort: shipment.destinationPort || "NAS - Nassau Container Port",
-          destinationCode: shipment.destinationCode || "NAS",
+          portOfDischarge: shipment.destinationPort || "Port of Charlotte Amalie (VISTT)",
+          destinationPort: shipment.destinationPort || "STT - Charlotte Amalie, St. Thomas",
+          destinationCode: shipment.destinationCode || "STT",
           carrier: shipment.carrier || "Tropical Shipping",
           containerNumber: shipment.containerNumber || "MSKU-948291-4",
           containerType: shipment.containerType || "40' High Cube Dry",
@@ -188,20 +188,20 @@ export const AgentBLDetail = ({ blId, onNavigate }) => {
           contact: "+1 (305) 555-5377"
         },
         consignee: {
-          name: "Caribbean Express Freight Ltd.",
-          address: "Port Area, Nassau, Bahamas",
-          contact: "+1 (242) 393-4555"
+          name: "Destination Agency Hub",
+          address: "Crown Bay Port Terminal, Charlotte Amalie, St. Thomas",
+          contact: "+1 (340) 774-4555"
         },
         notifyParty: {
-          name: "Caribbean Express Freight Ltd. (Notify On Arrival)",
-          address: "Customs Brokerage Hub, Nassau, Bahamas",
-          contact: "+1 (242) 393-4555"
+          name: "Destination Agency Hub (Notify On Arrival)",
+          address: "Customs Brokerage Hub, Charlotte Amalie, St. Thomas",
+          contact: "+1 (340) 774-4555"
         },
-        vesselName: "MV Caribbean Carrier",
+        vesselName: "Ocean Vessel",
         portOfLoading: "Port of Miami (USMIA)",
-        portOfDischarge: "Nassau Container Port (NAS)",
-        destinationPort: "NAS - Nassau Container Port",
-        destinationCode: "NAS",
+        portOfDischarge: "Port of Charlotte Amalie (VISTT)",
+        destinationPort: "STT - Charlotte Amalie, St. Thomas",
+        destinationCode: "STT",
         carrier: "Tropical Shipping",
         containerNumber: "MSKU-948291-4",
         containerType: "40' High Cube Dry",

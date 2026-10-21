@@ -172,6 +172,6 @@ All runtime exceptions and validation errors are intercepted by `registerErrorHa
 | `PORT` | `5000` | HTTP listening port |
 | `HOST` | `0.0.0.0` | Network interface binding |
 | `NODE_ENV` | `development` | Environment mode (`development` / `production`) |
-| `DATABASE_URL` | `postgresql://postgres:123456@localhost:5432/wereHouseDb` | PostgreSQL connection string |
-| `JWT_SECRET` | `vi_customs_jwt_super_secret_key_2026_production` | HMAC SHA256 key for signing auth tokens |
+| `DATABASE_URL` | `postgresql://<DB_USER>:<DB_PASSWORD>@<DB_HOST>:<DB_PORT>/<DB_NAME>` | PostgreSQL connection string |
+| `JWT_SECRET` | `<JWT_SECRET_KEY>` | HMAC SHA256 key for signing auth tokens |
 | `CORS_ORIGIN` | `http://localhost:5173,http://127.0.0.1:5173` | Allowed frontend origins |

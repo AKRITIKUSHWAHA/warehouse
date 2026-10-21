@@ -11,7 +11,7 @@ export const AgentModal = ({
   const [formData, setFormData] = useState({
     name: '',
     agentCode: '',
-    territory: 'Nassau & New Providence, Bahamas',
+    territory: 'St. Thomas & St. John, VI',
     contactPerson: '',
     email: '',
     phone: '',
@@ -25,7 +25,7 @@ export const AgentModal = ({
       setFormData({
         name: agent.name || '',
         agentCode: agent.agentCode || '',
-        territory: agent.territory || 'Nassau & New Providence, Bahamas',
+        territory: agent.territory || 'St. Thomas & St. John, VI',
         contactPerson: agent.contactPerson || '',
         email: agent.email || '',
         phone: agent.phone || '',
@@ -37,7 +37,7 @@ export const AgentModal = ({
       setFormData({
         name: '',
         agentCode: `AGT-CARIB-${Math.floor(10 + Math.random() * 90)}`,
-        territory: 'Nassau & New Providence, Bahamas',
+        territory: 'St. Thomas & St. John, VI',
         contactPerson: '',
         email: '',
         phone: '',
@@ -107,7 +107,7 @@ export const AgentModal = ({
                   type="text"
                   required
                   className="form-control"
-                  placeholder="e.g. Nassau & New Providence, Bahamas"
+                  placeholder="e.g. St. Thomas & St. John, VI"
                   value={formData.territory}
                   onChange={(e) => setFormData({ ...formData, territory: e.target.value })}
                 />
@@ -119,7 +119,7 @@ export const AgentModal = ({
                   type="text"
                   required
                   className="form-control"
-                  placeholder="e.g. Marcus Bethel"
+                  placeholder="e.g. David Vance"
                   value={formData.contactPerson}
                   onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
                 />
@@ -133,7 +133,7 @@ export const AgentModal = ({
                   type="email"
                   required
                   className="form-control"
-                  placeholder="e.g. operations@nassau-agents.com"
+                  placeholder="e.g. operations@vi-agents.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
@@ -145,7 +145,7 @@ export const AgentModal = ({
                   type="text"
                   required
                   className="form-control"
-                  placeholder="e.g. +1 (242) 322-8901"
+                  placeholder="e.g. +1 (340) 774-8901"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 />
@@ -157,7 +157,7 @@ export const AgentModal = ({
               <input
                 type="text"
                 className="form-control"
-                placeholder="e.g. Prince George Wharf, Suite 102, Nassau, Bahamas"
+                placeholder="e.g. Crown Bay Port Terminal, Suite 102, St. Thomas, VI"
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
               />

@@ -10,7 +10,6 @@ export const VesselModal = ({
 }) => {
   const [formData, setFormData] = useState({
     name: '',
-    type: 'Container Vessel',
     carrier: '',
     notes: ''
   });
@@ -19,14 +18,12 @@ export const VesselModal = ({
     if (vessel && isEdit) {
       setFormData({
         name: vessel.name || '',
-        type: vessel.type || 'Container Vessel',
         carrier: vessel.carrier || '',
         notes: vessel.notes || ''
       });
     } else {
       setFormData({
         name: '',
-        type: 'Container Vessel',
         carrier: '',
         notes: ''
       });
@@ -67,21 +64,6 @@ export const VesselModal = ({
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 autoFocus
               />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Vessel Classification / Type</label>
-              <select
-                className="form-select"
-                value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-              >
-                <option value="Container Vessel">Container Vessel</option>
-                <option value="Merchant Vessel / Island Trader">Merchant Vessel / Island Trader</option>
-                <option value="Coastal Breakbulk Freighter">Coastal Breakbulk Freighter</option>
-                <option value="Small Cargo Feeder / Mailboat">Small Cargo Feeder / Mailboat</option>
-                <option value="Ro-Ro Carrier">Ro-Ro Carrier</option>
-              </select>
             </div>
 
             <div className="form-group">

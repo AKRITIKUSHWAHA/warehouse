@@ -13,7 +13,7 @@ export const CargoModal = ({
   const hasInitializedRef = useRef(false);
 
   const getPortCode = (p) => p?.portCode || p?.code || 'PORT';
-  const defaultPort = ports[0] ? `${getPortCode(ports[0])} - ${ports[0].name}` : 'NAS - Nassau, Bahamas';
+  const defaultPort = ports[0] ? `${getPortCode(ports[0])} - ${ports[0].name}` : 'STT - Charlotte Amalie, St. Thomas';
 
   const [formData, setFormData] = useState({
     id: '',
@@ -65,7 +65,7 @@ export const CargoModal = ({
         widthInches: 20,
         heightInches: 18,
         weightLbs: 120,
-        destinationPort: 'NAS - Nassau, Bahamas',
+        destinationPort: defaultPort,
         status: 'Ready for Consolidation'
       });
     }
