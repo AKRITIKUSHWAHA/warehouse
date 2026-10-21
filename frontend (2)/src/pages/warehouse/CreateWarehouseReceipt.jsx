@@ -683,17 +683,18 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
                         <td style={{ textAlign: 'right', fontWeight: 700, color: '#0284C7', padding: '0.5rem' }}>
                           {pkg.cbm} <span style={{ fontSize: '0.7rem' }}>CBM</span>
                         </td>
-                        <td style={{ textAlign: 'center', padding: '0.5rem' }}>
-                          <button
-                            type="button"
-                            onClick={() => removePackageRow(idx)}
-                            disabled={packages.length <= 1}
-                            className="btn btn-ghost btn-sm"
-                            style={{ padding: '0.2rem', color: packages.length <= 1 ? '#CBD5E1' : '#EF4444' }}
-                            title="Remove package"
-                          >
-                            <Trash2 size={15} />
-                          </button>
+                        <td style={{ textAlign: 'center', padding: '0.5rem', width: '36px' }}>
+                          {packages.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removePackageRow(idx)}
+                              className="btn btn-ghost btn-sm"
+                              style={{ padding: '0.2rem', color: '#EF4444' }}
+                              title="Remove this package row"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}
