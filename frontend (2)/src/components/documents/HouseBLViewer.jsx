@@ -298,8 +298,8 @@ export const HouseBLViewer = ({ hbl, onNavigate }) => {
         </div>
 
         {/* Cargo Specification & Packages Table */}
-        <div style={{ border: '1px solid #0A192F', marginBottom: '0.75rem' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+        <div className="hbl-cargo-table-wrap" style={{ border: '1px solid #0A192F', marginBottom: '0.75rem', minHeight: '180px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem', height: '100%' }}>
             <thead>
               <tr style={{ background: '#0A192F', color: '#FFFFFF', textAlign: 'left', fontSize: '0.65rem', textTransform: 'uppercase' }}>
                 <th style={{ padding: '0.4rem 0.5rem', width: '20%' }}>Marks &amp; Numbers</th>
@@ -359,6 +359,14 @@ export const HouseBLViewer = ({ hbl, onNavigate }) => {
                   </td>
                 </tr>
               )}
+              {/* Flexible spacer row so the table body naturally stretches like a physical maritime Bill of Lading */}
+              <tr className="b-l-body-fill-row" style={{ height: '100%' }}>
+                <td style={{ borderRight: '1px solid #E2E8F0', padding: '0.5rem' }}>&nbsp;</td>
+                <td style={{ borderRight: '1px solid #E2E8F0', padding: '0.5rem' }}>&nbsp;</td>
+                <td style={{ borderRight: '1px solid #E2E8F0', padding: '0.5rem' }}>&nbsp;</td>
+                <td style={{ borderRight: '1px solid #E2E8F0', padding: '0.5rem' }}>&nbsp;</td>
+                <td style={{ padding: '0.5rem' }}>&nbsp;</td>
+              </tr>
             </tbody>
             <tfoot>
               <tr style={{ background: '#F8FAFC', fontWeight: 800, borderTop: '2px solid #0A192F' }}>

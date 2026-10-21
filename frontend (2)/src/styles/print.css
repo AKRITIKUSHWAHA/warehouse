@@ -100,10 +100,10 @@
     gap: 0 !important;
   }
 
-  /* Standard Letter Portrait for Documents */
+  /* Standard Letter / A4 Portrait for Documents */
   @page {
     size: letter portrait;
-    margin: 0.25in;
+    margin: 0.2in;
   }
 
   /* --------------------------------------------------------------------------
@@ -136,7 +136,7 @@
   }
 
   /* --------------------------------------------------------------------------
-     House B/L Document Print Specifics (Standard Letter Portrait)
+     House B/L Document Print Specifics (Standard Letter / A4 Full-Page Portrait)
      -------------------------------------------------------------------------- */
   @page cargo-label-page {
     size: 4in 6in;
@@ -149,50 +149,97 @@
     max-height: 5.7in !important;
     border: 2px solid #000000 !important;
     padding: 0.12in !important;
-
   }
 
   .printable-document-hbl {
     width: 100% !important;
     max-width: 100% !important;
+    min-height: 9.85in !important;
+    height: 9.85in !important;
     margin: 0 auto !important;
-    border: 2px solid #0A192F !important;
-    padding: 0.3in !important;
+    border: 2.5px solid #0A192F !important;
+    padding: 0.22in !important;
     box-sizing: border-box !important;
     box-shadow: none !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
     display: flex !important;
     flex-direction: column !important;
     justify-content: space-between !important;
     font-family: Arial, Helvetica, sans-serif !important;
-    zoom: 0.80 !important;
-    page-break-after: avoid !important;
-    display: block !important;
+    zoom: 1 !important;
     background: #ffffff !important;
   }
 
+  .printable-document-hbl .hbl-cargo-table-wrap {
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    min-height: 3.5in !important;
+    margin-bottom: 0.12in !important;
+  }
+
+  .printable-document-hbl .hbl-cargo-table-wrap table {
+    height: 100% !important;
+    flex: 1 1 auto !important;
+    border-collapse: collapse !important;
+  }
+
+  .printable-document-hbl .hbl-cargo-table-wrap tbody {
+    height: 100% !important;
+  }
+
   /* --------------------------------------------------------------------------
-     Master B/L Document Print Specifics (Standard Letter / A4 Portrait)
+     Master B/L Document Print Specifics (Standard Full-Page Letter / A4 Portrait)
      -------------------------------------------------------------------------- */
   @page bl-document-page {
     size: letter portrait;
-    margin: 0.3in;
+    margin: 0.2in;
   }
 
   .printable-document-bl {
     page: bl-document-page;
     width: 100% !important;
     max-width: 100% !important;
+    min-height: 9.85in !important;
+    height: 9.85in !important;
     margin: 0 auto !important;
-    border: 2px solid #000000 !important;
-    padding: 0.3in !important;
+    border: 2.5px solid #0A192F !important;
+    padding: 0.22in !important;
     box-sizing: border-box !important;
     box-shadow: none !important;
     page-break-inside: avoid !important;
+    break-inside: avoid !important;
     page-break-after: avoid !important;
-    display: block !important;
+    break-after: avoid !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    font-family: Arial, Helvetica, sans-serif !important;
+    zoom: 1 !important;
     background: #ffffff !important;
+  }
+
+  .printable-document-bl .bl-cargo-table-wrap {
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    min-height: 3.5in !important;
+    margin-bottom: 0.12in !important;
+  }
+
+  .printable-document-bl .bl-cargo-table-wrap table {
+    height: 100% !important;
+    flex: 1 1 auto !important;
+    border-collapse: collapse !important;
+  }
+
+  .printable-document-bl .bl-cargo-table-wrap tbody {
+    height: 100% !important;
   }
 
   /* --------------------------------------------------------------------------

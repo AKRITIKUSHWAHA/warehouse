@@ -276,8 +276,8 @@ export const MasterBLViewer = ({ bl, linkedHbls = [], onNavigate }) => {
         </div>
 
         {/* Cargo Line Items Table */}
-        <div style={{ border: '1px solid #0A192F', marginBottom: '0.75rem' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+        <div className="bl-cargo-table-wrap" style={{ border: '1px solid #0A192F', marginBottom: '0.75rem', minHeight: '180px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem', height: '100%' }}>
             <thead>
               <tr style={{ background: '#0A192F', color: '#FFFFFF', textAlign: 'left', fontSize: '0.65rem', textTransform: 'uppercase' }}>
                 <th style={{ padding: '0.4rem 0.5rem', width: '22%' }}>Marks &amp; Container #</th>
@@ -314,6 +314,14 @@ export const MasterBLViewer = ({ bl, linkedHbls = [], onNavigate }) => {
                   <strong style={{ color: '#D97706' }}>{bl.cft || (bl.cbm ? Number((bl.cbm * 35.3147).toFixed(1)) : 0)} CFT</strong><br />
                   <span style={{ fontSize: '0.7rem', color: '#0284C7', fontWeight: 600 }}>({bl.cbm} CBM)</span>
                 </td>
+              </tr>
+              {/* Flexible spacer row so the table body naturally stretches like a physical maritime Bill of Lading */}
+              <tr className="b-l-body-fill-row" style={{ height: '100%' }}>
+                <td style={{ borderRight: '1px solid #E2E8F0', padding: '0.5rem' }}>&nbsp;</td>
+                <td style={{ borderRight: '1px solid #E2E8F0', padding: '0.5rem' }}>&nbsp;</td>
+                <td style={{ borderRight: '1px solid #E2E8F0', padding: '0.5rem' }}>&nbsp;</td>
+                <td style={{ borderRight: '1px solid #E2E8F0', padding: '0.5rem' }}>&nbsp;</td>
+                <td style={{ padding: '0.5rem' }}>&nbsp;</td>
               </tr>
             </tbody>
           </table>
