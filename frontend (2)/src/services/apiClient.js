@@ -43,11 +43,48 @@ export const apiClient = {
     if (token && !this.isTokenExpired(token) && token !== 'local-session-active') {
       return token;
     }
+
+    // Auto-refresh fresh JWT from backend using active user session
+    if (typeof window !== 'undefined') {
+      if (authPromise) {
+        return authPromise;
+      }
+      authPromise = (async () => {
+        try {
+          const activeUserStr = localStorage.getItem('kers_active_user');
+          const activeUser = activeUserStr ? JSON.parse(activeUserStr) : null;
+          if (activeUser?.id || activeUser?.email || activeUser?.userCode) {
+            const url = `${API_BASE_URL}/auth/switch-user`;
+            const res = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                userId: activeUser.id || activeUser.userCode,
+                email: activeUser.email,
+              }),
+            });
+            const data = await res.json().catch(() => null);
+            const freshToken = data?.data?.token || data?.token;
+            if (freshToken) {
+              this.setToken(freshToken);
+              return freshToken;
+            }
+          }
+        } catch {
+          // ignore network failure in fallback
+        } finally {
+          authPromise = null;
+        }
+        return null;
+      })();
+      return authPromise;
+    }
+
     return null;
   },
 
   async request(endpoint, options = {}, isRetry = false) {
-    const isAuthOrHealth = endpoint.includes('/auth/login') || endpoint.includes('/health');
+    const isAuthOrHealth = endpoint.includes('/auth/login') || endpoint.includes('/auth/switch-user') || endpoint.includes('/health');
     let token = this.getToken();
     if ((!token || this.isTokenExpired(token) || token === 'local-session-active') && !isAuthOrHealth) {
       token = await this.ensureToken();
@@ -77,6 +114,13 @@ export const apiClient = {
 
       if (!response.ok) {
         if (response.status === 401 && !isAuthOrHealth) {
+          if (!isRetry) {
+            this.setToken(null);
+            const freshToken = await this.ensureToken();
+            if (freshToken) {
+              return this.request(endpoint, options, true);
+            }
+          }
           this.setToken(null);
         }
         const errorMsg = data?.message || `HTTP ${response.status}: ${response.statusText}`;

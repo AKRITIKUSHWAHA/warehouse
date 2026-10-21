@@ -12,9 +12,9 @@ export const ManifestModal = ({
   const { billsOfLading, ports, vessels, houseBills, customers = [] } = useAppData();
   const hasInitializedRef = useRef(false);
 
-  const getPortCode = (p) => p?.portCode || p?.code || 'NAS';
-  const nasPort = ports.find(p => getPortCode(p) === 'NAS') || ports[0];
-  const defaultPod = nasPort ? `${getPortCode(nasPort)} - ${nasPort.name}` : 'NAS - Nassau Container Port';
+  const getPortCode = (p) => p?.portCode || p?.code || '';
+  const firstPort = ports && ports.length > 0 ? ports[0] : null;
+  const defaultPod = firstPort ? `${getPortCode(firstPort)} - ${firstPort.name}` : '';
 
   const [selectedMasterBLId, setSelectedMasterBLId] = useState('');
   const [formData, setFormData] = useState({
@@ -46,7 +46,7 @@ export const ManifestModal = ({
     }
     if (hasInitializedRef.current) return;
     hasInitializedRef.current = true;
-    const curPod = nasPort ? `${getPortCode(nasPort)} - ${nasPort.name}` : 'NAS - Nassau Container Port';
+    const curPod = firstPort ? `${getPortCode(firstPort)} - ${firstPort.name}` : '';
     if (manifest && isEdit) {
       setFormData({
         manifestNumber: manifest.manifestNumber || '',

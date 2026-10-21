@@ -20,20 +20,24 @@ import {
   Layers,
   ExternalLink,
   Package,
-  AlertTriangle
+  AlertTriangle,
+  FileSpreadsheet
 } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import { WorkflowIndicator } from '../../components/common/WorkflowIndicator';
 
 export const BillOfLadingDetail = ({ blId, onNavigate }) => {
-  const { billsOfLading, houseBills, clearBLHold, placeBLHold, updateBillOfLading, deleteBillOfLading } = useAppData();
+  const { billsOfLading, houseBills, clearBLHold, placeBLHold, updateBillOfLading, deleteBillOfLading, generateManifestFromMasterBL } = useAppData();
   const { isAgent } = useAuth();
+  const { showToast } = useToast();
 
   const [showClearModal, setShowClearModal] = useState(false);
   const [showPlaceModal, setShowPlaceModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isGeneratingManifest, setIsGeneratingManifest] = useState(false);
 
   const [liveBL, setLiveBL] = useState(null);
 
@@ -73,24 +77,83 @@ export const BillOfLadingDetail = ({ blId, onNavigate }) => {
         h => bl.houseBillIds?.includes(h.id) || bl.houseBillIds?.includes(h.hblNumber) || h.assignedMasterBLId === bl.id || h.assignedMasterBLId === bl.blNumber
       );
 
+  const handleOneClickManifest = async () => {
+    if (isOnHold) {
+      const confirmOnHold = window.confirm(
+        `Notice: Master B/L ${bl.blNumber} is currently ON HOLD (${bl.holdDetails?.reason || 'Hold active'}).\n\nA manifest can still be generated for customs review, but it will be flagged as "Subject to B/L Hold". Proceed?`
+      );
+      if (!confirmOnHold) return;
+    }
+
+    try {
+      setIsGeneratingManifest(true);
+      showToast(`Generating Shipping Manifest from Master B/L ${bl.blNumber}...`, 'info', '1-Click Manifest');
+      const newManifest = await generateManifestFromMasterBL(bl.id || bl.blNumber);
+      if (newManifest) {
+        showToast(`Manifest ${newManifest.manifestNumber || newManifest.id} generated in 1 click!`, 'success', 'Manifest Created');
+        onNavigate('manifests', newManifest.id || newManifest.manifestNumber);
+      }
+    } catch (err) {
+      console.error('Failed to generate manifest from Master B/L:', err);
+      showToast(err?.message || 'Error generating manifest', 'error', 'Manifest Failed');
+    } finally {
+      setIsGeneratingManifest(false);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '1100px', margin: '0 auto' }}>
       <PageHeader
         title={`Master Bill of Lading ${bl.blNumber}`}
-        subtitle={`Consigned to ${bl.consignee?.name} via ${bl.oceanVessel} (${bl.portOfDischarge})`}
+        subtitle={
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '2px' }}>
+            <span>Consigned to {bl.consignee?.name || bl.consignee} via {bl.oceanVessel} ({bl.portOfDischarge})</span>
+            {(bl.consolidationNumber || bl.consolidationId) && (
+              <span
+                onClick={() => onNavigate('consolidations')}
+                style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  color: '#0369A1',
+                  background: '#E0F2FE',
+                  padding: '0.15rem 0.5rem',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+                title="View linked Consolidation"
+              >
+                <Layers size={12} />
+                <span>Consolidation: {bl.consolidationNumber || bl.consolidationId}</span>
+              </span>
+            )}
+          </div>
+        }
         icon={FileText}
         breadcrumbs={[
           { label: 'Bills of Lading', href: '#' },
           { label: bl.blNumber }
         ]}
         actions={
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
             <button
               onClick={() => onNavigate('bills-of-lading')}
               className="btn btn-outline btn-sm"
             >
               <ArrowLeft size={15} />
               <span>Back</span>
+            </button>
+            <button
+              onClick={handleOneClickManifest}
+              disabled={isGeneratingManifest}
+              className="btn btn-primary btn-sm"
+              style={{ background: '#0284C7', borderColor: '#0284C7', color: '#FFFFFF', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '5px' }}
+              title="Generate customs cargo manifest from this Master B/L in 1 click"
+            >
+              <FileSpreadsheet size={15} />
+              <span>{isGeneratingManifest ? 'Generating...' : '⚡ Generate Manifest (1-Click)'}</span>
             </button>
             {bl.shipmentId && (
               <button
@@ -186,11 +249,13 @@ export const BillOfLadingDetail = ({ blId, onNavigate }) => {
             </button>
           ) : (
             <button
-              onClick={() => onNavigate('manifests')}
+              onClick={handleOneClickManifest}
+              disabled={isGeneratingManifest}
               className="btn btn-primary btn-sm"
-              style={{ fontSize: '0.8rem' }}
+              style={{ fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}
             >
-              Generate Manifest &rarr;
+              <FileSpreadsheet size={13} />
+              <span>⚡ 1-Click Manifest</span>
             </button>
           )}
           <button

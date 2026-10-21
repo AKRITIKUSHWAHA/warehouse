@@ -20,7 +20,7 @@ export const AgentShipmentsList = ({ onNavigate }) => {
     setError(null);
 
     try {
-      const res = await agentPortalService.getShipments({ limit: 100, destinationCode: 'NAS' });
+      const res = await agentPortalService.getShipments({ limit: 100 });
       setShipments(res.data || []);
     } catch (err) {
       console.error('Failed to load agent shipments from API:', err);

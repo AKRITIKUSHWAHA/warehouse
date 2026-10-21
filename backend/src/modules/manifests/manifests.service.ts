@@ -182,16 +182,16 @@ export class ManifestsService {
     return this.repo.create({
       manifestNumber,
       type: input.type || 'Ocean Cargo Inward / Outward Manifest',
-      title: input.title || `Ocean Cargo Manifest — ${input.vesselName || 'Vessel'} (${input.voyageNumber || 'Voyage'})`,
-      vesselName: input.vesselName || 'M/V Caribbean Voyager',
-      voyageNumber: input.voyageNumber || 'VOY-2026-088',
-      flag: input.flag || 'Bahamas',
-      masterName: input.masterName || 'Capt. Marcus Vance',
+      title: input.title || `Ocean Cargo Manifest — ${input.vesselName || 'Vessel'} (${input.voyageNumber || 'General'})`,
+      vesselName: input.vesselName || '',
+      voyageNumber: input.voyageNumber || '',
+      flag: input.flag || '',
+      masterName: input.masterName || '',
       portOfLoading: input.portOfLoading || 'Port of Miami, USA (USMIA)',
-      portOfDischarge: input.portOfDischarge || 'Nassau Container Port (BSNAS)',
+      portOfDischarge: input.portOfDischarge || '',
       departureDate: input.departureDate || new Date().toISOString().split('T')[0],
       arrivalDate: input.arrivalDate || null,
-      carrier: input.carrier || 'Tropical Shipping',
+      carrier: input.carrier || '',
       totalBLs: Number(input.totalBLs) || (lineItems.length > 0 ? lineItems.length : 1),
       totalHouseBills: Number(input.totalHouseBills) || (lineItems.length > 0 ? lineItems.length : 0),
       totalContainers: Number(input.totalContainers) || 1,
@@ -229,6 +229,51 @@ export class ManifestsService {
     }
 
     return this.repo.update(existing.id, updatePayload);
+  }
+
+  async createFromMasterBL(blIdOrNumber: string) {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(blIdOrNumber);
+    const blCondition = isUuid
+      ? or(eq(billsOfLading.id, blIdOrNumber), eq(billsOfLading.blNumber, blIdOrNumber))
+      : eq(billsOfLading.blNumber, blIdOrNumber);
+
+    const [matchedBL] = await db
+      .select()
+      .from(billsOfLading)
+      .where(blCondition)
+      .limit(1);
+
+    if (!matchedBL) {
+      throw new NotFoundError('Master Bill of Lading');
+    }
+
+    const isOnHold = matchedBL.status === 'On Hold' || (matchedBL.holdDetails as any)?.isOnHold;
+    const status = isOnHold ? 'Generated (Subject to B/L Hold)' : 'Generated';
+
+    return this.createManifest({
+      type: 'Ocean Cargo Inward / Outward Manifest',
+      masterBLNumber: matchedBL.blNumber,
+      masterBLId: matchedBL.id,
+      title: `Ocean Cargo Manifest - ${matchedBL.portOfDischarge} (${matchedBL.oceanVessel || 'Ocean Vessel'} / ${matchedBL.voyageNumber || 'General'})`,
+      vesselName: matchedBL.oceanVessel || 'M/V Regional Carrier',
+      voyageNumber: matchedBL.voyageNumber || 'VOY-001',
+      flag: '',
+      carrier: matchedBL.carrier || 'Tropical Shipping Line',
+      portOfLoading: matchedBL.portOfLoading,
+      portOfDischarge: matchedBL.portOfDischarge,
+      departureDate: matchedBL.issueDate || matchedBL.createdDate || new Date().toISOString().split('T')[0],
+      totalBLs: 1,
+      totalHouseBills: Array.isArray(matchedBL.houseBillIds) ? matchedBL.houseBillIds.length : 0,
+      totalContainers: 1,
+      totalPackages: matchedBL.packageCount || 0,
+      totalPieces: matchedBL.totalPieces || matchedBL.packageCount || 0,
+      totalWeightLbs: matchedBL.grossWeightLbs ? Number(matchedBL.grossWeightLbs) : 0,
+      totalWeightKg: matchedBL.grossWeightKg ? Number(matchedBL.grossWeightKg) : 0,
+      totalCbm: matchedBL.cbm ? Number(matchedBL.cbm) : 0,
+      totalCft: matchedBL.cft ? Number(matchedBL.cft) : 0,
+      status,
+      lineItems: [],
+    });
   }
 
   async deleteManifest(id: string) {

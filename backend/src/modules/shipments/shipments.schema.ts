@@ -19,8 +19,8 @@ export const createShipmentSchema = z.object({
 
   origin: z.string().default('Port of Miami (USMIA)'),
   destination: z.string().optional(),
-  destinationPort: z.string().default('NAS - Nassau Container Port'),
-  destinationCode: z.string().default('NAS'),
+  destinationPort: z.string().default(''),
+  destinationCode: z.string().default(''),
 
   agentId: z.string().nullish(),
   agentName: z.string().optional(),

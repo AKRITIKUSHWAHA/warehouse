@@ -31,7 +31,12 @@ export const ShipmentsList = ({ onNavigate }) => {
 
   // Filter if Agent
   const visibleShipments = isAgent 
-    ? shipments.filter(s => !currentUser?.agentId || !s.agentId || s.agentId === currentUser?.agentId || s.destinationCode === currentUser?.destinationPortCode || s.destinationCode === 'NAS' || s.destinationPort?.includes('Nassau'))
+    ? shipments.filter(s => {
+        if (!currentUser?.agentId && !currentUser?.destinationPortCode) return true;
+        if (currentUser?.agentId && s.agentId === currentUser.agentId) return true;
+        if (currentUser?.destinationPortCode && s.destinationCode === currentUser.destinationPortCode) return true;
+        return false;
+      })
     : shipments;
 
   const columns = [

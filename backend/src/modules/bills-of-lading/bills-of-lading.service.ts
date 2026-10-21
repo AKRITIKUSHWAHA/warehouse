@@ -4,6 +4,9 @@ import { NotFoundError } from '../../common/errors/not-found-error.js';
 import { BadRequestError } from '../../common/errors/bad-request-error.js';
 import { BL_STATUSES } from '../../common/constants/statuses.js';
 import { convertLbsToKg } from '../../common/utils/calculations.js';
+import { db } from '../../db/index.js';
+import { consolidations, houseBills } from '../../db/schema/index.js';
+import { eq, or, inArray } from 'drizzle-orm';
 
 const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
@@ -35,7 +38,18 @@ export class BillsOfLadingService {
     const issueDate = input.issueDate || createdDate;
 
     const validAgentId = input.agentId && UUID_REGEX.test(input.agentId) ? input.agentId : null;
-    const validConsolId = input.consolidationId && UUID_REGEX.test(input.consolidationId) ? input.consolidationId : null;
+    let validConsolId = input.consolidationId && UUID_REGEX.test(input.consolidationId) ? input.consolidationId : null;
+    const consolSearch = (input.consolidationId || (input as any).consolidationNumber)?.trim();
+    if (!validConsolId && consolSearch) {
+      const [matchedConsol] = await db
+        .select({ id: consolidations.id })
+        .from(consolidations)
+        .where(eq(consolidations.consolidationNumber, consolSearch))
+        .limit(1);
+      if (matchedConsol) {
+        validConsolId = matchedConsol.id;
+      }
+    }
 
     const shipperObj = typeof input.shipper === 'object' && input.shipper !== null
       ? input.shipper
@@ -54,7 +68,7 @@ export class BillsOfLadingService {
     const cbm = Number(input.cbm) || 0;
     const cft = input.cft ? Number(input.cft) : Number((cbm * 35.3147).toFixed(2));
 
-    return this.repo.create({
+    const createdBL = await this.repo.create({
       blNumber,
       type: input.type || 'Master Ocean Bill of Lading',
       status: input.status || 'Draft',
@@ -70,12 +84,11 @@ export class BillsOfLadingService {
       agentId: validAgentId,
       agentName: input.agentName || null,
       preCarriageBy: input.preCarriageBy || null,
-      placeOfReceipt: input.placeOfReceipt || null,
-      oceanVessel: input.oceanVessel || 'M/V Caribbean Voyager',
-      voyageNumber: input.voyageNumber || 'VOY-2026-088',
-      carrier: input.carrier || 'Tropical Shipping',
+      oceanVessel: input.oceanVessel || '',
+      voyageNumber: input.voyageNumber || '',
+      carrier: input.carrier || '',
       portOfLoading: input.portOfLoading || 'Port of Miami, USA (USMIA)',
-      portOfDischarge: input.portOfDischarge || 'Nassau Port Terminal (BSNAS)',
+      portOfDischarge: input.portOfDischarge || '',
       placeOfDelivery: input.placeOfDelivery || null,
       containerNumber: input.containerNumber || null,
       sealNumber: input.sealNumber || null,
@@ -96,6 +109,35 @@ export class BillsOfLadingService {
       charges: input.charges || [],
       totalFreightUsd: String((Number(input.totalFreightUsd) || 0).toFixed(2)),
     });
+
+    // Automatically synchronize linked consolidation
+    if (validConsolId) {
+      await db
+        .update(consolidations)
+        .set({ assignedMasterBLId: createdBL.blNumber, updatedAt: new Date() })
+        .where(eq(consolidations.id, validConsolId))
+        .catch(() => {});
+    }
+
+    // Automatically synchronize linked House Bills
+    if (input.houseBillIds && input.houseBillIds.length > 0) {
+      const uuidHbs = input.houseBillIds.filter((id) => UUID_REGEX.test(id));
+      const hbConds = [];
+      if (uuidHbs.length > 0) hbConds.push(inArray(houseBills.id, uuidHbs));
+      hbConds.push(inArray(houseBills.hblNumber, input.houseBillIds));
+
+      await db
+        .update(houseBills)
+        .set({
+          assignedMasterBLId: createdBL.blNumber,
+          status: 'Consolidated',
+          updatedAt: new Date(),
+        })
+        .where(or(...hbConds))
+        .catch(() => {});
+    }
+
+    return createdBL;
   }
 
   async updateBill(idOrNumber: string, input: UpdateBillOfLadingInput) {

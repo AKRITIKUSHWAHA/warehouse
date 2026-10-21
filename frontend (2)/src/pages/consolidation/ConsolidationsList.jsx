@@ -5,15 +5,17 @@ import { StatusBadge } from '../../components/common/StatusBadge';
 import { WorkflowIndicator } from '../../components/common/WorkflowIndicator';
 import { ContainerFillBar } from '../../components/common/ContainerFillBar';
 import { ConsolidationModal } from '../../components/modals/ConsolidationModal';
+import { BillOfLadingModal } from '../../components/modals/BillOfLadingModal';
 import { DeleteConfirmModal } from '../../components/modals/DeleteConfirmModal';
-import { Layers, Plus, Eye, Edit2, Trash2, Ship, Box, ArrowRight, RefreshCw } from 'lucide-react';
+import { Layers, Plus, Eye, Edit2, Trash2, Ship, Box, ArrowRight, RefreshCw, FileText } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
 import { useAuth } from '../../context/AuthContext';
 
 export const ConsolidationsList = ({ onNavigate }) => {
-  const { consolidations, shipments, updateConsolidation, deleteConsolidation, refreshAll, fetchMenuApi } = useAppData();
+  const { consolidations, shipments, updateConsolidation, deleteConsolidation, createBillOfLading, refreshAll, fetchMenuApi } = useAppData();
   const { isAgent, currentUser } = useAuth();
   const [editingConsolidation, setEditingConsolidation] = useState(null);
+  const [creatingBLForConsolidation, setCreatingBLForConsolidation] = useState(null);
   const [deletingConsolidation, setDeletingConsolidation] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -31,15 +33,12 @@ export const ConsolidationsList = ({ onNavigate }) => {
 
   // Filter if Agent
   const visibleConsolidations = isAgent 
-    ? consolidations.filter(c => 
-        !currentUser?.agentId || 
-        !c.agentId || 
-        c.agentId === currentUser?.agentId || 
-        (currentUser?.destinationPortCode && c.destinationCode === currentUser?.destinationPortCode) || 
-        (currentUser?.destinationPortCode && c.destinationPort?.includes(currentUser.destinationPortCode)) || 
-        c.destinationPort?.includes('NAS') || 
-        c.destinationPort?.includes('Nassau')
-      ) 
+    ? consolidations.filter(c => {
+        if (!currentUser?.agentId && !currentUser?.destinationPortCode) return true;
+        if (currentUser?.agentId && c.agentId === currentUser.agentId) return true;
+        if (currentUser?.destinationPortCode && (c.destinationCode === currentUser.destinationPortCode || c.destinationPort?.includes(currentUser.destinationPortCode))) return true;
+        return false;
+      }) 
     : consolidations;
 
   const columns = [
@@ -194,6 +193,21 @@ export const ConsolidationsList = ({ onNavigate }) => {
             </>
           )}
 
+          {!isAgent && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setCreatingBLForConsolidation(item);
+              }}
+              className="btn btn-sm btn-ghost"
+              title={`Issue Master B/L for Consolidation ${item.consolidationNumber}`}
+              style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', color: '#0284C7' }}
+            >
+              <FileText size={13} />
+              <span className="hide-mobile">+ Master B/L</span>
+            </button>
+          )}
+
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -278,6 +292,22 @@ export const ConsolidationsList = ({ onNavigate }) => {
           await updateConsolidation(editingConsolidation.id, updates);
         }}
       />
+
+      {/* Create Master B/L from Consolidation Modal */}
+      {creatingBLForConsolidation && (
+        <BillOfLadingModal
+          isOpen={!!creatingBLForConsolidation}
+          initialConsolidationNumber={creatingBLForConsolidation.consolidationNumber}
+          onClose={() => setCreatingBLForConsolidation(null)}
+          onSave={async (blData) => {
+            const created = await createBillOfLading(blData);
+            setCreatingBLForConsolidation(null);
+            if (created) {
+              onNavigate('bills-of-lading', created.id || created.blNumber);
+            }
+          }}
+        />
+      )}
 
       {/* Delete Confirmation Modal */}
       <DeleteConfirmModal

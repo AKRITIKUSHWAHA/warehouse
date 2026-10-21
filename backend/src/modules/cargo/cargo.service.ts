@@ -31,8 +31,8 @@ export class CargoService {
       cbm = calculateCbmFromCft(cft);
     }
     const weightKg = Number(input.weightKg) || convertLbsToKg(weightLbs);
-    const destPort = input.destinationPort || 'NAS - Nassau, Bahamas';
-    const destCode = input.destinationCode || (destPort.includes(' - ') ? destPort.split(' - ')[0].trim() : 'NAS');
+    const destPort = input.destinationPort || '';
+    const destCode = input.destinationCode || (destPort.includes(' - ') ? destPort.split(' - ')[0].trim() : '');
 
     return this.repo.create({
       cargoNumber: cargoNum,

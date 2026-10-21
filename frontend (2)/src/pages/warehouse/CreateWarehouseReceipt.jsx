@@ -38,12 +38,12 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
     ? (configuredPrefix.endsWith('-') ? `${configuredPrefix}${nextSeq}` : `${configuredPrefix}-${nextSeq}`)
     : String(nextSeq);
 
-  const getPortCode = (p) => p?.portCode || p?.code || 'NAS';
-  const nasPort = ports.find(p => getPortCode(p) === 'NAS') || ports[0];
-  const defaultPort = nasPort ? `${getPortCode(nasPort)} - ${nasPort.name}` : 'NAS - Nassau Container Port';
-  const defaultPortCode = nasPort ? getPortCode(nasPort) : 'NAS';
-  const initialAgent = agents.find(a => a.assignedPortCode === defaultPortCode);
-  const initialAgentName = initialAgent?.name || nasPort?.defaultAgent || '';
+  const getPortCode = (p) => p?.portCode || p?.code || '';
+  const firstPort = ports && ports.length > 0 ? ports[0] : null;
+  const defaultPort = firstPort ? `${getPortCode(firstPort)} - ${firstPort.name}` : '';
+  const defaultPortCode = firstPort ? getPortCode(firstPort) : '';
+  const initialAgent = defaultPortCode ? agents.find(a => a.assignedPortCode === defaultPortCode) : null;
+  const initialAgentName = initialAgent?.name || firstPort?.defaultAgent || '';
 
   // Form Header State (Fresh Blank State)
   const [formData, setFormData] = useState({

@@ -21,14 +21,15 @@ import {
   HelpCircle,
   FileCheck,
   RefreshCw,
-  Lock
+  Lock,
+  FileSpreadsheet
 } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 
 export const BillsOfLadingList = ({ onNavigate }) => {
-  const { billsOfLading, clearBLHold, placeBLHold, createBillOfLading, updateBillOfLading, deleteBillOfLading, houseBills, fetchMenuApi } = useAppData();
+  const { billsOfLading, clearBLHold, placeBLHold, createBillOfLading, updateBillOfLading, deleteBillOfLading, generateManifestFromMasterBL, houseBills, fetchMenuApi } = useAppData();
   const { isAgent, currentUser } = useAuth();
   const { showToast } = useToast();
 
@@ -56,17 +57,16 @@ export const BillsOfLadingList = ({ onNavigate }) => {
         if (!currentUser?.agentId && !currentUser?.destinationPortCode) return true;
         const bPort = (b.portOfDischarge || '').toUpperCase();
         const bAgentId = b.agentId;
-        const userPort = (currentUser?.destinationPortCode || 'NAS').toUpperCase();
+        const userPort = (currentUser?.destinationPortCode || '').toUpperCase();
         const userAgentId = currentUser?.agentId;
         const userName = (currentUser?.name || '').toLowerCase();
         const bAgentName = (b.agentName || '').toLowerCase();
 
         if (userAgentId && bAgentId === userAgentId) return true;
         if (b.destinationPortCode && b.destinationPortCode === currentUser?.destinationPortCode) return true;
-        if (userPort && (bPort.includes(userPort) || bPort.includes('NASSAU') || bPort.includes('BAHAMAS'))) return true;
+        if (userPort && bPort.includes(userPort)) return true;
         if (userName && bAgentName.includes(userName)) return true;
-        if (bAgentName.includes('caribbean')) return true;
-        return true;
+        return false;
       })
     : billsOfLading;
 
@@ -205,6 +205,35 @@ export const BillsOfLadingList = ({ onNavigate }) => {
               >
                 <Edit2 size={13} />
                 <span className="hide-mobile">Edit</span>
+              </button>
+            )}
+
+            {/* Quick 1-Click Manifest Action (Head Office Staff) */}
+            {!isAgent && !isCancelled && (
+              <button
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  if (isOnHold) {
+                    const confirmHold = window.confirm(`Notice: Master B/L ${item.blNumber} is currently ON HOLD. Proceed with generating manifest?`);
+                    if (!confirmHold) return;
+                  }
+                  try {
+                    showToast(`Generating manifest from Master B/L ${item.blNumber}...`, 'info', '1-Click Manifest');
+                    const newManifest = await generateManifestFromMasterBL(item.id || item.blNumber);
+                    if (newManifest) {
+                      showToast(`Manifest ${newManifest.manifestNumber || newManifest.id} generated in 1 click!`, 'success', 'Manifest Ready');
+                      onNavigate('manifests', newManifest.id || newManifest.manifestNumber);
+                    }
+                  } catch (err) {
+                    showToast(err?.message || 'Failed to generate manifest', 'error', 'Error');
+                  }
+                }}
+                className="btn btn-sm btn-ghost"
+                title="Generate Customs Manifest from this Master B/L in 1 click"
+                style={{ padding: '0.25rem 0.45rem', color: '#0284C7', fontSize: '0.75rem' }}
+              >
+                <FileSpreadsheet size={13} />
+                <span className="hide-mobile">⚡ Manifest</span>
               </button>
             )}
 

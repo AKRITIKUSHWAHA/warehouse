@@ -39,7 +39,7 @@ export class ShipmentsService {
       : `TRK-VI-${Math.floor(100000 + Math.random() * 900000)}`;
 
     const createdDate = input.createdDate || new Date().toISOString().split('T')[0];
-    const destinationPort = input.destinationPort || 'NAS - Nassau Container Port';
+    const destinationPort = input.destinationPort || '';
     const destination = input.destination || destinationPort;
     const origin = input.origin || 'Port of Miami (USMIA)';
 
@@ -116,12 +116,12 @@ export class ShipmentsService {
       origin,
       destination,
       destinationPort,
-      destinationCode: input.destinationCode || 'NAS',
+      destinationCode: input.destinationCode || '',
       agentId: validAgentId,
       agentName: input.agentName || null,
       vesselName: input.vesselName || null,
       voyageNumber: input.voyageNumber || null,
-      carrier: input.carrier || 'Tropical Shipping',
+      carrier: input.carrier || '',
       containerNumber: input.containerNumber || null,
       containerType: input.containerType || "40' Standard Dry",
       sealNumber: input.sealNumber || null,

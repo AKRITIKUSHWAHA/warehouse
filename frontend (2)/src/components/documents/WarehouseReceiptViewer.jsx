@@ -186,7 +186,7 @@ export const WarehouseReceiptViewer = ({ receipt, onNavigate }) => {
               {receipt.receiptNumber}
             </div>
             <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '2px' }}>
-              Destination Port: <strong style={{ color: '#0284C7' }}>{receipt.destinationPort || 'NAS - Nassau, Bahamas'}</strong>
+              Destination Port: <strong style={{ color: '#0284C7' }}>{receipt.destinationPort || 'General Destination'}</strong>
             </div>
           </div>
         </div>
@@ -202,9 +202,7 @@ export const WarehouseReceiptViewer = ({ receipt, onNavigate }) => {
             <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748B' }}>CONSIGNEE &amp; DESTINATION AGENT</div>
             <div style={{ fontSize: '0.85rem', fontWeight: 700, marginTop: '2px' }}>{consigneeDisplayName}</div>
             <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px' }}>Assigned Port Agent: <strong>{
-              (!receipt.agentName || (receipt.agentName === 'Caribbean Express Freight Ltd.' && receipt.destinationCode && receipt.destinationCode !== 'NAS'))
-                ? 'Unassigned (Direct Consignee Delivery)'
-                : receipt.agentName
+              receipt.agentName || 'Unassigned (Direct Delivery)'
             }</strong></div>
           </div>
         </div>

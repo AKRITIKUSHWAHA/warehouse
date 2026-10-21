@@ -219,8 +219,10 @@ export const AuthProvider = ({ children }) => {
     return getStoredPermissionsMap();
   });
 
-  // Sync role permissions from backend settings if available
+  // Sync role permissions from backend settings if available (only when authenticated)
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     const fetchBackendPermissions = async () => {
       try {
         const res = await apiClient.get('settings/role_permissions');
@@ -234,7 +236,7 @@ export const AuthProvider = ({ children }) => {
       }
     };
     fetchBackendPermissions();
-  }, []);
+  }, [isAuthenticated]);
 
   const updateRolePermissionsMap = useCallback(async (newMap) => {
     setRolePermissionsMap(newMap);

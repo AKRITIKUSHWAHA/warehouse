@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { FileText, X, Save, Plus } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { FileText, X, Save, Plus, Layers, CheckSquare, Square, Box, Anchor, Check } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
 import { useAuth } from '../../context/AuthContext';
 
@@ -8,13 +8,14 @@ export const BillOfLadingModal = ({
   onClose,
   onSave,
   bl = null,
-  isEdit = false
+  isEdit = false,
+  initialConsolidationNumber = null
 }) => {
-  const { ports, customers = [] } = useAppData();
+  const { ports, customers = [], consolidations = [], houseBills = [] } = useAppData();
   const { currentUser, isAgent } = useAuth();
   const hasInitializedRef = useRef(false);
 
-  const getPortCode = (p) => p?.portCode || p?.code || 'NAS';
+  const getPortCode = (p) => p?.portCode || p?.code || '';
 
   const getPolDefault = () => {
     const p = ports.find(pt => getPortCode(pt) === 'MIA' || getPortCode(pt) === 'USMIA');
@@ -22,35 +23,72 @@ export const BillOfLadingModal = ({
   };
 
   const getPodDefault = () => {
-    const targetCode = isAgent ? (currentUser?.destinationPortCode || 'NAS') : 'NAS';
-    const p = ports.find(pt => getPortCode(pt) === targetCode || getPortCode(pt) === 'NAS' || getPortCode(pt) === 'BSNAS');
-    return p ? `${getPortCode(p)} - ${p.name}` : (ports[0] ? `${getPortCode(ports[0])} - ${ports[0].name}` : 'NAS - Nassau Container Port');
+    const targetCode = isAgent ? currentUser?.destinationPortCode : null;
+    const p = targetCode ? ports.find(pt => getPortCode(pt) === targetCode) : (ports[0] || null);
+    return p ? `${getPortCode(p)} - ${p.name}` : '';
   };
+
+  const [selectedConsolidationNumber, setSelectedConsolidationNumber] = useState('');
+  const [selectedHouseBillIds, setSelectedHouseBillIds] = useState([]);
 
   const [formData, setFormData] = useState({
     blNumber: '',
     issueDate: '',
-    shipperName: 'KERS Global Freight Forwarding Inc.',
-    shipperAddress: '8200 NW 33rd Street, Miami, FL 33122 USA',
+    shipperName: '',
+    shipperAddress: '',
     consigneeName: '',
     consigneeAddress: '',
     notifyPartyName: '',
     notifyPartyAddress: '',
-    oceanVessel: 'M/V Caribbean Voyager',
-    voyageNumber: 'VOY-2026-088',
-    carrier: 'Tropical Shipping',
+    oceanVessel: '',
+    voyageNumber: '',
+    carrier: '',
     portOfLoading: '',
     portOfDischarge: '',
     containerNumber: '',
     sealNumber: 'BOLT-99281',
     cargoDescription: 'General Consignment: Commercial goods, packaged merchandise and freight.',
-    packageCount: 120,
+    packageCount: 0,
     packageType: 'Packages',
-    grossWeightLbs: 8500,
-    cbm: 28.5,
+    grossWeightLbs: 0,
+    cbm: 0,
     freightTerms: 'Freight Prepaid',
     status: 'Draft'
   });
+
+  // Calculate candidate house bills based on selected consolidation or destination
+  const candidateHouseBills = useMemo(() => {
+    if (!selectedConsolidationNumber) {
+      // If no consolidation is selected, show unassigned house bills matching destination
+      const pod = formData.portOfDischarge?.toLowerCase() || '';
+      return houseBills.filter(hb => {
+        if (bl && (bl.houseBillIds?.includes(hb.hblNumber) || bl.houseBillIds?.includes(hb.id))) return true;
+        if (hb.assignedMasterBLId && hb.assignedMasterBLId !== bl?.blNumber && hb.assignedMasterBLId !== bl?.id) return false;
+        if (!pod) return true;
+        const hbDest = (hb.destinationPort || '').toLowerCase();
+        return hbDest.includes(pod.split(' - ')[0]) || hbDest.includes(pod.split(' - ')[1] || pod);
+      });
+    }
+
+    const consol = consolidations.find(c => c.consolidationNumber === selectedConsolidationNumber || c.id === selectedConsolidationNumber);
+    if (!consol) return [];
+
+    return houseBills.filter(hb => {
+      // 1. Explicitly assigned to this consolidation
+      const matchConsol = hb.assignedConsolidationId === consol.consolidationNumber ||
+        hb.assignedConsolidationId === consol.id ||
+        (Array.isArray(consol.houseBillIds) && (consol.houseBillIds.includes(hb.hblNumber) || consol.houseBillIds.includes(hb.id)));
+      if (matchConsol) return true;
+
+      // 2. Already linked to this Master B/L
+      if (bl && (bl.houseBillIds?.includes(hb.hblNumber) || bl.houseBillIds?.includes(hb.id))) return true;
+
+      // 3. Or unassigned House Bills with matching destination
+      const isUnassigned = !hb.assignedMasterBLId || hb.assignedMasterBLId === bl?.blNumber || hb.assignedMasterBLId === bl?.id;
+      const matchPort = consol.destinationCode && (hb.destinationCode === consol.destinationCode || hb.destinationPort?.includes(consol.destinationCode));
+      return isUnassigned && matchPort;
+    });
+  }, [selectedConsolidationNumber, consolidations, houseBills, formData.portOfDischarge, bl]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -64,6 +102,10 @@ export const BillOfLadingModal = ({
     const pod = getPodDefault();
 
     if (bl && isEdit) {
+      const linkedHblNums = bl.houseBillIds || [];
+      setSelectedHouseBillIds(linkedHblNums);
+      setSelectedConsolidationNumber(bl.consolidationNumber || bl.consolidationId || '');
+
       setFormData({
         blNumber: bl.blNumber || '',
         issueDate: bl.issueDate || bl.createdDate || new Date().toISOString().split('T')[0],
@@ -81,51 +123,224 @@ export const BillOfLadingModal = ({
         containerNumber: bl.containerNumber || '',
         sealNumber: bl.sealNumber || 'BOLT-99281',
         cargoDescription: bl.cargoDescription || 'General Consignment',
-        packageCount: bl.packageCount || 120,
+        packageCount: bl.packageCount || 0,
         packageType: bl.packageType || 'Packages',
-        grossWeightLbs: bl.grossWeightLbs || 8500,
-        cbm: bl.cbm || 28.5,
+        grossWeightLbs: bl.grossWeightLbs || 0,
+        cbm: bl.cbm || 0,
         freightTerms: bl.freightTerms || 'Freight Prepaid',
         status: bl.status || 'Draft'
       });
     } else {
+      const initConsolNum = initialConsolidationNumber || '';
+      setSelectedConsolidationNumber(initConsolNum);
+
+      const generatedBlNumber = `BL-VI-2026-${Math.floor(100 + Math.random() * 899)}`;
+      let initialVessel = '';
+      let initialVoyage = '';
+      let initialCarrier = 'Tropical Shipping';
+      let initialPod = pod;
+      let initialContainer = '';
+      let initialSeal = '';
+      let initialConsignee = '';
+      let initialHblIds = [];
+
+      if (initConsolNum) {
+        const found = consolidations.find(c => c.consolidationNumber === initConsolNum || c.id === initConsolNum);
+        if (found) {
+          initialVessel = found.vesselName || '';
+          initialVoyage = found.voyageNumber || '';
+          initialCarrier = found.carrier || 'Tropical Shipping';
+          initialPod = found.destinationPort || found.dischargePort || pod;
+          initialContainer = found.containerNumber || '';
+          initialSeal = found.sealNumber || '';
+          initialConsignee = found.agentName ? `${found.agentName} (Destination Agent)` : 'To Order of Destination Agent';
+
+          // Gather HBLs linked to this consolidation
+          const linkedHbls = houseBills.filter(h =>
+            h.assignedConsolidationId === found.consolidationNumber ||
+            h.assignedConsolidationId === found.id ||
+            found.houseBillIds?.includes(h.hblNumber) ||
+            found.houseBillIds?.includes(h.id)
+          );
+          initialHblIds = linkedHbls.map(h => h.hblNumber || h.id);
+        }
+      }
+
+      setSelectedHouseBillIds(initialHblIds);
+
       setFormData({
-        blNumber: `BL-VI-2026-${Math.floor(95 + Math.random() * 900)}`,
+        blNumber: generatedBlNumber,
         issueDate: new Date().toISOString().split('T')[0],
-        shipperName: 'KERS Global Freight Forwarding Inc.',
-        shipperAddress: '8200 NW 33rd Street, Miami, FL 33122 USA',
-        consigneeName: '',
-        consigneeAddress: '',
+        shipperName: 'VI Customs Brokers & Logistics',
+        shipperAddress: '1200 NW 78th Ave, Miami, FL 33126',
+        consigneeName: initialConsignee,
+        consigneeAddress: initialPod,
         notifyPartyName: 'Same as Consignee',
-        notifyPartyAddress: '',
-        oceanVessel: 'M/V Caribbean Voyager',
-        voyageNumber: 'VOY-2026-088',
-        carrier: 'Tropical Shipping',
+        notifyPartyAddress: initialPod,
+        oceanVessel: initialVessel,
+        voyageNumber: initialVoyage,
+        carrier: initialCarrier,
         portOfLoading: pol,
-        portOfDischarge: pod,
-        containerNumber: `MEDU${Math.floor(1000000 + Math.random() * 9000000)}`,
-        sealNumber: `BOLT-${Math.floor(10000 + Math.random() * 90000)}`,
-        cargoDescription: 'General Consignment: Commercial goods, packaged merchandise and freight.',
-        packageCount: 120,
+        portOfDischarge: initialPod,
+        containerNumber: initialContainer,
+        sealNumber: initialSeal,
+        cargoDescription: 'General Consignment: Consolidated ocean freight merchandise.',
+        packageCount: 0,
         packageType: 'Packages',
-        grossWeightLbs: 8500,
-        cbm: 28.5,
+        grossWeightLbs: 0,
+        cbm: 0,
         freightTerms: 'Freight Prepaid',
         status: 'Draft'
       });
     }
-  }, [isOpen, bl, isEdit]);
+  }, [isOpen, bl, isEdit, initialConsolidationNumber, consolidations, houseBills]);
+
+  // Handle Consolidation dropdown selection
+  const handleConsolidationSelect = (consolNum) => {
+    setSelectedConsolidationNumber(consolNum);
+
+    if (!consolNum) {
+      return;
+    }
+
+    const selectedConsol = consolidations.find(c => c.consolidationNumber === consolNum || c.id === consolNum);
+    if (!selectedConsol) return;
+
+    // Load House B/Ls linked to this consolidation
+    const matchedHbls = houseBills.filter(hb =>
+      hb.assignedConsolidationId === selectedConsol.consolidationNumber ||
+      hb.assignedConsolidationId === selectedConsol.id ||
+      (Array.isArray(selectedConsol.houseBillIds) && (selectedConsol.houseBillIds.includes(hb.hblNumber) || selectedConsol.houseBillIds.includes(hb.id)))
+    );
+
+    const targetHbls = matchedHbls.length > 0 ? matchedHbls : houseBills.filter(hb =>
+      !hb.assignedMasterBLId && selectedConsol.destinationCode && (hb.destinationCode === selectedConsol.destinationCode || hb.destinationPort?.includes(selectedConsol.destinationCode))
+    );
+
+    const hblIds = targetHbls.map(h => h.hblNumber || h.id);
+    setSelectedHouseBillIds(hblIds);
+
+    // Sum totals from candidate HBLs
+    let sumPkgs = 0;
+    let sumWeightLbs = 0;
+    let sumCbm = 0;
+
+    targetHbls.forEach(h => {
+      sumPkgs += Number(h.totalPackages || h.packageCount || 1);
+      sumWeightLbs += Number(h.totalWeightLbs || 0);
+      sumCbm += Number(h.totalCbm || 0);
+    });
+
+    if (sumPkgs === 0 && selectedConsol.totalPackages) sumPkgs = Number(selectedConsol.totalPackages);
+    if (sumWeightLbs === 0 && selectedConsol.totalWeightLbs) sumWeightLbs = Number(selectedConsol.totalWeightLbs);
+    if (sumCbm === 0 && selectedConsol.totalCbm) sumCbm = Number(selectedConsol.totalCbm);
+
+    const destPortName = selectedConsol.destinationPort || selectedConsol.dischargePort || formData.portOfDischarge;
+
+    setFormData(prev => ({
+      ...prev,
+      oceanVessel: selectedConsol.vesselName || prev.oceanVessel,
+      voyageNumber: selectedConsol.voyageNumber || prev.voyageNumber,
+      carrier: selectedConsol.carrier || prev.carrier,
+      portOfDischarge: destPortName,
+      consigneeName: prev.consigneeName || (selectedConsol.agentName ? `${selectedConsol.agentName} (Destination Agent)` : 'To Order of Destination Agent'),
+      consigneeAddress: prev.consigneeAddress || destPortName,
+      notifyPartyName: prev.notifyPartyName || selectedConsol.agentName || 'Same as Consignee',
+      notifyPartyAddress: prev.notifyPartyAddress || destPortName,
+      containerNumber: selectedConsol.containerNumber || prev.containerNumber,
+      sealNumber: selectedConsol.sealNumber || prev.sealNumber,
+      packageCount: sumPkgs,
+      grossWeightLbs: Math.round(sumWeightLbs),
+      cbm: Number(sumCbm.toFixed(2)),
+      cargoDescription: targetHbls.length > 0
+        ? `Consolidation of ${targetHbls.length} House B/Ls (${sumPkgs} Packages): Commercial goods and cargo consigned for ${destPortName}.`
+        : `Consolidation ${selectedConsol.consolidationNumber}: Commercial goods and ocean freight.`
+    }));
+  };
+
+  // Toggle individual House B/L selection
+  const toggleHouseBill = (hblNumber) => {
+    setSelectedHouseBillIds(prev => {
+      const isSelected = prev.includes(hblNumber);
+      const updated = isSelected ? prev.filter(id => id !== hblNumber) : [...prev, hblNumber];
+
+      // Recalculate totals based on updated selection
+      const activeHbls = candidateHouseBills.filter(h => updated.includes(h.hblNumber || h.id));
+      let sumPkgs = 0;
+      let sumWeightLbs = 0;
+      let sumCbm = 0;
+
+      activeHbls.forEach(h => {
+        sumPkgs += Number(h.totalPackages || h.packageCount || 1);
+        sumWeightLbs += Number(h.totalWeightLbs || 0);
+        sumCbm += Number(h.totalCbm || 0);
+      });
+
+      setFormData(f => ({
+        ...f,
+        packageCount: sumPkgs,
+        grossWeightLbs: Math.round(sumWeightLbs),
+        cbm: Number(sumCbm.toFixed(2)),
+        cargoDescription: activeHbls.length > 0
+          ? `Consolidation of ${activeHbls.length} House B/Ls (${sumPkgs} Packages): Commercial goods and cargo consigned for ${f.portOfDischarge}.`
+          : f.cargoDescription
+      }));
+
+      return updated;
+    });
+  };
+
+  const selectAllHouseBills = () => {
+    const allIds = candidateHouseBills.map(h => h.hblNumber || h.id);
+    setSelectedHouseBillIds(allIds);
+
+    let sumPkgs = 0;
+    let sumWeightLbs = 0;
+    let sumCbm = 0;
+
+    candidateHouseBills.forEach(h => {
+      sumPkgs += Number(h.totalPackages || h.packageCount || 1);
+      sumWeightLbs += Number(h.totalWeightLbs || 0);
+      sumCbm += Number(h.totalCbm || 0);
+    });
+
+    setFormData(prev => ({
+      ...prev,
+      packageCount: sumPkgs,
+      grossWeightLbs: Math.round(sumWeightLbs),
+      cbm: Number(sumCbm.toFixed(2)),
+      cargoDescription: candidateHouseBills.length > 0
+        ? `Consolidation of ${candidateHouseBills.length} House B/Ls (${sumPkgs} Packages): Commercial goods and cargo consigned for ${prev.portOfDischarge}.`
+        : prev.cargoDescription
+    }));
+  };
+
+  const clearAllHouseBills = () => {
+    setSelectedHouseBillIds([]);
+    setFormData(prev => ({
+      ...prev,
+      packageCount: 0,
+      grossWeightLbs: 0,
+      cbm: 0
+    }));
+  };
 
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const selectedConsol = consolidations.find(c => c.consolidationNumber === selectedConsolidationNumber || c.id === selectedConsolidationNumber);
+
     onSave({
       blNumber: formData.blNumber,
       issueDate: formData.issueDate,
+      consolidationId: selectedConsol?.id || null,
+      consolidationNumber: selectedConsolidationNumber || null,
+      houseBillIds: selectedHouseBillIds,
       agentId: bl?.agentId || currentUser?.agentId || null,
-      agentName: bl?.agentName || (currentUser?.roleKey === 'agent' ? currentUser.name : 'Caribbean Express Freight Ltd.'),
-      destinationPortCode: formData.portOfDischarge?.split(' - ')[0]?.trim() || 'NAS',
+      agentName: bl?.agentName || (currentUser?.roleKey === 'agent' ? currentUser.name : ''),
+      destinationPortCode: formData.portOfDischarge?.split(' - ')[0]?.trim() || '',
       shipper: {
         name: formData.shipperName,
         address: formData.shipperAddress
@@ -147,6 +362,7 @@ export const BillOfLadingModal = ({
       sealNumber: formData.sealNumber,
       cargoDescription: formData.cargoDescription,
       packageCount: Number(formData.packageCount) || 0,
+      totalPieces: Number(formData.packageCount) || 0,
       packageType: formData.packageType,
       grossWeightLbs: Number(formData.grossWeightLbs) || 0,
       grossWeightKg: Number(((Number(formData.grossWeightLbs) || 0) * 0.453592).toFixed(1)),
@@ -157,6 +373,8 @@ export const BillOfLadingModal = ({
     });
     onClose();
   };
+
+  const selectedConsolObj = consolidations.find(c => c.consolidationNumber === selectedConsolidationNumber || c.id === selectedConsolidationNumber);
 
   return (
     <div className="modal-backdrop">
@@ -179,7 +397,182 @@ export const BillOfLadingModal = ({
             }
           }}
         >
-          <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '72vh', overflowY: 'auto' }}>
+          <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxHeight: '74vh', overflowY: 'auto' }}>
+            
+            {/* STEP 1: Consolidation Link & Auto-Population Banner */}
+            <div style={{
+              background: '#F0F9FF',
+              border: '1.5px solid #0284C7',
+              borderRadius: '10px',
+              padding: '1rem 1.25rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.75rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#0284C7', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Layers size={16} />
+                  </div>
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: '0.95rem', color: '#0A192F', fontWeight: 700 }}>
+                      Step 1: Select Consolidation Number (Recommended)
+                    </h4>
+                    <p style={{ margin: 0, fontSize: '0.78rem', color: '#64748B' }}>
+                      Select an existing Consolidation. All linked House B/Ls, vessel, carrier, container, and cargo metrics will load automatically.
+                    </p>
+                  </div>
+                </div>
+
+                {selectedConsolObj && (
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0369A1', background: '#E0F2FE', padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
+                    Linked: {selectedConsolObj.consolidationNumber} ({selectedConsolObj.destinationPort || 'Consolidation'})
+                  </span>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4" style={{ alignItems: 'center' }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label" style={{ fontWeight: 700 }}>Consolidation #</label>
+                  <select
+                    className="form-select"
+                    value={selectedConsolidationNumber}
+                    onChange={(e) => handleConsolidationSelect(e.target.value)}
+                  >
+                    <option value="">-- None (Direct / Standalone Master B/L) --</option>
+                    {consolidations.map(c => (
+                      <option key={c.id || c.consolidationNumber} value={c.consolidationNumber}>
+                        {c.consolidationNumber} — {c.title || c.destinationPort} ({c.vesselName || 'Vessel'} • {c.containerNumber || 'Box'} • {c.totalHouseBills || c.houseBillIds?.length || 0} HBLs)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={{ fontSize: '0.8rem', color: '#475569', background: '#FFFFFF', padding: '0.65rem 0.85rem', borderRadius: '6px', border: '1px solid #BAE6FD' }}>
+                  {selectedConsolObj ? (
+                    <div>
+                      <strong>{selectedConsolObj.vesselName || 'Ocean Vessel'}</strong> ({selectedConsolObj.voyageNumber || 'General'}) • Container: <strong>{selectedConsolObj.containerNumber || 'TBD'}</strong>
+                      <div style={{ fontSize: '0.72rem', color: '#0284C7', marginTop: '2px' }}>
+                        Discharge Port: {selectedConsolObj.destinationPort} • Seal: {selectedConsolObj.sealNumber || 'N/A'}
+                      </div>
+                    </div>
+                  ) : (
+                    <span style={{ color: '#64748B' }}>
+                      Tip: Select a consolidation to automatically load its House Bills and fill in container and vessel details.
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* STEP 2: Interactive House B/Ls Linked Table */}
+            <div style={{
+              background: '#FFFFFF',
+              border: '1px solid #E2E8F0',
+              borderRadius: '8px',
+              padding: '1rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.75rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Box size={16} style={{ color: '#0284C7' }} />
+                  <span style={{ fontWeight: 700, color: '#0A192F', fontSize: '0.9rem' }}>
+                    Linked House Bills of Lading ({selectedHouseBillIds.length} of {candidateHouseBills.length} selected)
+                  </span>
+                </div>
+
+                {candidateHouseBills.length > 0 && (
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      type="button"
+                      onClick={selectAllHouseBills}
+                      className="btn btn-outline btn-sm"
+                      style={{ padding: '0.2rem 0.5rem', fontSize: '0.72rem' }}
+                    >
+                      Select All
+                    </button>
+                    <button
+                      type="button"
+                      onClick={clearAllHouseBills}
+                      className="btn btn-ghost btn-sm"
+                      style={{ padding: '0.2rem 0.5rem', fontSize: '0.72rem', color: '#64748B' }}
+                    >
+                      Deselect All
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {candidateHouseBills.length === 0 ? (
+                <div style={{ padding: '1rem', textAlign: 'center', background: '#F8FAFC', borderRadius: '6px', color: '#64748B', fontSize: '0.825rem' }}>
+                  No House B/Ls currently match this consolidation or port of discharge. You can enter cargo totals manually below or link House B/Ls later.
+                </div>
+              ) : (
+                <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid #E2E8F0', borderRadius: '6px' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+                    <thead>
+                      <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569', textAlign: 'left' }}>
+                        <th style={{ padding: '0.5rem 0.75rem', width: '36px' }}></th>
+                        <th style={{ padding: '0.5rem 0.75rem' }}>HBL Number</th>
+                        <th style={{ padding: '0.5rem 0.75rem' }}>Consignee</th>
+                        <th style={{ padding: '0.5rem 0.75rem' }}>Packages</th>
+                        <th style={{ padding: '0.5rem 0.75rem' }}>Weight (LBS)</th>
+                        <th style={{ padding: '0.5rem 0.75rem' }}>Volume</th>
+                        <th style={{ padding: '0.5rem 0.75rem' }}>Destination</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {candidateHouseBills.map(h => {
+                        const isChecked = selectedHouseBillIds.includes(h.hblNumber) || selectedHouseBillIds.includes(h.id);
+                        const cftVal = h.totalCft || (h.totalCbm ? Number((h.totalCbm * 35.3147).toFixed(1)) : 0);
+                        return (
+                          <tr
+                            key={h.id || h.hblNumber}
+                            onClick={() => toggleHouseBill(h.hblNumber || h.id)}
+                            style={{
+                              borderBottom: '1px solid #F1F5F9',
+                              background: isChecked ? '#F0FDF4' : '#FFFFFF',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <td style={{ padding: '0.45rem 0.75rem' }}>
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => {}} // handled by row onClick
+                                style={{ cursor: 'pointer' }}
+                              />
+                            </td>
+                            <td style={{ padding: '0.45rem 0.75rem', fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: '#0A192F' }}>
+                              {h.hblNumber}
+                            </td>
+                            <td style={{ padding: '0.45rem 0.75rem', color: '#1E293B' }}>
+                              {h.consignee?.name || h.consignee || 'Consignee'}
+                            </td>
+                            <td style={{ padding: '0.45rem 0.75rem', fontWeight: 600 }}>
+                              {h.totalPackages || h.packageCount || 1} pkgs
+                            </td>
+                            <td style={{ padding: '0.45rem 0.75rem' }}>
+                              {h.totalWeightLbs ? `${Number(h.totalWeightLbs).toLocaleString()} lbs` : '—'}
+                            </td>
+                            <td style={{ padding: '0.45rem 0.75rem', color: '#D97706', fontWeight: 600 }}>
+                              {cftVal} CFT ({h.totalCbm || 0} CBM)
+                            </td>
+                            <td style={{ padding: '0.45rem 0.75rem', color: '#0284C7' }}>
+                              {h.destinationPort || '—'}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* B/L Number and Issue Date */}
             <div className="grid grid-cols-2 gap-4">
               <div className="form-group">
                 <label className="form-label">Master B/L Number <span className="required">*</span></label>
@@ -204,6 +597,7 @@ export const BillOfLadingModal = ({
               </div>
             </div>
 
+            {/* Shipper & Consignee */}
             <div className="grid grid-cols-2 gap-4">
               <div style={{ background: '#F8FAFC', padding: '0.85rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
                 <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '0.5rem' }}>
@@ -291,7 +685,7 @@ export const BillOfLadingModal = ({
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="e.g. Bay Street, Nassau, Bahamas"
+                    placeholder="e.g. Port Road, Port of Discharge"
                     value={formData.consigneeAddress}
                     onChange={(e) => setFormData({ ...formData, consigneeAddress: e.target.value })}
                   />
@@ -299,12 +693,14 @@ export const BillOfLadingModal = ({
               </div>
             </div>
 
+            {/* Ocean Vessel, Voyage & Carrier */}
             <div className="grid grid-cols-3 gap-4">
               <div className="form-group">
                 <label className="form-label">Ocean Vessel</label>
                 <input
                   type="text"
                   className="form-control"
+                  placeholder="e.g. M/V Caribbean Voyager"
                   value={formData.oceanVessel}
                   onChange={(e) => setFormData({ ...formData, oceanVessel: e.target.value })}
                 />
@@ -315,6 +711,7 @@ export const BillOfLadingModal = ({
                 <input
                   type="text"
                   className="form-control"
+                  placeholder="e.g. VOY-2026-088"
                   value={formData.voyageNumber}
                   onChange={(e) => setFormData({ ...formData, voyageNumber: e.target.value })}
                 />
@@ -325,12 +722,14 @@ export const BillOfLadingModal = ({
                 <input
                   type="text"
                   className="form-control"
+                  placeholder="e.g. Tropical Shipping"
                   value={formData.carrier}
                   onChange={(e) => setFormData({ ...formData, carrier: e.target.value })}
                 />
               </div>
             </div>
 
+            {/* Routing Ports */}
             <div className="grid grid-cols-2 gap-4">
               <div className="form-group">
                 <label className="form-label">Port of Loading (POL)</label>
@@ -346,7 +745,7 @@ export const BillOfLadingModal = ({
                     const pCode = getPortCode(p);
                     return (
                       <option key={`pol-${p.id || pCode}`} value={`${pCode} - ${p.name}`}>
-                        {pCode} — {p.name} ({p.island || p.country || 'Caribbean'})
+                        {pCode} — {p.name} ({p.island || p.country || 'Port'})
                       </option>
                     );
                   })}
@@ -368,7 +767,7 @@ export const BillOfLadingModal = ({
                     const pCode = getPortCode(p);
                     return (
                       <option key={`pod-${p.id || pCode}`} value={`${pCode} - ${p.name}`}>
-                        {pCode} — {p.name} ({p.island || p.country || 'Caribbean'})
+                        {pCode} — {p.name} ({p.island || p.country || 'Port'})
                       </option>
                     );
                   })}
@@ -376,12 +775,14 @@ export const BillOfLadingModal = ({
               </div>
             </div>
 
+            {/* Container & Seal */}
             <div className="grid grid-cols-2 gap-4">
               <div className="form-group">
                 <label className="form-label">Container Number</label>
                 <input
                   type="text"
                   className="form-control"
+                  placeholder="e.g. MSKU-829104-5"
                   value={formData.containerNumber}
                   onChange={(e) => setFormData({ ...formData, containerNumber: e.target.value })}
                 />
@@ -392,12 +793,14 @@ export const BillOfLadingModal = ({
                 <input
                   type="text"
                   className="form-control"
+                  placeholder="e.g. SEAL-VI-8821"
                   value={formData.sealNumber}
                   onChange={(e) => setFormData({ ...formData, sealNumber: e.target.value })}
                 />
               </div>
             </div>
 
+            {/* Cargo Description */}
             <div className="form-group">
               <label className="form-label">Cargo Description <span className="required">*</span></label>
               <textarea
@@ -409,12 +812,13 @@ export const BillOfLadingModal = ({
               />
             </div>
 
+            {/* Package, Weight & Volume Totals (Auto-aggregated) */}
             <div className="grid grid-cols-4 gap-4">
               <div className="form-group">
-                <label className="form-label">Packages</label>
+                <label className="form-label">Total Packages</label>
                 <input
                   type="number"
-                  min="1"
+                  min="0"
                   className="form-control"
                   value={formData.packageCount}
                   onChange={(e) => setFormData({ ...formData, packageCount: e.target.value })}
@@ -425,7 +829,7 @@ export const BillOfLadingModal = ({
                 <label className="form-label">Gross Weight (LBS)</label>
                 <input
                   type="number"
-                  min="1"
+                  min="0"
                   className="form-control"
                   value={formData.grossWeightLbs}
                   onChange={(e) => setFormData({ ...formData, grossWeightLbs: e.target.value })}

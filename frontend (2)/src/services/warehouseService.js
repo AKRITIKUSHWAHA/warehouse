@@ -115,8 +115,8 @@ export const warehouseService = {
     totalCbm = Number(totalCbm.toFixed(2));
     const totalWeightKg = Number((totalWeightLbs * 0.453592).toFixed(1));
 
-    const destPort = receiptData.destinationPort || "NAS - Nassau Container Port";
-    const destCode = receiptData.destinationCode || (destPort.includes(' - ') ? destPort.split(' - ')[0].trim() : 'NAS');
+    const destPort = receiptData.destinationPort || "";
+    const destCode = receiptData.destinationCode || (destPort.includes(' - ') ? destPort.split(' - ')[0].trim() : '');
 
     const payload = {
       ...receiptData,

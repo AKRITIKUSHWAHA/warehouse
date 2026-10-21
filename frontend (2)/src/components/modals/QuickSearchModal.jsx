@@ -5,23 +5,7 @@ import { searchService } from '../../services';
 // Helper to format any destination code or string into full readable name
 const formatFullDestination = (dest) => {
   if (!dest) return '';
-  const portMap = {
-    'NAS': 'NAS - Nassau, Bahamas',
-    'KIN': 'KIN - Kingston, Jamaica',
-    'BGI': 'BGI - Bridgetown, Barbados',
-    'POS': 'POS - Port of Spain, Trinidad',
-    'GCM': 'GCM - George Town, Cayman Islands',
-    'FPO': 'FPO - Freeport, Bahamas',
-    'PLS': 'PLS - Providenciales, Turks & Caicos',
-    'MIA': 'MIA - Miami, FL, USA'
-  };
-
-  const trimmed = String(dest).trim();
-  if (portMap[trimmed]) return portMap[trimmed];
-  if (trimmed.includes(' - ') || trimmed.includes(',')) return trimmed;
-
-  const prefix = trimmed.toUpperCase().slice(0, 3);
-  return portMap[prefix] || trimmed;
+  return String(dest).trim();
 };
 
 export const QuickSearchModal = ({ isOpen, onClose, onSelectResult }) => {

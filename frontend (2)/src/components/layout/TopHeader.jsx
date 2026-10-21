@@ -334,15 +334,19 @@ export const TopHeader = ({
                   return (
                     <div
                       key={u.id}
-                      onClick={() => {
-                        switchUser(u.id);
+                      onClick={async () => {
                         setShowUserMenu(false);
-                        if (u.roleKey === 'agent') {
-                          onNavigate('agent-dashboard');
-                        } else {
-                          onNavigate('dashboard');
+                        try {
+                          const switched = await switchUser(u.id);
+                          if (u.roleKey === 'agent' || switched?.roleKey === 'agent') {
+                            onNavigate('agent-dashboard');
+                          } else {
+                            onNavigate('dashboard');
+                          }
+                          showToast(`Switched user to ${u.name} (${u.role || u.roleKey}).`, 'info', 'Persona Switched');
+                        } catch (err) {
+                          onNavigate(u.roleKey === 'agent' ? 'agent-dashboard' : 'dashboard');
                         }
-                        showToast(`Switched user to ${u.name} (${u.role}).`, 'info', 'Persona Switched');
                       }}
                       style={{
                         display: 'flex',

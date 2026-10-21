@@ -11,10 +11,10 @@ export const ShipmentModal = ({
 }) => {
   const { ports, vessels } = useAppData();
   const hasInitializedRef = useRef(false);
-  const getPortCode = (p) => p?.portCode || p?.code || 'NAS';
+  const getPortCode = (p) => p?.portCode || p?.code || '';
   const defaultOrigin = ports.find(p => getPortCode(p) === 'MIA') ? 'MIA - Port of Miami' : (ports[0] ? `${getPortCode(ports[0])} - ${ports[0].name}` : 'MIA - Port of Miami');
-  const defaultDest = ports.find(p => getPortCode(p) === 'NAS') ? 'NAS - Nassau Container Port' : (ports[0] ? `${getPortCode(ports[0])} - ${ports[0].name}` : 'NAS - Nassau Container Port');
-  const defaultDestCode = ports.find(p => getPortCode(p) === 'NAS') ? 'NAS' : (ports[0] ? getPortCode(ports[0]) : 'NAS');
+  const defaultDest = ports[0] ? `${getPortCode(ports[0])} - ${ports[0].name}` : '';
+  const defaultDestCode = ports[0] ? getPortCode(ports[0]) : '';
 
   const [formData, setFormData] = useState({
     shipmentNumber: '',
@@ -22,12 +22,12 @@ export const ShipmentModal = ({
     origin: defaultOrigin,
     destinationPort: defaultDest,
     destinationCode: defaultDestCode,
-    vesselName: vessels[0]?.name || 'M/V Caribbean Voyager',
-    voyageNumber: 'VOY-2026-088',
-    carrier: 'Tropical Shipping',
+    vesselName: vessels[0]?.name || '',
+    voyageNumber: '',
+    carrier: '',
     containerNumber: '',
-    sealNumber: 'BOLT-99281',
-    totalPackages: 120,
+    sealNumber: '',
+    totalPackages: 0,
     totalWeightLbs: 8500,
     totalCbm: 28.5,
     etd: '2026-09-02',
@@ -52,19 +52,19 @@ export const ShipmentModal = ({
         origin: shipment.origin || defaultOrigin,
         destinationPort: shipment.destinationPort || defaultDest,
         destinationCode: shipment.destinationCode || defaultDestCode,
-        vesselName: shipment.vesselName || (vessels[0]?.name || 'M/V Caribbean Voyager'),
-        voyageNumber: shipment.voyageNumber || 'VOY-2026-088',
-        carrier: shipment.carrier || 'Tropical Shipping',
+        vesselName: shipment.vesselName || (vessels[0]?.name || ''),
+        voyageNumber: shipment.voyageNumber || '',
+        carrier: shipment.carrier || '',
         containerNumber: shipment.containerNumber || '',
-        sealNumber: shipment.sealNumber || 'BOLT-99281',
-        totalPackages: shipment.totalPackages || 120,
-        totalWeightLbs: shipment.totalWeightLbs || 8500,
-        totalCbm: shipment.totalCbm || 28.5,
-        etd: shipment.etd || '2026-09-02',
-        eta: shipment.eta || '2026-09-06',
+        sealNumber: shipment.sealNumber || '',
+        totalPackages: shipment.totalPackages || 0,
+        totalWeightLbs: shipment.totalWeightLbs || 0,
+        totalCbm: shipment.totalCbm || 0,
+        etd: shipment.etd || new Date().toISOString().split('T')[0],
+        eta: shipment.eta || '',
         status: shipment.status || 'Cargo Received',
         blStatus: shipment.blStatus || 'Draft',
-        agentName: shipment.agentName || 'Nassau Freight Logistics Ltd'
+        agentName: shipment.agentName || ''
       });
     } else {
       setFormData({
@@ -73,19 +73,19 @@ export const ShipmentModal = ({
         origin: defaultOrigin,
         destinationPort: defaultDest,
         destinationCode: defaultDestCode,
-        vesselName: vessels[0]?.name || 'M/V Caribbean Voyager',
-        voyageNumber: `VOY-2026-${Math.floor(100 + Math.random() * 900)}`,
-        carrier: 'Tropical Shipping',
+        vesselName: vessels[0]?.name || '',
+        voyageNumber: '',
+        carrier: '',
         containerNumber: '',
-        sealNumber: `SEAL-VI-${Math.floor(10000 + Math.random() * 90000)}`,
+        sealNumber: '',
         totalPackages: 0,
         totalWeightLbs: 0,
         totalCbm: 0,
         etd: new Date().toISOString().split('T')[0],
-        eta: '2026-09-06',
+        eta: '',
         status: 'Cargo Received',
         blStatus: 'Draft',
-        agentName: 'Nassau Freight Logistics Ltd'
+        agentName: ''
       });
     }
   }, [shipment, isEdit, isOpen, defaultOrigin, defaultDest, defaultDestCode, vessels]);

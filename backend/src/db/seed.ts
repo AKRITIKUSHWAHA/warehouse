@@ -50,7 +50,7 @@ export async function seedDatabase(): Promise<void> {
       name: 'Elena Rostova',
       email: 'elena.r@vicustoms.com',
       roleKey: ROLES.OPERATIONS,
-      department: 'Vessel Operations & Consolidations',
+      department: 'Operations & Consolidations',
       passwordHash: defaultPasswordHash,
       status: 'Active',
       avatar: 'ER',

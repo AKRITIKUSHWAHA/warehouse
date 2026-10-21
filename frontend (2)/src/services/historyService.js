@@ -117,10 +117,10 @@ function enrichShipmentFallback(s) {
       date: s.eta || 'Pending Arrival',
       location: s.destinationPort || s.destination,
       details: {
-        port: s.destinationPort || 'NAS',
+        port: s.destinationPort || '',
         agent: s.agentName || 'Destination Port Agent',
       },
-      calculationNotes: `Vessel discharge and Customs manifest documentation at ${s.destinationCode || 'NAS'}.`,
+      calculationNotes: `Vessel discharge and Customs manifest documentation at ${s.destinationCode || 'destination'}.`,
     },
     {
       stageNumber: 6,

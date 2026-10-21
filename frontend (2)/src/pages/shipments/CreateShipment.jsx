@@ -6,10 +6,10 @@ import { useAppData } from '../../context/AppDataContext';
 export const CreateShipment = ({ onNavigate }) => {
   const { createShipment, vessels, agents, shipments, ports } = useAppData();
 
-  const getPortCode = (p) => p?.portCode || p?.code || 'PORT';
-  const defaultPortObj = ports.find(p => getPortCode(p) === 'NAS') || ports[0];
-  const defaultPortName = defaultPortObj ? `${defaultPortObj.name} (${getPortCode(defaultPortObj)})` : 'Nassau, Bahamas (BSNAS)';
-  const defaultPortCode = defaultPortObj ? getPortCode(defaultPortObj) : 'NAS';
+  const getPortCode = (p) => p?.portCode || p?.code || '';
+  const defaultPortObj = ports && ports.length > 0 ? ports[0] : null;
+  const defaultPortName = defaultPortObj ? `${defaultPortObj.name} (${getPortCode(defaultPortObj)})` : '';
+  const defaultPortCode = defaultPortObj ? getPortCode(defaultPortObj) : '';
 
   const [formData, setFormData] = useState({
     type: 'Master Ocean FCL',
@@ -18,9 +18,9 @@ export const CreateShipment = ({ onNavigate }) => {
     destinationCode: defaultPortCode,
     agentId: agents[0]?.id || null,
     agentName: agents[0]?.name || '',
-    vesselName: vessels[0]?.name || 'MV Caribbean Carrier',
-    voyageNumber: `VOY-2026-${Math.floor(100 + Math.random() * 900)}`,
-    carrier: 'Tropical Shipping Line',
+    vesselName: vessels[0]?.name || '',
+    voyageNumber: '',
+    carrier: '',
     containerNumber: '',
     containerType: "40' High Cube",
     sealNumber: `SEAL-VI-${Math.floor(10000 + Math.random() * 90000)}`,
@@ -83,7 +83,7 @@ export const CreateShipment = ({ onNavigate }) => {
               onChange={(e) => {
                 const dest = e.target.value;
                 const matched = ports.find(p => `${p.name} (${getPortCode(p)})` === dest || p.name === dest);
-                const code = matched ? getPortCode(matched) : (dest.includes('(') ? dest.split('(')[1].replace(')', '') : 'NAS');
+                const code = matched ? getPortCode(matched) : (dest.includes('(') ? dest.split('(')[1].replace(')', '') : '');
                 setFormData({ ...formData, destinationPort: dest, destinationCode: code });
               }}
             >

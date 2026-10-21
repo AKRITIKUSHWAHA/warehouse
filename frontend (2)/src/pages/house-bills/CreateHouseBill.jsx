@@ -219,14 +219,14 @@ export const CreateHouseBill = ({ onNavigate }) => {
         taxId: consigneeParty.taxId || selectedCustomer?.taxId || ""
       },
       notifyParty: {
-        name: firstWr?.agentName || selectedCustomer?.agentName || (selectedCustomer?.destinationCode === 'NAS' ? "Caribbean Express Freight Ltd." : "Direct Consignee Delivery"),
+        name: firstWr?.agentName || selectedCustomer?.agentName || "Direct Consignee Delivery",
         address: "Destination Port Cargo Terminal"
       },
-      agentId: firstWr?.agentId || (selectedCustomer?.destinationCode === 'NAS' ? "AGT-001" : null),
-      agentName: firstWr?.agentName || selectedCustomer?.agentName || (selectedCustomer?.destinationCode === 'NAS' ? "Caribbean Express Freight Ltd." : ""),
+      agentId: firstWr?.agentId || null,
+      agentName: firstWr?.agentName || selectedCustomer?.agentName || "",
       originPort: "Port of Miami (USMIA), FL",
-      destinationPort: selectedCustomer?.destinationPort || firstWr?.destinationPort || "NAS - Nassau, Bahamas",
-      destinationCode: selectedCustomer?.destinationCode || firstWr?.destinationCode || "NAS",
+      destinationPort: selectedCustomer?.destinationPort || firstWr?.destinationPort || "",
+      destinationCode: selectedCustomer?.destinationCode || firstWr?.destinationCode || "",
       warehouseReceiptIds: selectedWrs.length > 0 ? selectedWrs.map(w => w.receiptNumber || w.id) : selectedWrIds,
       cargoDescription: combinedTotals.cargoDescriptions || "Commercial Cargo Goods",
       packages: combinedTotals.packages,

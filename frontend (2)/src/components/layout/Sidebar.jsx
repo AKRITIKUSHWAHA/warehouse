@@ -259,8 +259,8 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
 
           <div style={{ display: 'flex', gap: '0.35rem' }}>
             <button
-              onClick={() => {
-                switchUser('USR-004'); // Test agent portal
+              onClick={async () => {
+                await switchUser('USR-004'); // Test agent portal
                 onSelectTab('agent-dashboard');
               }}
               className="btn btn-sm btn-outline"

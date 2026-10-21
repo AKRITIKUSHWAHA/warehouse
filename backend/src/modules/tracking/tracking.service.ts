@@ -53,9 +53,9 @@ export class TrackingService {
         type: 'Ocean LCL Consolidation',
         status: 'In Transit',
         origin: 'Port of Miami (USMIA)',
-        destination: 'Nassau Container Port (BSNAS)',
-        vesselName: 'M/V Tropic Sun',
-        voyageNumber: 'VOY-2026-088'
+        destination: 'Destination Port',
+        vesselName: 'Feeder Boat',
+        voyageNumber: 'VOY-2026-01'
       }
     ];
   }

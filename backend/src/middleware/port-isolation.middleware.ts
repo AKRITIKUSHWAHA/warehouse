@@ -21,7 +21,11 @@ export async function enforcePortIsolation(
     return;
   }
 
-  const agentPortCode = user.destinationPortCode || 'NAS';
+  const agentPortCode = user.destinationPortCode;
+  if (!agentPortCode) {
+    // Generic agent with no assigned port restriction
+    return;
+  }
 
   // If request contains a port parameter, query, or body, check compatibility
   const params = request.params as Record<string, unknown> | undefined;
