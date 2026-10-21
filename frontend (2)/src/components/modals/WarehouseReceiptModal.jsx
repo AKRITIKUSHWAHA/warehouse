@@ -21,9 +21,8 @@ export const WarehouseReceiptModal = ({
     lengthInches: 24,
     widthInches: 20,
     heightInches: 18,
-    weightLbs: 150,
-    destinationCode: ports[0]?.code || 'NAS',
-    destinationPort: ports[0] ? `${ports[0].code} - ${ports[0].name}` : 'NAS - Nassau, Bahamas',
+    destinationCode: ports[0]?.code || ports[0]?.portCode || '',
+    destinationPort: ports[0] ? `${ports[0].code || ports[0].portCode} - ${ports[0].name}` : '',
     status: 'Ready for Consolidation',
     agentId: agents[0]?.id || null
   });

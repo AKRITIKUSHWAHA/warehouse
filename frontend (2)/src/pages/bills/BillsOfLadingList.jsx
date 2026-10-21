@@ -56,17 +56,16 @@ export const BillsOfLadingList = ({ onNavigate }) => {
         if (!currentUser?.agentId && !currentUser?.destinationPortCode) return true;
         const bPort = (b.portOfDischarge || '').toUpperCase();
         const bAgentId = b.agentId;
-        const userPort = (currentUser?.destinationPortCode || 'NAS').toUpperCase();
+        const userPort = (currentUser?.destinationPortCode || '').toUpperCase();
         const userAgentId = currentUser?.agentId;
         const userName = (currentUser?.name || '').toLowerCase();
         const bAgentName = (b.agentName || '').toLowerCase();
 
         if (userAgentId && bAgentId === userAgentId) return true;
         if (b.destinationPortCode && b.destinationPortCode === currentUser?.destinationPortCode) return true;
-        if (userPort && (bPort.includes(userPort) || bPort.includes('NASSAU') || bPort.includes('BAHAMAS'))) return true;
+        if (userPort && bPort.includes(userPort)) return true;
         if (userName && bAgentName.includes(userName)) return true;
-        if (bAgentName.includes('caribbean')) return true;
-        return true;
+        return false;
       })
     : billsOfLading;
 

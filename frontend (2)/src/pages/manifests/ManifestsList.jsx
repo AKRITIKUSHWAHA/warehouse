@@ -37,13 +37,13 @@ export const ManifestsList = ({ onNavigate }) => {
         if (!currentUser?.agentId && !currentUser?.destinationPortCode) return true;
         const mPort = (m.portOfDischarge || '').toUpperCase();
         const mAgentId = m.agentId;
-        const userPort = (currentUser?.destinationPortCode || 'NAS').toUpperCase();
+        const userPort = (currentUser?.destinationPortCode || '').toUpperCase();
         const userAgentId = currentUser?.agentId;
 
         if (userAgentId && mAgentId === userAgentId) return true;
         if (m.destinationCode && m.destinationCode === currentUser?.destinationPortCode) return true;
-        if (userPort && (mPort.includes(userPort) || mPort.includes('NASSAU') || mPort.includes('BAHAMAS'))) return true;
-        return true;
+        if (userPort && mPort.includes(userPort)) return true;
+        return false;
       })
     : manifests;
 

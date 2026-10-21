@@ -67,8 +67,7 @@ export const agentPortalService = {
     if (params.search) query.append('search', params.search);
     if (params.status && params.status !== 'All') query.append('status', params.status);
 
-    // Auto-inject destination port code NAS for Destination Agent if not overridden
-    const destCode = params.destinationCode || 'NAS';
+    const destCode = params.destinationCode;
     if (destCode && destCode !== 'All') query.append('destinationCode', destCode);
 
     if (params.page) query.append('page', String(params.page));

@@ -31,17 +31,13 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
         list.push({ id: w.destinationCode, code: w.destinationCode, name: w.destinationPort || `${w.destinationCode} Port` });
       }
     });
-    if (!list.some(p => p.code === 'NAS' || p.port_code === 'NAS')) {
-      list.push({ id: 'NAS', code: 'NAS', name: 'Nassau Container Port (NAS)' });
-    }
     return list;
   }, [ports, warehouseReceipts]);
 
   const defaultVessels = [
-    { id: 'VES-001', name: 'MV Island Voyager', type: 'Container Vessel' },
-    { id: 'VES-002', name: 'MV Atlantic Trader', type: 'Feeder Vessel' },
-    { id: 'VES-003', name: 'MV Caribbean Star', type: 'Container Vessel' },
-    { id: 'VES-004', name: 'MV Bahama Express', type: 'Ro-Ro Vessel' }
+    { id: 'VES-001', name: 'MV Island Voyager', type: 'Feeder Boat' },
+    { id: 'VES-002', name: 'MV Atlantic Trader', type: 'Feeder Boat' },
+    { id: 'VES-003', name: 'MV Caribbean Star', type: 'Feeder Boat' }
   ];
   const vesselOptions = (vessels && vessels.length > 0) ? vessels : defaultVessels;
 
@@ -69,15 +65,15 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
 
   // Form State for Consolidation
   const [formData, setFormData] = useState({
-    title: 'Nassau LCL Consolidated Ocean Box',
-    destinationPort: 'NAS - Nassau, Bahamas',
-    destinationCode: 'NAS',
-    agentId: 'AGT-001',
-    agentName: 'Caribbean Express Freight Ltd.',
-    vesselName: 'MV Island Voyager',
-    voyageNumber: 'V.2026-19E',
-    carrier: 'Tropical Shipping Line',
-    containerNumber: 'CMAU-109482-7',
+    title: 'LCL Consolidated Ocean Box',
+    destinationPort: '',
+    destinationCode: '',
+    agentId: '',
+    agentName: '',
+    vesselName: '',
+    voyageNumber: '',
+    carrier: '',
+    containerNumber: '',
     containerType: "40' Standard GP",
     containerCapacityCbm: 67.7,
     containerCapacityCft: 2390,
@@ -145,30 +141,16 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
   const handleDestinationChange = (destCode) => {
     setDestinationFilter(destCode);
     setSelectedWrIds([]);
-    const destPortMap = {
-      'NAS': 'NAS - Nassau, Bahamas',
-      'KIN': 'KIN - Kingston, Jamaica',
-      'BGI': 'BGI - Bridgetown, Barbados',
-      'POS': 'POS - Port of Spain, Trinidad',
-      'GCM': 'GCM - George Town, Cayman Islands'
-    };
-    const dischargePortMap = {
-      'NAS': 'Port of Nassau (BSNAS)',
-      'KIN': 'Port of Kingston (JMKIN)',
-      'BGI': 'Port of Bridgetown (BBBGI)',
-      'POS': 'Port of Spain (TTPOS)',
-      'GCM': 'Port of George Town (KYGCM)'
-    };
     const portObj = allAvailablePorts.find(p => p.code === destCode || p.port_code === destCode);
-    const portName = portObj ? `${portObj.code || portObj.port_code} - ${portObj.name}` : (destPortMap[destCode] || `${destCode} Port`);
-    const dischargeName = portObj ? `Port of ${portObj.name} (${portObj.code || portObj.port_code})` : (dischargePortMap[destCode] || `${destCode} Port`);
+    const portName = portObj ? `${portObj.code || portObj.port_code} - ${portObj.name}` : (destCode === 'ALL' ? 'All Destinations' : `${destCode} Port`);
+    const dischargeName = portObj ? `Port of ${portObj.name}` : `${destCode} Port`;
 
     setFormData(prev => ({
       ...prev,
-      destinationCode: destCode === 'ALL' ? 'NAS' : destCode,
-      destinationPort: destCode === 'ALL' ? 'NAS - Nassau, Bahamas' : portName,
-      dischargePort: destCode === 'ALL' ? 'Port of Nassau (BSNAS)' : dischargeName,
-      title: `${destCode === 'ALL' ? 'NAS' : destCode} LCL Consolidated Ocean Box`
+      destinationCode: destCode === 'ALL' ? '' : destCode,
+      destinationPort: destCode === 'ALL' ? '' : portName,
+      dischargePort: destCode === 'ALL' ? '' : dischargeName,
+      title: `${destCode === 'ALL' ? 'General' : destCode} LCL Consolidated Ocean Box`
     }));
   };
 

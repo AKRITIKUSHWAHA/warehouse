@@ -14,7 +14,7 @@ export const BillOfLadingModal = ({
   const { currentUser, isAgent } = useAuth();
   const hasInitializedRef = useRef(false);
 
-  const getPortCode = (p) => p?.portCode || p?.code || 'NAS';
+  const getPortCode = (p) => p?.portCode || p?.code || '';
 
   const getPolDefault = () => {
     const p = ports.find(pt => getPortCode(pt) === 'MIA' || getPortCode(pt) === 'USMIA');
@@ -22,23 +22,23 @@ export const BillOfLadingModal = ({
   };
 
   const getPodDefault = () => {
-    const targetCode = isAgent ? (currentUser?.destinationPortCode || 'NAS') : 'NAS';
-    const p = ports.find(pt => getPortCode(pt) === targetCode || getPortCode(pt) === 'NAS' || getPortCode(pt) === 'BSNAS');
-    return p ? `${getPortCode(p)} - ${p.name}` : (ports[0] ? `${getPortCode(ports[0])} - ${ports[0].name}` : 'NAS - Nassau Container Port');
+    const targetCode = isAgent ? currentUser?.destinationPortCode : null;
+    const p = targetCode ? ports.find(pt => getPortCode(pt) === targetCode) : (ports[0] || null);
+    return p ? `${getPortCode(p)} - ${p.name}` : '';
   };
 
   const [formData, setFormData] = useState({
     blNumber: '',
     issueDate: '',
-    shipperName: 'KERS Global Freight Forwarding Inc.',
-    shipperAddress: '8200 NW 33rd Street, Miami, FL 33122 USA',
+    shipperName: '',
+    shipperAddress: '',
     consigneeName: '',
     consigneeAddress: '',
     notifyPartyName: '',
     notifyPartyAddress: '',
-    oceanVessel: 'M/V Caribbean Voyager',
-    voyageNumber: 'VOY-2026-088',
-    carrier: 'Tropical Shipping',
+    oceanVessel: '',
+    voyageNumber: '',
+    carrier: '',
     portOfLoading: '',
     portOfDischarge: '',
     containerNumber: '',
@@ -92,24 +92,24 @@ export const BillOfLadingModal = ({
       setFormData({
         blNumber: `BL-VI-2026-${Math.floor(95 + Math.random() * 900)}`,
         issueDate: new Date().toISOString().split('T')[0],
-        shipperName: 'KERS Global Freight Forwarding Inc.',
-        shipperAddress: '8200 NW 33rd Street, Miami, FL 33122 USA',
+        shipperName: '',
+        shipperAddress: '',
         consigneeName: '',
         consigneeAddress: '',
-        notifyPartyName: 'Same as Consignee',
+        notifyPartyName: '',
         notifyPartyAddress: '',
-        oceanVessel: 'M/V Caribbean Voyager',
-        voyageNumber: 'VOY-2026-088',
-        carrier: 'Tropical Shipping',
+        oceanVessel: '',
+        voyageNumber: '',
+        carrier: '',
         portOfLoading: pol,
         portOfDischarge: pod,
-        containerNumber: `MEDU${Math.floor(1000000 + Math.random() * 9000000)}`,
-        sealNumber: `BOLT-${Math.floor(10000 + Math.random() * 90000)}`,
-        cargoDescription: 'General Consignment: Commercial goods, packaged merchandise and freight.',
-        packageCount: 120,
+        containerNumber: '',
+        sealNumber: '',
+        cargoDescription: '',
+        packageCount: 0,
         packageType: 'Packages',
-        grossWeightLbs: 8500,
-        cbm: 28.5,
+        grossWeightLbs: 0,
+        cbm: 0,
         freightTerms: 'Freight Prepaid',
         status: 'Draft'
       });
@@ -124,8 +124,8 @@ export const BillOfLadingModal = ({
       blNumber: formData.blNumber,
       issueDate: formData.issueDate,
       agentId: bl?.agentId || currentUser?.agentId || null,
-      agentName: bl?.agentName || (currentUser?.roleKey === 'agent' ? currentUser.name : 'Caribbean Express Freight Ltd.'),
-      destinationPortCode: formData.portOfDischarge?.split(' - ')[0]?.trim() || 'NAS',
+      agentName: bl?.agentName || (currentUser?.roleKey === 'agent' ? currentUser.name : ''),
+      destinationPortCode: formData.portOfDischarge?.split(' - ')[0]?.trim() || '',
       shipper: {
         name: formData.shipperName,
         address: formData.shipperAddress

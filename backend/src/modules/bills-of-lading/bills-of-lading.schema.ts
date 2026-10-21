@@ -37,12 +37,11 @@ export const createBillOfLadingSchema = z.object({
   agentName: z.string().optional(),
 
   preCarriageBy: z.string().optional(),
-  placeOfReceipt: z.string().optional(),
-  oceanVessel: z.string().optional().default('M/V Caribbean Voyager'),
-  voyageNumber: z.string().optional().default('VOY-2026-088'),
-  carrier: z.string().optional().default('Tropical Shipping'),
+  oceanVessel: z.string().optional().default(''),
+  voyageNumber: z.string().optional().default(''),
+  carrier: z.string().optional().default(''),
   portOfLoading: z.string().default('Port of Miami, USA (USMIA)'),
-  portOfDischarge: z.string().default('Nassau Port Terminal (BSNAS)'),
+  portOfDischarge: z.string().default(''),
   placeOfDelivery: z.string().optional(),
 
   containerNumber: z.string().optional(),

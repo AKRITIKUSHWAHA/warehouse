@@ -81,9 +81,9 @@ export const consolidationService = {
     let createdConsolidationFromApi = null;
     try {
       const payload = {
-        title: consolidationData.title || `Consolidation - ${consolidationData.destinationPort || 'NAS'}`,
-        destinationPort: consolidationData.destinationPort || 'Port of Nassau (BSNAS)',
-        destinationCode: consolidationData.destinationCode || 'NAS',
+        title: consolidationData.title || `Consolidation - ${consolidationData.destinationPort || 'General'}`,
+        destinationPort: consolidationData.destinationPort || '',
+        destinationCode: consolidationData.destinationCode || '',
         status: consolidationData.status || 'Loaded',
         containerId: consolidationData.containerId || undefined,
         containerNumber: consolidationData.containerNumber || 'MSKU-948291-4',
@@ -169,9 +169,9 @@ export const consolidationService = {
       ...consolidationData,
       id,
       consolidationNumber: id,
-      title: consolidationData.title || `Consolidation ${id} - ${consolidationData.destinationPort || 'NAS'}`,
-      destinationPort: consolidationData.destinationPort || 'NAS - Nassau, Bahamas',
-      destinationCode: consolidationData.destinationCode || (consolidationData.destinationPort?.includes(' - ') ? consolidationData.destinationPort.split(' - ')[0].trim() : 'NAS'),
+      title: consolidationData.title || `Consolidation ${id} - ${consolidationData.destinationPort || 'General'}`,
+      destinationPort: consolidationData.destinationPort || '',
+      destinationCode: consolidationData.destinationCode || (consolidationData.destinationPort?.includes(' - ') ? consolidationData.destinationPort.split(' - ')[0].trim() : ''),
       createdDate: new Date().toISOString().split('T')[0],
       status: consolidationData.status || "Loaded",
       totalHouseBills: selectedHbls.length || selectedHblIds.length,

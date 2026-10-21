@@ -49,16 +49,16 @@ export const initialUsers = [
   },
   {
     id: "USR-004",
-    name: "David Cartwright",
-    email: "operations@caribbeanexpressbahamas.com",
+    name: "Regional Port Agent",
+    email: "agent@vicustoms.com",
     role: "Destination Agent",
     roleKey: "agent",
-    department: "Caribbean Express Freight Ltd. (Bahamas)",
-    agentId: "AGT-001",
+    department: "Destination Agent Operations",
+    agentId: null,
     status: "Active",
-    avatar: "DC",
+    avatar: "RA",
     lastLogin: "2026-08-29 10:15 AM",
-    phone: "+1 (242) 555-9000"
+    phone: "+1 (305) 555-0150"
   }
 ];
 

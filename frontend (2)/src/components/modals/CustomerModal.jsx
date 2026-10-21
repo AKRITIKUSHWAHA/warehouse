@@ -4,10 +4,10 @@ import { useAppData } from '../../context/AppDataContext';
 
 export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSave }) => {
   const { ports = [] } = useAppData();
-  const nasPort = (ports || []).find(p => (p.code || p.portCode) === 'NAS');
-  const defaultPort = nasPort
-    ? `${nasPort.code || nasPort.portCode} - ${nasPort.name}`
-    : (ports[0] ? `${ports[0].code || ports[0].portCode} - ${ports[0].name}` : 'NAS - Nassau Container Port');
+  const firstPort = (ports && ports.length > 0) ? ports[0] : null;
+  const defaultPort = firstPort
+    ? `${firstPort.code || firstPort.portCode} - ${firstPort.name}`
+    : '';
 
   const [formData, setFormData] = useState({
     name: '',
@@ -17,7 +17,7 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
     telephone: '',
     address: '',
     taxId: '',
-    accountType: 'Commercial Importer',
+    accountType: 'Customer',
     creditTerms: 'Net 30',
     notes: '',
     status: 'Active'
@@ -33,12 +33,12 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
         telephone: customer.telephone || customer.phone || '',
         address: customer.address || '',
         taxId: customer.taxId || '',
-        accountType: customer.accountType || 'Commercial Importer',
+        accountType: customer.accountType || 'Customer',
         creditTerms: customer.creditTerms || 'Net 30',
         notes: customer.notes || '',
         status: customer.status || 'Active',
         destinationPort: customer.destinationPort || defaultPort,
-        destinationCode: customer.destinationCode || (customer.destinationPort ? customer.destinationPort.split(' - ')[0] : 'NAS'),
+        destinationCode: customer.destinationCode || (customer.destinationPort ? customer.destinationPort.split(' - ')[0] : ''),
       });
     } else {
       setFormData({
@@ -49,12 +49,12 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
         telephone: '',
         address: '',
         taxId: '',
-        accountType: 'Commercial Importer',
+        accountType: 'Customer',
         creditTerms: 'Net 30',
         notes: '',
         status: 'Active',
         destinationPort: defaultPort,
-        destinationCode: defaultPort ? defaultPort.split(' - ')[0] : 'NAS',
+        destinationCode: defaultPort ? defaultPort.split(' - ')[0] : '',
       });
     }
   }, [customer, isEdit, isOpen, defaultPort]);
@@ -208,15 +208,12 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
                   value={formData.destinationPort}
                   onChange={(e) => {
                     const val = e.target.value;
-                    const code = val ? val.split(' - ')[0] : 'NAS';
+                    const code = val ? val.split(' - ')[0] : '';
                     setFormData({ ...formData, destinationPort: val, destinationCode: code });
                   }}
                 >
-                  {(ports && ports.length > 0 ? ports : [
-                    { code: 'NAS', name: 'Nassau Container Port (Arawak Cay)' },
-                    { code: 'FPO', name: 'Freeport Container Port' },
-                    { code: 'KIN', name: 'Kingston Freeport Terminal (KFTL)' }
-                  ]).map((p) => {
+                  <option value="">Select Destination Port...</option>
+                  {(ports || []).map((p) => {
                     const portStr = `${p.code || p.portCode} - ${p.name}`;
                     return (
                       <option key={p.id || p.code || p.portCode} value={portStr}>

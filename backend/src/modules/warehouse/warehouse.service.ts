@@ -94,7 +94,7 @@ export class WarehouseService {
     const validAgentId = input.agentId && UUID_REGEX.test(input.agentId) ? input.agentId : null;
 
     const totalWeightKg = Number((totalWeightLbs * 0.453592).toFixed(1));
-    const destCode = input.destinationCode || (input.destinationPort ? (input.destinationPort.includes(' - ') ? input.destinationPort.split(' - ')[0].trim() : input.destinationPort.slice(0, 3).toUpperCase()) : 'NAS');
+    const destCode = input.destinationCode || (input.destinationPort ? (input.destinationPort.includes(' - ') ? input.destinationPort.split(' - ')[0].trim() : input.destinationPort.slice(0, 3).toUpperCase()) : '');
     const customerDisplayName = input.customerName || (input as any).customer || 'General Cargo';
 
     const created = await this.repo.create({
@@ -108,7 +108,7 @@ export class WarehouseService {
       consignee: input.consignee || '',
       agentId: validAgentId,
       agentName: input.agentName || '',
-      destinationPort: input.destinationPort || 'NAS - Nassau Container Port',
+      destinationPort: input.destinationPort || '',
       destinationCode: destCode,
       cargoDescription: input.cargoDescription || 'General Cargo',
       packageCount: packages.length,

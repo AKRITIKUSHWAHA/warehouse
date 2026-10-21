@@ -96,10 +96,10 @@ export class ConsolidationService {
       const trackingNumber = `TRK-VI-${Math.floor(100000 + Math.random() * 900000)}`;
 
       const createdDate = input.createdDate || new Date().toISOString().split('T')[0];
-      const destinationPort = input.destinationPort || 'NAS - Nassau Container Port';
+      const destinationPort = input.destinationPort || '';
       const dischargePort = input.dischargePort || destinationPort;
       const loadingPort = input.loadingPort || 'Port of Miami (USMIA)';
-      const title = input.title || `Consolidation - ${destinationPort} (${createdDate})`;
+      const title = input.title || `Consolidation - ${destinationPort || 'General'} (${createdDate})`;
 
       const validContainerId = input.containerId && UUID_REGEX.test(input.containerId) ? input.containerId : null;
       const validVesselId = input.vesselId && UUID_REGEX.test(input.vesselId) ? input.vesselId : null;
@@ -129,7 +129,7 @@ export class ConsolidationService {
           consolidationNumber,
           title,
           destinationPort,
-          destinationCode: input.destinationCode || 'NAS',
+          destinationCode: input.destinationCode || '',
           createdDate,
           status: input.status || 'Planning',
           containerId: validContainerId,
@@ -254,12 +254,12 @@ export class ConsolidationService {
           origin: loadingPort,
           destination: dischargePort,
           destinationPort,
-          destinationCode: input.destinationCode || 'NAS',
+          destinationCode: input.destinationCode || '',
           agentId: validAgentId,
           agentName: input.agentName || null,
           vesselName: input.vesselName || null,
           voyageNumber: input.voyageNumber || null,
-          carrier: input.carrier || 'Tropical Shipping Line',
+          carrier: input.carrier || '',
           containerNumber: input.containerNumber || null,
           containerType: input.containerType || "40' Standard Dry",
           sealNumber: input.sealNumber || null,
