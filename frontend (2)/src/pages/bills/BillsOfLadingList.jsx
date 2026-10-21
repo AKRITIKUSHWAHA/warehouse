@@ -22,7 +22,8 @@ import {
   FileCheck,
   RefreshCw,
   Lock,
-  FileSpreadsheet
+  FileSpreadsheet,
+  MoreVertical
 } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
 import { useAuth } from '../../context/AuthContext';
@@ -39,6 +40,13 @@ export const BillsOfLadingList = ({ onNavigate }) => {
   const [deletingBL, setDeletingBL] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [activeMenuId, setActiveMenuId] = useState(null);
+
+  useEffect(() => {
+    const handleOutsideClick = () => setActiveMenuId(null);
+    window.addEventListener('click', handleOutsideClick);
+    return () => window.removeEventListener('click', handleOutsideClick);
+  }, []);
 
   useEffect(() => {
     if ((!billsOfLading || billsOfLading.length === 0) && fetchMenuApi) {
@@ -144,111 +152,229 @@ export const BillsOfLadingList = ({ onNavigate }) => {
     {
       header: 'Actions',
       align: 'right',
+      width: '70px',
       render: (item) => {
+        const menuKey = item.id || item.blNumber;
+        const isOpen = activeMenuId === menuKey;
         const isOnHold = item.status === 'On Hold' || item.holdDetails?.isOnHold;
         const isCancelled = item.status === 'Cancelled';
         const isReleased = item.status === 'Released';
         const isDraft = item.status === 'Draft';
 
         return (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', justifyContent: 'flex-end' }}>
-            {/* CONTEXTUAL ACTION 1: Draft -> Review / Place Hold (Head Office Staff only) */}
-            {!isAgent && isDraft && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setActiveBLForPlace(item);
-                }}
-                className="btn btn-sm btn-ghost"
-                title="Place Hold on Draft B/L"
-                style={{ padding: '0.25rem 0.45rem', color: '#D97706', fontSize: '0.75rem' }}
-              >
-                <AlertTriangle size={13} />
-                <span className="hide-mobile">Hold</span>
-              </button>
-            )}
-
-            {/* CONTEXTUAL ACTION 2: On Hold -> View Reason / Clear Hold (Head Office Staff only) */}
-            {!isAgent && isOnHold && !isCancelled && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setActiveBLForClear(item);
-                }}
-                className="btn btn-sm btn-success"
-                title="Clear Hold and Release B/L"
-                style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
-              >
-                <CheckCircle2 size={13} />
-                <span>Clear Hold</span>
-              </button>
-            )}
-
-            {/* Read-Only Status Indicator for Destination Agent */}
-            {isAgent && isOnHold && (
-              <span style={{ fontSize: '0.72rem', color: '#DC2626', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '3px', padding: '0.2rem 0.45rem', background: '#FEF2F2', borderRadius: '4px', border: '1px solid #FECACA' }}>
-                <Lock size={12} />
-                <span>Hold Active</span>
-              </span>
-            )}
-
-            {/* CONTEXTUAL ACTION 3: Released -> Edit if authorized */}
-            {isReleased && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setEditingBL(item);
-                }}
-                className="btn btn-sm btn-secondary"
-                title="Edit Released B/L"
-                style={{ padding: '0.25rem 0.45rem', fontSize: '0.75rem' }}
-              >
-                <Edit2 size={13} />
-                <span className="hide-mobile">Edit</span>
-              </button>
-            )}
-
-            {/* Quick 1-Click Manifest Action (Head Office Staff) */}
-            {!isAgent && !isCancelled && (
-              <button
-                onClick={async (e) => {
-                  e.stopPropagation();
-                  if (isOnHold) {
-                    const confirmHold = window.confirm(`Notice: Master B/L ${item.blNumber} is currently ON HOLD. Proceed with generating manifest?`);
-                    if (!confirmHold) return;
-                  }
-                  try {
-                    showToast(`Generating manifest from Master B/L ${item.blNumber}...`, 'info', '1-Click Manifest');
-                    const newManifest = await generateManifestFromMasterBL(item.id || item.blNumber);
-                    if (newManifest) {
-                      showToast(`Manifest ${newManifest.manifestNumber || newManifest.id} generated in 1 click!`, 'success', 'Manifest Ready');
-                      onNavigate('manifests', newManifest.id || newManifest.manifestNumber);
-                    }
-                  } catch (err) {
-                    showToast(err?.message || 'Failed to generate manifest', 'error', 'Error');
-                  }
-                }}
-                className="btn btn-sm btn-ghost"
-                title="Generate Customs Manifest from this Master B/L in 1 click"
-                style={{ padding: '0.25rem 0.45rem', color: '#0284C7', fontSize: '0.75rem' }}
-              >
-                <FileSpreadsheet size={13} />
-                <span className="hide-mobile">⚡ Manifest</span>
-              </button>
-            )}
-
-            {/* Primary Action: View B/L (Always visible for all statuses) */}
+          <div
+            style={{ position: 'relative', display: 'inline-block', textAlign: 'right' }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                onNavigate('bills-of-lading', item.id || item.blNumber);
+                setActiveMenuId(isOpen ? null : menuKey);
               }}
-              className="btn btn-sm btn-primary"
-              style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem' }}
+              className="btn btn-ghost btn-sm"
+              style={{
+                width: '32px',
+                height: '32px',
+                padding: 0,
+                borderRadius: '6px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: isOpen ? '#0284C7' : '#64748B',
+                background: isOpen ? '#F0F9FF' : 'transparent',
+                border: '1px solid',
+                borderColor: isOpen ? '#BAE6FD' : 'transparent',
+                cursor: 'pointer'
+              }}
+              title="Actions"
+              aria-label="Actions"
             >
-              <Eye size={13} />
-              <span>View B/L</span>
+              <MoreVertical size={16} />
             </button>
+
+            {isOpen && (
+              <div
+                style={{
+                  position: 'absolute',
+                  right: 0,
+                  top: 'calc(100% + 4px)',
+                  background: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '8px',
+                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08)',
+                  zIndex: 9999,
+                  minWidth: '195px',
+                  padding: '6px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '2px',
+                  textAlign: 'left'
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '0.45rem 0.65rem',
+                    fontSize: '0.8rem',
+                    fontWeight: 500,
+                    color: '#1E293B',
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#F8FAFC'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  onClick={() => {
+                    setActiveMenuId(null);
+                    onNavigate('bills-of-lading', item.id || item.blNumber);
+                  }}
+                >
+                  <Eye size={14} style={{ color: '#0284C7' }} />
+                  <span>View Master B/L</span>
+                </button>
+
+                {!isAgent && !isCancelled && (
+                  <button
+                    type="button"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '0.45rem 0.65rem',
+                      fontSize: '0.8rem',
+                      fontWeight: 500,
+                      color: '#0284C7',
+                      background: 'transparent',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      width: '100%',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#F0F9FF'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                    onClick={async () => {
+                      setActiveMenuId(null);
+                      if (isOnHold) {
+                        const confirmHold = window.confirm(`Notice: Master B/L ${item.blNumber} is currently ON HOLD. Proceed with generating manifest?`);
+                        if (!confirmHold) return;
+                      }
+                      try {
+                        showToast(`Generating manifest from Master B/L ${item.blNumber}...`, 'info', '1-Click Manifest');
+                        const newManifest = await generateManifestFromMasterBL(item.id || item.blNumber);
+                        if (newManifest) {
+                          showToast(`Manifest ${newManifest.manifestNumber || newManifest.id} generated in 1 click!`, 'success', 'Manifest Ready');
+                          onNavigate('manifests', newManifest.id || newManifest.manifestNumber);
+                        }
+                      } catch (err) {
+                        showToast(err?.message || 'Failed to generate manifest', 'error', 'Error');
+                      }
+                    }}
+                  >
+                    <FileSpreadsheet size={14} style={{ color: '#0284C7' }} />
+                    <span>⚡ 1-Click Manifest</span>
+                  </button>
+                )}
+
+                {isReleased && (
+                  <button
+                    type="button"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '0.45rem 0.65rem',
+                      fontSize: '0.8rem',
+                      fontWeight: 500,
+                      color: '#1E293B',
+                      background: 'transparent',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      width: '100%',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#F8FAFC'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                    onClick={() => {
+                      setActiveMenuId(null);
+                      setEditingBL(item);
+                    }}
+                  >
+                    <Edit2 size={14} style={{ color: '#64748B' }} />
+                    <span>Edit Master B/L</span>
+                  </button>
+                )}
+
+                {!isAgent && isDraft && (
+                  <button
+                    type="button"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '0.45rem 0.65rem',
+                      fontSize: '0.8rem',
+                      fontWeight: 500,
+                      color: '#D97706',
+                      background: 'transparent',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      width: '100%',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#FFFBEB'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                    onClick={() => {
+                      setActiveMenuId(null);
+                      setActiveBLForPlace(item);
+                    }}
+                  >
+                    <AlertTriangle size={14} style={{ color: '#D97706' }} />
+                    <span>Place On Hold</span>
+                  </button>
+                )}
+
+                {!isAgent && isOnHold && !isCancelled && (
+                  <button
+                    type="button"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '0.45rem 0.65rem',
+                      fontSize: '0.8rem',
+                      fontWeight: 500,
+                      color: '#059669',
+                      background: 'transparent',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      width: '100%',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#ECFDF5'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                    onClick={() => {
+                      setActiveMenuId(null);
+                      setActiveBLForClear(item);
+                    }}
+                  >
+                    <CheckCircle2 size={14} style={{ color: '#059669' }} />
+                    <span>Clear Hold &amp; Release</span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         );
       }

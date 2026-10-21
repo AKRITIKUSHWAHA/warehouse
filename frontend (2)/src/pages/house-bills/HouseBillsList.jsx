@@ -17,7 +17,8 @@ import {
   ExternalLink,
   Package,
   Building2,
-  Ship
+  Ship,
+  MoreVertical
 } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
 import { useAuth } from '../../context/AuthContext';
@@ -29,6 +30,13 @@ export const HouseBillsList = ({ onNavigate }) => {
 
   const [editingHBL, setEditingHBL] = useState(null);
   const [deletingHBL, setDeletingHBL] = useState(null);
+  const [activeMenuId, setActiveMenuId] = useState(null);
+
+  useEffect(() => {
+    const handleOutsideClick = () => setActiveMenuId(null);
+    window.addEventListener('click', handleOutsideClick);
+    return () => window.removeEventListener('click', handleOutsideClick);
+  }, []);
 
   useEffect(() => {
     if ((!houseBills || houseBills.length === 0) && fetchMenuApi) {
@@ -135,76 +143,213 @@ export const HouseBillsList = ({ onNavigate }) => {
     {
       header: 'Actions',
       align: 'right',
+      width: '70px',
       render: (item) => {
+        const menuKey = item.id || item.hblNumber;
+        const isOpen = activeMenuId === menuKey;
         const isOnHold = item.status === 'On Hold' || item.holdDetails?.isOnHold;
+
         return (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', justifyContent: 'flex-end' }}>
-            {canManageHolds(currentUser?.roleKey) && (
-              isOnHold ? (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    clearHBLHold(item.id || item.hblNumber, 'Hold cleared from table');
-                  }}
-                  className="btn btn-sm btn-success"
-                  title="Clear Hold on House B/L"
-                  style={{ padding: '0.25rem 0.45rem', fontSize: '0.75rem' }}
-                >
-                  <CheckCircle2 size={13} />
-                  <span className="hide-mobile">Clear</span>
-                </button>
-              ) : (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    placeHBLHold(item.id || item.hblNumber, 'Documentation Hold', 'Awaiting clearance');
-                  }}
-                  className="btn btn-sm btn-ghost"
-                  title="Place House B/L On Hold"
-                  style={{ padding: '0.25rem 0.45rem', color: '#D97706' }}
-                >
-                  <AlertTriangle size={13} />
-                </button>
-              )
-            )}
-
+          <div
+            style={{ position: 'relative', display: 'inline-block', textAlign: 'right' }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                setEditingHBL(item);
+                setActiveMenuId(isOpen ? null : menuKey);
               }}
-              className="btn btn-sm btn-secondary"
-              title="Edit House B/L"
-              style={{ padding: '0.25rem 0.45rem' }}
+              className="btn btn-ghost btn-sm"
+              style={{
+                width: '32px',
+                height: '32px',
+                padding: 0,
+                borderRadius: '6px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: isOpen ? '#0284C7' : '#64748B',
+                background: isOpen ? '#F0F9FF' : 'transparent',
+                border: '1px solid',
+                borderColor: isOpen ? '#BAE6FD' : 'transparent',
+                cursor: 'pointer'
+              }}
+              title="Actions"
+              aria-label="Actions"
             >
-              <Edit2 size={13} />
-              <span className="hide-mobile">Edit</span>
+              <MoreVertical size={16} />
             </button>
 
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onNavigate('house-bills', item.id);
-              }}
-              className="btn btn-sm btn-primary"
-              style={{ padding: '0.25rem 0.6rem' }}
-            >
-              <Eye size={13} />
-              <span>View</span>
-            </button>
-
-            {!isAgent && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setDeletingHBL(item);
+            {isOpen && (
+              <div
+                style={{
+                  position: 'absolute',
+                  right: 0,
+                  top: 'calc(100% + 4px)',
+                  background: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '8px',
+                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08)',
+                  zIndex: 9999,
+                  minWidth: '185px',
+                  padding: '6px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '2px',
+                  textAlign: 'left'
                 }}
-                className="btn btn-sm btn-ghost"
-                title="Delete House B/L"
-                style={{ padding: '0.25rem 0.45rem', color: '#EF4444' }}
+                onClick={(e) => e.stopPropagation()}
               >
-                <Trash2 size={13} />
-              </button>
+                <button
+                  type="button"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '0.45rem 0.65rem',
+                    fontSize: '0.8rem',
+                    fontWeight: 500,
+                    color: '#1E293B',
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#F8FAFC'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  onClick={() => {
+                    setActiveMenuId(null);
+                    onNavigate('house-bills', item.id);
+                  }}
+                >
+                  <Eye size={14} style={{ color: '#0284C7' }} />
+                  <span>View Details</span>
+                </button>
+
+                <button
+                  type="button"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '0.45rem 0.65rem',
+                    fontSize: '0.8rem',
+                    fontWeight: 500,
+                    color: '#1E293B',
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#F8FAFC'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  onClick={() => {
+                    setActiveMenuId(null);
+                    setEditingHBL(item);
+                  }}
+                >
+                  <Edit2 size={14} style={{ color: '#64748B' }} />
+                  <span>Edit House B/L</span>
+                </button>
+
+                {canManageHolds(currentUser?.roleKey) && (
+                  isOnHold ? (
+                    <button
+                      type="button"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '0.45rem 0.65rem',
+                        fontSize: '0.8rem',
+                        fontWeight: 500,
+                        color: '#059669',
+                        background: 'transparent',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        width: '100%',
+                        textAlign: 'left'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#ECFDF5'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                      onClick={() => {
+                        setActiveMenuId(null);
+                        clearHBLHold(item.id || item.hblNumber, 'Hold cleared from table');
+                      }}
+                    >
+                      <CheckCircle2 size={14} style={{ color: '#059669' }} />
+                      <span>Clear Hold &amp; Release</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '0.45rem 0.65rem',
+                        fontSize: '0.8rem',
+                        fontWeight: 500,
+                        color: '#D97706',
+                        background: 'transparent',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        width: '100%',
+                        textAlign: 'left'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#FFFBEB'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                      onClick={() => {
+                        setActiveMenuId(null);
+                        placeHBLHold(item.id || item.hblNumber, 'Documentation Hold', 'Awaiting clearance');
+                      }}
+                    >
+                      <AlertTriangle size={14} style={{ color: '#D97706' }} />
+                      <span>Place On Hold</span>
+                    </button>
+                  )
+                )}
+
+                {!isAgent && (
+                  <>
+                    <div style={{ height: '1px', background: '#F1F5F9', margin: '4px 0' }} />
+                    <button
+                      type="button"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '0.45rem 0.65rem',
+                        fontSize: '0.8rem',
+                        fontWeight: 500,
+                        color: '#EF4444',
+                        background: 'transparent',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        width: '100%',
+                        textAlign: 'left'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#FEF2F2'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                      onClick={() => {
+                        setActiveMenuId(null);
+                        setDeletingHBL(item);
+                      }}
+                    >
+                      <Trash2 size={14} style={{ color: '#EF4444' }} />
+                      <span>Delete</span>
+                    </button>
+                  </>
+                )}
+              </div>
             )}
           </div>
         );

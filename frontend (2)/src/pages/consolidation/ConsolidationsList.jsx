@@ -6,7 +6,7 @@ import { WorkflowIndicator } from '../../components/common/WorkflowIndicator';
 import { ConsolidationModal } from '../../components/modals/ConsolidationModal';
 import { BillOfLadingModal } from '../../components/modals/BillOfLadingModal';
 import { DeleteConfirmModal } from '../../components/modals/DeleteConfirmModal';
-import { Layers, Plus, Eye, Edit2, Trash2, Ship, Box, ArrowRight, RefreshCw, FileText } from 'lucide-react';
+import { Layers, Plus, Eye, Edit2, Trash2, Ship, Box, ArrowRight, RefreshCw, FileText, MoreVertical } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
 import { useAuth } from '../../context/AuthContext';
 
@@ -17,6 +17,13 @@ export const ConsolidationsList = ({ onNavigate }) => {
   const [creatingBLForConsolidation, setCreatingBLForConsolidation] = useState(null);
   const [deletingConsolidation, setDeletingConsolidation] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [activeMenuId, setActiveMenuId] = useState(null);
+
+  useEffect(() => {
+    const handleOutsideClick = () => setActiveMenuId(null);
+    window.addEventListener('click', handleOutsideClick);
+    return () => window.removeEventListener('click', handleOutsideClick);
+  }, []);
 
   useEffect(() => {
     if ((!consolidations || consolidations.length === 0) && fetchMenuApi) {
@@ -117,101 +124,220 @@ export const ConsolidationsList = ({ onNavigate }) => {
     {
       header: 'Actions',
       align: 'right',
-      render: (item) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', justifyContent: 'flex-end' }}>
-          {isAgent && (
-            <select
-              className="form-select form-select-sm"
-              style={{ width: '160px', padding: '0.15rem 0.5rem', fontSize: '0.75rem', marginRight: '0.5rem' }}
-              value={item.status}
-              onClick={(e) => e.stopPropagation()}
-              onChange={async (e) => {
-                const newStatus = e.target.value;
-                await updateConsolidation(item.id, { ...item, status: newStatus });
-              }}
-            >
-              <option value="In Transit">In Transit</option>
-              <option value="Arrived at Port">Arrived at Port</option>
-              <option value="Container Unloaded">Container Unloaded</option>
-              <option value="Documents Released">Documents Released</option>
-            </select>
-          )}
+      width: '70px',
+      render: (item) => {
+        const menuKey = item.id || item.consolidationNumber;
+        const isOpen = activeMenuId === menuKey;
 
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setEditingConsolidation(item);
-            }}
-            className="btn btn-sm btn-outline"
-            title="View Consolidation Details"
-            style={{ padding: '0.25rem 0.55rem', fontSize: '0.75rem' }}
+        return (
+          <div
+            style={{ position: 'relative', display: 'inline-block', textAlign: 'right' }}
+            onClick={(e) => e.stopPropagation()}
           >
-            <Eye size={13} />
-            <span>View</span>
-          </button>
-
-          {!isAgent && (
-            <>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setEditingConsolidation(item);
-                }}
-                className="btn btn-sm btn-secondary"
-                title="Edit Consolidation"
-                style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
-              >
-                <Edit2 size={13} />
-                <span className="hide-mobile">Edit</span>
-              </button>
-
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setDeletingConsolidation(item);
-                }}
-                className="btn btn-sm btn-ghost"
-                title="Delete Consolidation"
-                style={{ padding: '0.25rem 0.45rem', color: '#EF4444' }}
-              >
-                <Trash2 size={13} />
-              </button>
-            </>
-          )}
-
-          {!isAgent && (
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                setCreatingBLForConsolidation(item);
+                setActiveMenuId(isOpen ? null : menuKey);
               }}
-              className="btn btn-sm btn-ghost"
-              title={`Issue Master B/L for Consolidation ${item.consolidationNumber}`}
-              style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', color: '#0284C7' }}
+              className="btn btn-ghost btn-sm"
+              style={{
+                width: '32px',
+                height: '32px',
+                padding: 0,
+                borderRadius: '6px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: isOpen ? '#0284C7' : '#64748B',
+                background: isOpen ? '#F0F9FF' : 'transparent',
+                border: '1px solid',
+                borderColor: isOpen ? '#BAE6FD' : 'transparent',
+                cursor: 'pointer'
+              }}
+              title="Actions"
+              aria-label="Actions"
             >
-              <FileText size={13} />
-              <span className="hide-mobile">+ Master B/L</span>
+              <MoreVertical size={16} />
             </button>
-          )}
 
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (item.assignedShipmentId) {
-                onNavigate('shipments', item.assignedShipmentId);
-              } else {
-                onNavigate('bills-of-lading');
-              }
-            }}
-            className="btn btn-sm btn-primary"
-            style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem' }}
-            title="Continue to Master Shipment & B/L stage"
-          >
-            <span>Continue</span>
-            <ArrowRight size={13} />
-          </button>
-        </div>
-      )
+            {isOpen && (
+              <div
+                style={{
+                  position: 'absolute',
+                  right: 0,
+                  top: 'calc(100% + 4px)',
+                  background: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '8px',
+                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08)',
+                  zIndex: 9999,
+                  minWidth: '195px',
+                  padding: '6px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '2px',
+                  textAlign: 'left'
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '0.45rem 0.65rem',
+                    fontSize: '0.8rem',
+                    fontWeight: 500,
+                    color: '#1E293B',
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#F8FAFC'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  onClick={() => {
+                    setActiveMenuId(null);
+                    setEditingConsolidation(item);
+                  }}
+                >
+                  <Eye size={14} style={{ color: '#0284C7' }} />
+                  <span>View Details</span>
+                </button>
+
+                {!isAgent && (
+                  <button
+                    type="button"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '0.45rem 0.65rem',
+                      fontSize: '0.8rem',
+                      fontWeight: 500,
+                      color: '#0284C7',
+                      background: 'transparent',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      width: '100%',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#F0F9FF'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                    onClick={() => {
+                      setActiveMenuId(null);
+                      setCreatingBLForConsolidation(item);
+                    }}
+                  >
+                    <FileText size={14} style={{ color: '#0284C7' }} />
+                    <span>Issue Master B/L</span>
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '0.45rem 0.65rem',
+                    fontSize: '0.8rem',
+                    fontWeight: 500,
+                    color: '#1E293B',
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#F8FAFC'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  onClick={() => {
+                    setActiveMenuId(null);
+                    if (item.assignedShipmentId) {
+                      onNavigate('shipments', item.assignedShipmentId);
+                    } else {
+                      onNavigate('bills-of-lading');
+                    }
+                  }}
+                >
+                  <ArrowRight size={14} style={{ color: '#059669' }} />
+                  <span>Go to Shipment / Master B/L</span>
+                </button>
+
+                {!isAgent && (
+                  <button
+                    type="button"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '0.45rem 0.65rem',
+                      fontSize: '0.8rem',
+                      fontWeight: 500,
+                      color: '#1E293B',
+                      background: 'transparent',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      width: '100%',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#F8FAFC'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                    onClick={() => {
+                      setActiveMenuId(null);
+                      setEditingConsolidation(item);
+                    }}
+                  >
+                    <Edit2 size={14} style={{ color: '#64748B' }} />
+                    <span>Edit Consolidation</span>
+                  </button>
+                )}
+
+                {!isAgent && (
+                  <>
+                    <div style={{ height: '1px', background: '#F1F5F9', margin: '4px 0' }} />
+                    <button
+                      type="button"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '0.45rem 0.65rem',
+                        fontSize: '0.8rem',
+                        fontWeight: 500,
+                        color: '#EF4444',
+                        background: 'transparent',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        width: '100%',
+                        textAlign: 'left'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#FEF2F2'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                      onClick={() => {
+                        setActiveMenuId(null);
+                        setDeletingConsolidation(item);
+                      }}
+                    >
+                      <Trash2 size={14} style={{ color: '#EF4444' }} />
+                      <span>Delete</span>
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      }
     }
   ];
 
