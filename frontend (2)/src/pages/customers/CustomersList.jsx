@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PageHeader } from '../../components/common/PageHeader';
 import { ResponsiveTable } from '../../components/tables/ResponsiveTable';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { CustomerModal } from '../../components/modals/CustomerModal';
 import { DeleteConfirmModal } from '../../components/modals/DeleteConfirmModal';
-import { Users, Plus, Eye, Edit2, Trash2, Package, MapPin, Phone, Mail, Building2 } from 'lucide-react';
+import { Users, Plus, Eye, Edit2, Trash2, Package, MapPin, Phone, Mail, Building2, MoreVertical } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
 
 export const CustomersList = ({ onNavigate }) => {
@@ -13,6 +13,13 @@ export const CustomersList = ({ onNavigate }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [deletingCustomer, setDeletingCustomer] = useState(null);
+  const [activeMenuId, setActiveMenuId] = useState(null);
+
+  useEffect(() => {
+    const handleOutsideClick = () => setActiveMenuId(null);
+    window.addEventListener('click', handleOutsideClick);
+    return () => window.removeEventListener('click', handleOutsideClick);
+  }, []);
 
   const columns = [
     {
@@ -114,57 +121,173 @@ export const CustomersList = ({ onNavigate }) => {
     {
       header: 'Actions',
       align: 'right',
+      width: '70px',
       render: (item) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', justifyContent: 'flex-end' }}>
+        <div
+          style={{ position: 'relative', display: 'inline-block', textAlign: 'right' }}
+          onClick={(e) => e.stopPropagation()}
+        >
           <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
-              onNavigate('warehouse-receipts', 'create');
+              setActiveMenuId(activeMenuId === item.id ? null : item.id);
             }}
-            className="btn btn-sm btn-ghost"
-            title="Create Warehouse Receipt for this customer"
-            style={{ padding: '0.25rem 0.45rem', color: '#0284C7' }}
+            className="btn btn-ghost btn-sm"
+            style={{
+              width: '32px',
+              height: '32px',
+              padding: 0,
+              borderRadius: '6px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: activeMenuId === item.id ? '#0284C7' : '#64748B',
+              background: activeMenuId === item.id ? '#F0F9FF' : 'transparent',
+              border: '1px solid',
+              borderColor: activeMenuId === item.id ? '#BAE6FD' : 'transparent'
+            }}
+            title="Options"
+            aria-label="Options"
           >
-            <Package size={13} />
-            <span className="hide-mobile">WR</span>
+            <MoreVertical size={16} />
           </button>
 
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setEditingCustomer(item);
-            }}
-            className="btn btn-sm btn-secondary"
-            title="Edit Customer Profile"
-            style={{ padding: '0.25rem 0.45rem' }}
-          >
-            <Edit2 size={13} />
-            <span className="hide-mobile">Edit</span>
-          </button>
+          {activeMenuId === item.id && (
+            <div
+              style={{
+                position: 'absolute',
+                right: 0,
+                top: 'calc(100% + 4px)',
+                background: '#FFFFFF',
+                border: '1px solid #E2E8F0',
+                borderRadius: '8px',
+                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08)',
+                zIndex: 9999,
+                minWidth: '185px',
+                padding: '6px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '2px',
+                textAlign: 'left'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '0.45rem 0.65rem',
+                  fontSize: '0.8rem',
+                  fontWeight: 500,
+                  color: '#1E293B',
+                  background: 'transparent',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  width: '100%',
+                  textAlign: 'left'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#F8FAFC'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                onClick={() => {
+                  setActiveMenuId(null);
+                  onNavigate('customers', item.id);
+                }}
+              >
+                <Eye size={14} style={{ color: '#0284C7' }} />
+                <span>View Details</span>
+              </button>
 
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setDeletingCustomer(item);
-            }}
-            className="btn btn-sm btn-ghost"
-            title="Delete Customer"
-            style={{ padding: '0.25rem 0.45rem', color: '#EF4444' }}
-          >
-            <Trash2 size={13} />
-          </button>
+              <button
+                type="button"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '0.45rem 0.65rem',
+                  fontSize: '0.8rem',
+                  fontWeight: 500,
+                  color: '#1E293B',
+                  background: 'transparent',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  width: '100%',
+                  textAlign: 'left'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#F8FAFC'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                onClick={() => {
+                  setActiveMenuId(null);
+                  setEditingCustomer(item);
+                }}
+              >
+                <Edit2 size={14} style={{ color: '#64748B' }} />
+                <span>Edit Profile</span>
+              </button>
 
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onNavigate('customers', item.id);
-            }}
-            className="btn btn-sm btn-primary"
-            style={{ padding: '0.25rem 0.6rem' }}
-          >
-            <Eye size={13} />
-            <span>View</span>
-          </button>
+              <button
+                type="button"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '0.45rem 0.65rem',
+                  fontSize: '0.8rem',
+                  fontWeight: 500,
+                  color: '#1E293B',
+                  background: 'transparent',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  width: '100%',
+                  textAlign: 'left'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#F8FAFC'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                onClick={() => {
+                  setActiveMenuId(null);
+                  onNavigate('warehouse-receipts', 'create');
+                }}
+              >
+                <Package size={14} style={{ color: '#0284C7' }} />
+                <span>Create Receipt (WR)</span>
+              </button>
+
+              <div style={{ height: '1px', background: '#F1F5F9', margin: '4px 0' }} />
+
+              <button
+                type="button"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '0.45rem 0.65rem',
+                  fontSize: '0.8rem',
+                  fontWeight: 500,
+                  color: '#EF4444',
+                  background: 'transparent',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  width: '100%',
+                  textAlign: 'left'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#FEF2F2'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                onClick={() => {
+                  setActiveMenuId(null);
+                  setDeletingCustomer(item);
+                }}
+              >
+                <Trash2 size={14} style={{ color: '#EF4444' }} />
+                <span>Delete Customer</span>
+              </button>
+            </div>
+          )}
         </div>
       )
     }

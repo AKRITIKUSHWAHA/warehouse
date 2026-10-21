@@ -151,7 +151,7 @@ export const ResponsiveTable = ({
       )}
 
       {/* Table Content */}
-      <div style={{ overflowX: 'auto', width: '100%' }}>
+      <div style={{ overflowX: 'auto', width: '100%', minHeight: paginatedData.length > 0 && paginatedData.length <= 4 ? '260px' : 'auto' }}>
         <table className="data-table">
           <thead>
             <tr>
