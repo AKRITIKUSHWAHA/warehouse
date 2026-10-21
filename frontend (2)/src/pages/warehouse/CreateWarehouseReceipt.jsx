@@ -340,29 +340,42 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
                 <span>1. Cargo Information — Shipper, Consignee &amp; Destination</span>
               </h3>
 
-              {/* Customer Account & Destination Port */}
-              <div className="grid grid-cols-2 gap-4" style={{ marginBottom: '1rem' }}>
+              {/* Receipt Parameters Grid (Receipt #, Date, Destination) */}
+              <div className="grid grid-cols-3 gap-4" style={{ marginBottom: '1.25rem', background: '#F8FAFC', padding: '1rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Customer Account Profile</label>
-                  <select
-                    className="form-select"
-                    value={formData.customerId}
-                    onChange={(e) => handleCustomerSelect(e.target.value)}
-                  >
-                    <option value="">-- Select Customer Account (Optional) --</option>
-                    {customers.map(c => (
-                      <option key={c.id} value={c.id}>
-                        {c.name} ({c.customerNumber || c.id}){c.destinationCode ? ` — ${c.destinationCode}` : ''}
-                      </option>
-                    ))}
-                  </select>
-                  <div style={{ fontSize: '0.72rem', color: '#64748B', marginTop: '3px' }}>
-                    Select customer to auto-fill details, or type Shipper &amp; Consignee manually below.
+                  <label className="form-label" style={{ fontWeight: 600 }}>Warehouse Receipt # <span className="required">*</span></label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={formData.receiptNumber}
+                    onChange={(e) => handleInputChange('receiptNumber', e.target.value)}
+                    disabled={!canEditWR}
+                    title={canEditWR ? "Editable by Documentation/Admin" : "Auto-generated"}
+                    required
+                  />
+                  {!canEditWR && (
+                    <div style={{ fontSize: '0.7rem', color: '#64748B', marginTop: '3px' }}>
+                      Auto-generated ID
+                    </div>
+                  )}
+                </div>
+
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label" style={{ fontWeight: 600 }}>CFS Receiving Date <span className="required">*</span></label>
+                  <input
+                    type="date"
+                    className="form-control"
+                    value={formData.date}
+                    onChange={(e) => handleInputChange('date', e.target.value)}
+                    required
+                  />
+                  <div style={{ fontSize: '0.7rem', color: '#64748B', marginTop: '3px' }}>
+                    Cargo intake arrival date
                   </div>
                 </div>
 
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Destination Port / Island <span className="required">*</span></label>
+                  <label className="form-label" style={{ fontWeight: 600 }}>Destination Port / Island <span className="required">*</span></label>
                   <select
                     className="form-select"
                     value={formData.destinationPort}
@@ -393,116 +406,104 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
                       );
                     })}
                   </select>
-                  <div style={{ fontSize: '0.72rem', color: '#0284C7', fontWeight: 600, marginTop: '3px' }}>
-                    Destination flows into 4x6 Label, House B/L, Consolidation, and Manifest.
+                  <div style={{ fontSize: '0.7rem', color: '#0284C7', fontWeight: 600, marginTop: '3px' }}>
+                    Flows into 4x6 Label, B/L &amp; Manifest
                   </div>
                 </div>
               </div>
 
-              {/* Receipt Number & Date */}
-              <div className="grid grid-cols-2 gap-4" style={{ marginBottom: '1rem' }}>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Warehouse Receipt # <span className="required">*</span></label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.receiptNumber}
-                    onChange={(e) => handleInputChange('receiptNumber', e.target.value)}
-                    disabled={!canEditWR}
-                    title={canEditWR ? "Editable by Documentation/Admin" : "Auto-generated"}
-                    required
-                  />
-                  {!canEditWR && (
-                    <div style={{ fontSize: '0.7rem', color: '#64748B', marginTop: '4px' }}>
-                      Auto-generated numeric ID
-                    </div>
-                  )}
-                </div>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">CFS Receiving Date <span className="required">*</span></label>
-                  <input
-                    type="date"
-                    className="form-control"
-                    value={formData.date}
-                    onChange={(e) => handleInputChange('date', e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Separate Shipper & Consignee */}
+              {/* Shipper & Consignee 2-Card Clean Layout */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                    <label className="form-label" style={{ margin: 0 }}>Shipper / Supplier Information</label>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <select
-                        style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', maxWidth: '170px' }}
-                        onChange={(e) => handleShipperSelect(e.target.value)}
-                        defaultValue=""
-                      >
-                        <option value="" disabled>Quick Fill Shipper...</option>
-                        {customers.map(c => (
-                          <option key={c.id} value={c.id}>
-                            {c.name} ({c.customerNumber || c.id})
-                          </option>
-                        ))}
-                        <option value="CREATE_NEW" style={{ fontWeight: 'bold', color: '#0284C7' }}>+ Create New Customer</option>
-                      </select>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCustomerCreationTarget('shipper');
-                          setShowAddCustomerModal(true);
-                        }}
-                        className="btn btn-outline btn-xs"
-                        style={{ padding: '2px 6px', fontSize: '0.7rem', color: '#0284C7', borderColor: '#0284C7' }}
-                        title="Add New Customer Profile"
-                      >
-                        + New
-                      </button>
+                {/* Shipper Card */}
+                <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Building2 size={16} style={{ color: '#64748B' }} />
+                      <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#0A192F' }}>Shipper (Origin Supplier)</span>
                     </div>
+                    <span style={{ fontSize: '0.68rem', color: '#64748B', background: '#F1F5F9', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>Origin</span>
                   </div>
+
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <select
+                      className="form-select"
+                      style={{ fontSize: '0.8rem', padding: '0.4rem 0.55rem', flex: 1 }}
+                      onChange={(e) => handleShipperSelect(e.target.value)}
+                      defaultValue=""
+                    >
+                      <option value="" disabled>Select Shipper from Directory...</option>
+                      {customers.map(c => (
+                        <option key={c.id} value={c.id}>
+                          {c.name} ({c.customerNumber || c.id})
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCustomerCreationTarget('shipper');
+                        setShowAddCustomerModal(true);
+                      }}
+                      className="btn btn-outline btn-sm"
+                      style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', color: '#0284C7', borderColor: '#0284C7', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}
+                      title="Register New Customer"
+                    >
+                      <Plus size={13} />
+                      <span>New</span>
+                    </button>
+                  </div>
+
                   <textarea
                     className="form-textarea"
                     rows={3}
                     placeholder="Enter Shipper / Vendor name, origin warehouse, address, phone..."
                     value={formData.shipper}
                     onChange={(e) => handleInputChange('shipper', e.target.value)}
+                    style={{ fontSize: '0.825rem', resize: 'vertical' }}
                   />
                 </div>
 
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                    <label className="form-label" style={{ margin: 0 }}>Consignee / Destination Receiver <span className="required">*</span></label>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <select
-                        style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', maxWidth: '170px' }}
-                        onChange={(e) => handleConsigneeSelect(e.target.value)}
-                        defaultValue=""
-                      >
-                        <option value="" disabled>Quick Fill Consignee...</option>
-                        {customers.map(c => (
-                          <option key={c.id} value={c.id}>
-                            {c.name} ({c.destinationCode ? `${c.destinationCode} • ` : ''}{c.customerNumber || c.id})
-                          </option>
-                        ))}
-                        <option value="CREATE_NEW" style={{ fontWeight: 'bold', color: '#0284C7' }}>+ Create New Customer</option>
-                      </select>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCustomerCreationTarget('consignee');
-                          setShowAddCustomerModal(true);
-                        }}
-                        className="btn btn-outline btn-xs"
-                        style={{ padding: '2px 6px', fontSize: '0.7rem', color: '#0284C7', borderColor: '#0284C7' }}
-                        title="Add New Customer Profile"
-                      >
-                        + New
-                      </button>
+                {/* Consignee Card */}
+                <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '8px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Building2 size={16} style={{ color: '#0284C7' }} />
+                      <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#0A192F' }}>
+                        Consignee (Destination Receiver) <span className="required">*</span>
+                      </span>
                     </div>
+                    <span style={{ fontSize: '0.68rem', color: '#0284C7', background: '#E0F2FE', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>Destination</span>
                   </div>
+
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <select
+                      className="form-select"
+                      style={{ fontSize: '0.8rem', padding: '0.4rem 0.55rem', flex: 1, borderColor: '#7DD3FC' }}
+                      onChange={(e) => handleConsigneeSelect(e.target.value)}
+                      defaultValue=""
+                    >
+                      <option value="" disabled>Select Consignee from Directory...</option>
+                      {customers.map(c => (
+                        <option key={c.id} value={c.id}>
+                          {c.name} ({c.customerNumber || c.id})
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCustomerCreationTarget('consignee');
+                        setShowAddCustomerModal(true);
+                      }}
+                      className="btn btn-outline btn-sm"
+                      style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', color: '#0284C7', borderColor: '#0284C7', background: '#FFFFFF', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}
+                      title="Register New Customer"
+                    >
+                      <Plus size={13} />
+                      <span>New</span>
+                    </button>
+                  </div>
+
                   <textarea
                     className="form-textarea"
                     rows={3}
@@ -510,6 +511,7 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
                     placeholder="Enter Consignee name, island address, contact person, phone..."
                     value={formData.consignee}
                     onChange={(e) => handleInputChange('consignee', e.target.value)}
+                    style={{ fontSize: '0.825rem', resize: 'vertical', background: '#FFFFFF' }}
                   />
                 </div>
               </div>
