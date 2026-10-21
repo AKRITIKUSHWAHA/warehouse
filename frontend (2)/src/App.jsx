@@ -31,7 +31,6 @@ import { BillOfLadingDetail } from './pages/bills/BillOfLadingDetail';
 import { ManifestsList } from './pages/manifests/ManifestsList';
 import { ManifestDetail } from './pages/manifests/ManifestDetail';
 import { VesselsList } from './pages/shipping/VesselsList';
-import { ContainersList } from './pages/shipping/ContainersList';
 import { ShipmentTrackingPortal } from './pages/tracking/ShipmentTrackingPortal';
 import { DocumentCenter } from './pages/documents/DocumentCenter';
 import { AgentManagementList } from './pages/agents/AgentManagementList';
@@ -62,7 +61,6 @@ const VALID_TABS = [
   'bills-of-lading',
   'manifests',
   'vessels',
-  'containers',
   'tracking',
   'documents',
   'agents',
@@ -368,15 +366,11 @@ const MainAppRouter = () => {
         }
         return <ManifestsList onNavigate={navigateTo} />;
 
-      // 10. Vessels & Voyages
+      // 10. Fleet Directory (Vessels)
       case 'vessels':
         return <VesselsList onNavigate={navigateTo} />;
 
-      // 11. Containers
-      case 'containers':
-        return <ContainersList onNavigate={navigateTo} />;
-
-      // 12. Tracking
+      // 11. Tracking
       case 'tracking':
         return <ShipmentTrackingPortal initialQuery={selectedRecordId} onNavigate={navigateTo} />;
 

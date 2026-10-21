@@ -3,7 +3,7 @@
  * Allows Super Admin to dynamically configure menu visibility and module access per role.
  */
 
-export const STORAGE_KEY_ROLE_PERMISSIONS = 'kers_role_permissions_map_v2';
+export const STORAGE_KEY_ROLE_PERMISSIONS = 'kers_role_permissions_map_v3';
 
 export const SYSTEM_MODULES = [
   {
@@ -87,18 +87,10 @@ export const SYSTEM_MODULES = [
     tabs: ['manifests']
   },
   {
-    id: 'containers',
-    label: 'Containers Inventory',
-    category: 'Logistics & Ocean',
-    description: '20ft/40ft/40HC container fleet, seal numbers, tare weights',
-    icon: 'Box',
-    tabs: ['containers']
-  },
-  {
     id: 'vessels',
-    label: 'Vessels & Trips',
+    label: 'Fleet Directory',
     category: 'Logistics & Ocean',
-    description: 'Vessel schedules, voyages, carrier coordination, transit timelines',
+    description: 'Vessel fleet directory and carrier coordination notes',
     icon: 'Anchor',
     tabs: ['vessels']
   },
@@ -164,13 +156,13 @@ export const DEFAULT_ROLE_PERMISSIONS_MAP = {
   super_admin: [
     'dashboard', 'customers', 'warehouse-receipts', 'cargo', 'documents',
     'house-bills', 'consolidations', 'shipments', 'bills-of-lading', 'manifests',
-    'containers', 'vessels', 'tracking', 'agent-portal', 'hold-authorization',
+    'vessels', 'tracking', 'agent-portal', 'hold-authorization',
     'users', 'audit', 'history', 'settings'
   ],
   operations: [
     'dashboard', 'customers', 'warehouse-receipts', 'cargo', 'documents',
     'house-bills', 'consolidations', 'shipments', 'manifests',
-    'containers', 'vessels', 'tracking', 'history'
+    'vessels', 'tracking', 'history'
   ],
   warehouse: [
     'dashboard', 'customers', 'warehouse-receipts', 'cargo', 'documents',
@@ -179,7 +171,7 @@ export const DEFAULT_ROLE_PERMISSIONS_MAP = {
   documentation: [
     'dashboard', 'customers', 'warehouse-receipts', 'documents',
     'house-bills', 'bills-of-lading', 'manifests', 'consolidations',
-    'containers', 'vessels', 'tracking', 'history', 'hold-authorization'
+    'vessels', 'tracking', 'history', 'hold-authorization'
   ],
   agent: [
     'dashboard', 'agent-portal', 'shipments', 'consolidations', 'manifests',

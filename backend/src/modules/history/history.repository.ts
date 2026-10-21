@@ -1,6 +1,6 @@
 import { eq, ilike, or, and, desc, sql, gte, lte } from 'drizzle-orm';
 import { db } from '../../db/index.js';
-import { shipments, warehouseReceipts, billsOfLading, containers } from '../../db/schema/index.js';
+import { shipments, warehouseReceipts, billsOfLading } from '../../db/schema/index.js';
 import { ShipmentHistoryFilterParams } from './history.types.js';
 
 export class HistoryRepository {

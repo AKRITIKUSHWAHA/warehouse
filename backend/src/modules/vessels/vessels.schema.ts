@@ -9,14 +9,15 @@ export const vesselQuerySchema = z.object({
 
 export const createVesselSchema = z.object({
   name: z.string().min(2, 'Vessel name is required'),
-  imoNumber: z.string().min(5, 'IMO number is required'),
+  type: z.string().optional().default('Merchant Vessel'), // Vessel classification / type (client confirmation pending)
+  notes: z.string().optional(),
+  imoNumber: z.string().optional(),
   flag: z.string().optional(),
-  type: z.string().default('Container Feeder'),
   carrier: z.string().optional(),
   capacityTeu: z.coerce.number().optional(),
   deadweightTonnage: z.coerce.number().optional(),
   builtYear: z.coerce.number().optional(),
-  status: z.string().default('Active'),
+  status: z.string().optional().default('Active'),
   currentVoyage: z.string().optional(),
   activeRoute: z.string().optional(),
   etaNextPort: z.string().optional(),

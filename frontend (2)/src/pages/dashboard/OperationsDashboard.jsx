@@ -33,7 +33,7 @@ import { useAuth } from '../../context/AuthContext';
 import { adminService } from '../../services';
 
 export const OperationsDashboard = ({ onNavigate }) => {
-  const { customers, warehouseReceipts, houseBills, consolidations, shipments, billsOfLading, manifests, containers, cargoItems } = useAppData();
+  const { customers, warehouseReceipts, houseBills, consolidations, shipments, billsOfLading, manifests, cargoItems } = useAppData();
   const { currentUser } = useAuth();
 
   const roleKey = currentUser?.roleKey || 'super_admin';
@@ -384,7 +384,7 @@ export const OperationsDashboard = ({ onNavigate }) => {
             {dbMetrics?.totalShipments ?? activeShipments.length} In Transit
           </div>
           <div style={{ fontSize: '0.72rem', color: '#64748B' }}>
-            {dbMetrics?.totalContainers ? `${dbMetrics.totalContainers} Fleet Containers` : 'Active Ocean Shipments'}
+            Active Ocean Shipments
           </div>
         </div>
       </div>

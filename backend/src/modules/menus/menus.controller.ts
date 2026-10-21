@@ -12,7 +12,6 @@ import {
   users,
   auditLogs,
   settings,
-  containers,
   vessels,
   documents
 } from '../../db/schema/index.js';
@@ -147,68 +146,38 @@ export class MenusController {
       const allConsolidations = await db.select().from(consolidations);
       const allShipments = await db.select().from(shipments);
       const stagedReceipts = await db.select().from(warehouseReceipts);
-      const allContainers = await db.select().from(containers);
 
       const awaitingConsolidation = stagedReceipts.filter(r => r.status === 'Ready for Consolidation' || r.status === 'STAGED');
 
-      const activeContainerFill = allContainers.slice(0, 10).map(c => {
-        let pct = Number(c.fillPercentage) || 0;
-        if (!pct) {
-          if (c.status === 'LOADED' || c.status === 'Loaded') pct = 85;
-          else if (c.status === 'SEALED' || c.status === 'Sealed') pct = 100;
-          else if (c.status === 'CONSOLIDATING' || c.status === 'In Consolidation') pct = 60;
-          else pct = 25;
-        }
-
-        return {
-          containerNumber: c.containerNumber,
-          type: c.type || 'Standard',
-          fillPercentage: pct,
-          sealNumber: c.sealNumber || 'N/A'
-        };
-      });
-
       reply.send(successResponse({
-        stageName: 'Stage 2: Container Consolidation',
-        assignedUser: 'Vessel Operations Team',
+        stageName: 'Stage 2: Consolidation',
+        assignedUser: 'Operations Team',
         menuName: 'Operations Dashboard',
         actionableTaskCard: {
           title: `${awaitingConsolidation.length} Cargo Items Awaiting Consolidation`,
-          description: 'Filter staged Warehouse Receipts by destination port to build new container run.',
+          description: 'Filter staged Warehouse Receipts by destination port to build new consolidation.',
           count: awaitingConsolidation.length,
           primaryCTA: '+ Build Consolidation'
         },
         metrics: {
           awaitingConsolidationCount: awaitingConsolidation.length,
           totalConsolidations: allConsolidations.length,
-          activeShipmentsCount: allShipments.length,
-          averageFillPercentage: activeContainerFill.length > 0
-            ? `${Math.round(activeContainerFill.reduce((a, b) => a + b.fillPercentage, 0) / activeContainerFill.length)}%`
-            : '0%'
-        },
-        activeContainerFill
+          activeShipmentsCount: allShipments.length
+        }
       }));
     } catch (err: any) {
       reply.status(500).send({ success: false, error: err.message });
     }
   };
 
-  // STAGE 2: Containers & Vessels
+  // STAGE 2: Fleet Directory
   getContainersVessels = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     try {
-      const allContainers = await db.select().from(containers);
       const allVessels = await db.select().from(vessels);
 
-      const containerTypes = Array.from(new Set(allContainers.map(c => c.type).filter(Boolean)));
-      if (containerTypes.length === 0) {
-        containerTypes.push('20ft Standard', '40ft Standard', '40ft High Cube', '45ft High Cube');
-      }
-
       reply.send(successResponse({
-        stageName: 'Containers & Vessels',
-        menuName: 'Containers & Vessels',
-        containerTypes,
-        containers: allContainers,
+        stageName: 'Fleet Directory',
+        menuName: 'Fleet Directory',
         vessels: allVessels
       }));
     } catch (err: any) {

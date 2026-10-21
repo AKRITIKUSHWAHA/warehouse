@@ -10,7 +10,7 @@ const formatFullDestination = (dest) => {
 
 export const QuickSearchModal = ({ isOpen, onClose, onSelectResult }) => {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState({ customers: [], houseBills: [], shipments: [], receipts: [], bls: [], containers: [], agents: [] });
+  const [results, setResults] = useState({ customers: [], houseBills: [], shipments: [], receipts: [], bls: [], agents: [] });
   const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
@@ -214,30 +214,6 @@ export const QuickSearchModal = ({ isOpen, onClose, onSelectResult }) => {
                 </div>
               )}
 
-              {/* Containers */}
-              {results.containers?.length > 0 && (
-                <div>
-                  <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Box size={14} /> Containers ({results.containers.length})
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                    {results.containers.map(c => (
-                      <div
-                        key={c.id}
-                        onClick={() => { onSelectResult('containers', c.id); onClose(); }}
-                        style={{ padding: '0.65rem 0.85rem', background: '#F8FAFC', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-                        className="card-hover"
-                      >
-                        <div>
-                          <div style={{ fontWeight: 600, color: '#0A192F', fontSize: '0.875rem' }}>{c.containerNumber} ({c.type})</div>
-                          <div style={{ fontSize: '0.75rem', color: '#64748B' }}>Seal: {c.sealNumber} | Fill: {c.fillPercentage}% | Status: {c.status}</div>
-                        </div>
-                        <ArrowRight size={16} style={{ color: '#94A3B8' }} />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* Agents */}
               {results.agents?.length > 0 && (

@@ -6,8 +6,7 @@ import { initialConsolidations } from '../data/mock/consolidationsData';
 import { initialShipments } from '../data/mock/shipmentsData';
 import { initialBillsOfLading } from '../data/mock/billsOfLadingData';
 import { initialManifests } from '../data/mock/manifestsData';
-import { initialContainers } from '../data/mock/containersData';
-import { initialVessels, initialVoyages } from '../data/mock/vesselsData';
+import { initialVessels } from '../data/mock/vesselsData';
 import { initialAgents } from '../data/mock/agentsData';
 import { initialUsers, initialRolesPermissions } from '../data/mock/usersData';
 import { initialAuditLogs } from '../data/mock/auditLogsData';
@@ -23,9 +22,7 @@ const KEYS = {
   SHIPMENTS: 'kers_shipments',
   BILLS_OF_LADING: 'kers_bills_of_lading',
   MANIFESTS: 'kers_manifests',
-  CONTAINERS: 'kers_containers',
   VESSELS: 'kers_vessels',
-  VOYAGES: 'kers_voyages',
   AGENTS: 'kers_agents',
   USERS: 'kers_users',
   ROLES: 'kers_roles',
@@ -40,9 +37,7 @@ export const initializeStorage = () => {
   const CLEAN_SLATE_KEY = 'kers_clean_slate_v7';
   if (!localStorage.getItem(CLEAN_SLATE_KEY)) {
     // Clear all transactional and test collections so UI strictly mirrors live clean database
-    localStorage.setItem(KEYS.CONTAINERS, JSON.stringify([]));
     localStorage.setItem(KEYS.VESSELS, JSON.stringify([]));
-    localStorage.setItem(KEYS.VOYAGES, JSON.stringify([]));
     localStorage.setItem(KEYS.SHIPMENTS, JSON.stringify([]));
     localStorage.setItem(KEYS.CARGO, JSON.stringify([]));
     localStorage.setItem(KEYS.CONSOLIDATIONS, JSON.stringify([]));
@@ -90,14 +85,8 @@ export const initializeStorage = () => {
   if (!localStorage.getItem(KEYS.DOCUMENTS)) {
     localStorage.setItem(KEYS.DOCUMENTS, JSON.stringify([]));
   }
-  if (!localStorage.getItem(KEYS.CONTAINERS)) {
-    localStorage.setItem(KEYS.CONTAINERS, JSON.stringify([]));
-  }
   if (!localStorage.getItem(KEYS.VESSELS)) {
     localStorage.setItem(KEYS.VESSELS, JSON.stringify([]));
-  }
-  if (!localStorage.getItem(KEYS.VOYAGES)) {
-    localStorage.setItem(KEYS.VOYAGES, JSON.stringify([]));
   }
   if (!localStorage.getItem(KEYS.AGENTS)) {
     localStorage.setItem(KEYS.AGENTS, JSON.stringify(initialAgents));
@@ -150,9 +139,7 @@ export const clearTransactionalData = () => {
   setStored(KEYS.BILLS_OF_LADING, []);
   setStored(KEYS.MANIFESTS, []);
   setStored(KEYS.DOCUMENTS, []);
-  setStored(KEYS.CONTAINERS, []);
   setStored(KEYS.VESSELS, []);
-  setStored(KEYS.VOYAGES, []);
   setStored(KEYS.AUDIT_LOGS, []);
   setStored(KEYS.AGENTS, initialAgents);
   setStored(KEYS.PORTS, initialPorts);

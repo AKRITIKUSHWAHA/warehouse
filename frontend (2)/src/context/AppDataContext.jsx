@@ -8,7 +8,7 @@ import { consolidationService } from '../services/consolidationService';
 import { shipmentService } from '../services/shipmentService';
 import { billOfLadingService } from '../services/billOfLadingService';
 import { manifestService } from '../services/manifestService';
-import { portService, containerService, vesselService, agentService, userService, documentService, settingsService } from '../services';
+import { portService, vesselService, agentService, userService, documentService, settingsService } from '../services';
 
 import { auditService } from '../services/auditService';
 import { historyService } from '../services/historyService';
@@ -30,9 +30,7 @@ export const AppDataProvider = ({ children }) => {
   const [shipments, setShipments] = useState([]);
   const [billsOfLading, setBillsOfLading] = useState([]);
   const [manifests, setManifests] = useState([]);
-  const [containers, setContainers] = useState([]);
   const [vessels, setVessels] = useState([]);
-  const [voyages, setVoyages] = useState([]);
   const [agents, setAgents] = useState([]);
   const [ports, setPorts] = useState([]);
   const [users, setUsers] = useState([]);
@@ -203,26 +201,11 @@ export const AppDataProvider = ({ children }) => {
           break;
         }
 
-        case 'containers': {
-          const cntRes = await apiClient.get('/containers').catch(() => null);
-          const list = extractListFromRes(cntRes);
-          if (list !== null) {
-            setContainers(list);
-            setStored(KEYS.CONTAINERS, list);
-          }
-          break;
-        }
-
         case 'vessels': {
           const vslList = await vesselService.getVessels();
-          const voyList = await vesselService.getVoyages();
           if (Array.isArray(vslList)) {
             setVessels(vslList);
             setStored(KEYS.VESSELS, vslList);
-          }
-          if (Array.isArray(voyList)) {
-            setVoyages(voyList);
-            setStored(KEYS.VOYAGES, voyList);
           }
           break;
         }
@@ -701,7 +684,7 @@ export const AppDataProvider = ({ children }) => {
     return success;
   };
 
-  // 9. Vessels & Voyages CRUD
+  // 9. Vessels (Fleet Directory) CRUD
   const createVessel = async (vesselData) => {
     try {
       const created = await vesselService.createVessel(vesselData, currentUser?.name || "Operations Staff");
@@ -741,69 +724,6 @@ export const AppDataProvider = ({ children }) => {
     }
   };
 
-  const createVoyage = async (voyageData) => {
-    try {
-      const created = await vesselService.createVoyage(voyageData, currentUser?.name || "Operations Staff");
-      await fetchMenuApi('vessels');
-      showToast(`Voyage ${created.voyageNumber} scheduled successfully.`, 'success', 'Voyage Scheduled');
-      return created;
-    } catch (err) {
-      showToast(err?.message || 'Failed to schedule voyage', 'error', 'Schedule Error');
-      throw err;
-    }
-  };
-
-  const updateVoyage = async (id, updates) => {
-    try {
-      const updated = await vesselService.updateVoyage(id, updates, currentUser?.name || "Operations Staff");
-      await fetchMenuApi('vessels');
-      showToast(`Voyage ${id} updated successfully.`, 'success', 'Voyage Updated');
-      return updated;
-    } catch (err) {
-      showToast(err?.message || 'Failed to update voyage', 'error', 'Update Error');
-      throw err;
-    }
-  };
-
-  const deleteVoyage = async (id) => {
-    try {
-      setVoyages(prev => prev.filter(v => v.id !== id && v.voyageNumber !== id));
-      const success = await vesselService.deleteVoyage(id, currentUser?.name || "Operations Staff");
-      if (success) {
-        await fetchMenuApi('vessels');
-        showToast(`Voyage ${id} deleted.`, 'info', 'Voyage Deleted');
-      }
-      return success;
-    } catch (err) {
-      showToast(err?.message || 'Failed to delete voyage', 'error', 'Delete Error');
-      throw err;
-    }
-  };
-
-  // 10. Containers CRUD
-  const createContainer = async (containerData) => {
-    const created = await containerService.createContainer(containerData, currentUser?.name || "Operations Staff");
-    await fetchMenuApi('containers');
-    showToast(`Container ${created.containerNumber} registered into equipment fleet.`, 'success', 'Container Added');
-    return created;
-  };
-
-  const updateContainer = async (id, updates) => {
-    const updated = await containerService.updateContainer(id, updates, currentUser?.name || "Operations Staff");
-    await fetchMenuApi('containers');
-    showToast(`Container ${id} updated successfully.`, 'success', 'Container Updated');
-    return updated;
-  };
-
-  const deleteContainer = async (id) => {
-    setContainers(prev => prev.filter(c => c.id !== id && c.containerNumber !== id));
-    const success = await containerService.deleteContainer(id, currentUser?.name || "Operations Staff");
-    if (success) {
-      await fetchMenuApi('containers');
-      showToast(`Container ${id} deleted.`, 'info', 'Container Removed');
-    }
-    return success;
-  };
 
   // 11. Agents CRUD
   const createAgent = async (agentData) => {
@@ -940,9 +860,7 @@ export const AppDataProvider = ({ children }) => {
       shipments,
       billsOfLading,
       manifests,
-      containers,
       vessels,
-      voyages,
       agents,
       ports,
       users,
@@ -993,17 +911,10 @@ export const AppDataProvider = ({ children }) => {
       createManifestFromMasterBL: generateManifestFromMasterBL,
       updateManifest,
       deleteManifest,
-      // Vessels & Voyages
+      // Vessels (Fleet Directory)
       createVessel,
       updateVessel,
       deleteVessel,
-      createVoyage,
-      updateVoyage,
-      deleteVoyage,
-      // Containers
-      createContainer,
-      updateContainer,
-      deleteContainer,
       // Agents
       createAgent,
       updateAgent,

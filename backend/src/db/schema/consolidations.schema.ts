@@ -1,7 +1,5 @@
 import { pgTable, uuid, text, integer, numeric, jsonb, timestamp } from 'drizzle-orm/pg-core';
-import { containers } from './containers.schema.js';
 import { vessels } from './vessels.schema.js';
-import { voyages } from './voyages.schema.js';
 
 export const consolidations = pgTable('consolidations', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -12,7 +10,7 @@ export const consolidations = pgTable('consolidations', {
   createdDate: text('created_date').notNull(),
   status: text('status').default('Planning').notNull(), // 'Planning' | 'Loaded' | 'Sealed' | 'Completed'
   
-  containerId: uuid('container_id').references(() => containers.id),
+  containerId: text('container_id'),
   containerNumber: text('container_number'),
   containerType: text('container_type'),
   containerCapacityCbm: numeric('container_capacity_cbm', { precision: 10, scale: 2 }),
@@ -20,7 +18,7 @@ export const consolidations = pgTable('consolidations', {
   
   vesselId: uuid('vessel_id').references(() => vessels.id),
   vesselName: text('vessel_name'),
-  voyageId: uuid('voyage_id').references(() => voyages.id),
+  voyageId: text('voyage_id'),
   voyageNumber: text('voyage_number'),
   carrier: text('carrier'),
   
