@@ -98,7 +98,7 @@ export const CustomerDetail = ({ customerId, onNavigate }) => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '1200px', margin: '0 auto' }}>
       <PageHeader
         title={customer.name}
-        subtitle={`Customer Account ${customer.customerNumber || customer.id} — ${customer.destinationPort}`}
+        subtitle={customer.destinationPort ? `Customer Account ${customer.customerNumber || customer.id} • ${customer.destinationPort}` : `Customer Account ${customer.customerNumber || customer.id}`}
         icon={Building2}
         breadcrumbs={[
           { label: 'Customers', href: '#' },
