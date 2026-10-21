@@ -98,14 +98,7 @@ export const VesselsList = ({ onNavigate }) => {
 
       <div className="card" style={{ padding: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-          <h3 style={{ fontSize: '1rem', color: '#0A192F', margin: 0 }}>Vessels</h3>
-          <button
-            onClick={() => setShowAddVessel(true)}
-            className="btn btn-sm btn-primary"
-          >
-            <Plus size={13} />
-            <span>Add Vessel</span>
-          </button>
+          <h3 style={{ fontSize: '1rem', color: '#0A192F', margin: 0 }}>Vessels Directory</h3>
         </div>
         <ResponsiveTable
           columns={vesselColumns}
