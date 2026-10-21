@@ -2,15 +2,16 @@ import React, { useState } from 'react';
 import { BrandLogo } from '../common/BrandLogo';
 import { StatusBadge } from '../common/StatusBadge';
 import { BarcodeVisual } from '../common/BarcodeVisual';
-import { Printer, Download, Layers, Loader2 } from 'lucide-react';
+import { Printer, Download, Layers, Loader2, FileSpreadsheet } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { useAppData } from '../../context/AppDataContext';
 import { downloadPdfFromElement } from '../../services/pdfService';
 
 export const MasterBLViewer = ({ bl, linkedHbls = [], onNavigate }) => {
   const { showToast } = useToast();
-  const { settings } = useAppData() || {};
+  const { settings, generateManifestFromMasterBL } = useAppData() || {};
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [isGeneratingManifest, setIsGeneratingManifest] = useState(false);
 
   if (!bl) return null;
 
@@ -47,6 +48,33 @@ export const MasterBLViewer = ({ bl, linkedHbls = [], onNavigate }) => {
     }
   };
 
+  const handleOneClickManifest = async () => {
+    if (isOnHold) {
+      const confirmOnHold = window.confirm(
+        `Notice: Master B/L ${bl.blNumber} is currently ON HOLD. Proceed with generating manifest?`
+      );
+      if (!confirmOnHold) return;
+    }
+    if (!generateManifestFromMasterBL) {
+      if (onNavigate) onNavigate('manifests');
+      return;
+    }
+
+    try {
+      setIsGeneratingManifest(true);
+      showToast(`Generating manifest from Master B/L ${bl.blNumber}...`, 'info', '1-Click Manifest');
+      const newManifest = await generateManifestFromMasterBL(bl.id || bl.blNumber);
+      if (newManifest && onNavigate) {
+        onNavigate('manifests', newManifest.id || newManifest.manifestNumber);
+      }
+    } catch (err) {
+      console.error('Error generating manifest:', err);
+      showToast(err?.message || 'Error generating manifest', 'error', 'Manifest Failed');
+    } finally {
+      setIsGeneratingManifest(false);
+    }
+  };
+
   return (
     <div style={{ maxWidth: '900px', margin: '0 auto' }}>
       {/* Top Document Action Bar (hidden in print) */}
@@ -59,6 +87,16 @@ export const MasterBLViewer = ({ bl, linkedHbls = [], onNavigate }) => {
         </div>
 
         <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button
+            className="btn btn-outline btn-sm"
+            onClick={handleOneClickManifest}
+            disabled={isGeneratingManifest}
+            style={{ fontWeight: 700, color: '#0284C7', borderColor: '#0284C7' }}
+            title="Generate Customs Manifest from this Master B/L in 1 click"
+          >
+            <FileSpreadsheet size={15} />
+            <span>{isGeneratingManifest ? 'Generating...' : '⚡ 1-Click Manifest'}</span>
+          </button>
           <button className="btn btn-outline btn-sm" onClick={handlePrint}>
             <Printer size={15} />
             <span>Print B/L Document</span>

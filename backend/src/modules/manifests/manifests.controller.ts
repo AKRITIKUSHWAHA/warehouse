@@ -34,6 +34,12 @@ export class ManifestsController {
     reply.status(201).send(successResponse(created, 'Shipping manifest created successfully'));
   };
 
+  createFromMasterBL = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+    const { blId } = request.params as { blId: string };
+    const created = await this.service.createFromMasterBL(blId);
+    reply.status(201).send(successResponse(created, 'Shipping manifest generated successfully from Master B/L'));
+  };
+
   update = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     const { id } = request.params as { id: string };
     const body = updateManifestSchema.parse(request.body);

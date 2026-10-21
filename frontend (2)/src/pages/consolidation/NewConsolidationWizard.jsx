@@ -48,6 +48,8 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [destinationFilter, setDestinationFilter] = useState(defaultDestinationCode);
   const [selectedWrIds, setSelectedWrIds] = useState([]);
+  const [selectedHblIds, setSelectedHblIds] = useState([]);
+  const [cargoTab, setCargoTab] = useState('wr'); // 'wr' | 'hbl'
 
   // Eligible staged Warehouse Receipts for chosen destination
   const availableReceipts = useMemo(() => {
@@ -63,8 +65,23 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
     return warehouseReceipts.filter(w => selectedWrIds.includes(w.id) || selectedWrIds.includes(w.receiptNumber));
   }, [warehouseReceipts, selectedWrIds]);
 
+  // Eligible House Bills for chosen destination
+  const availableHouseBills = useMemo(() => {
+    return houseBills.filter(h => {
+      const matchDest = destinationFilter === 'ALL' || h.destinationCode === destinationFilter || h.destinationPort?.includes(destinationFilter);
+      const isReady = !h.assignedConsolidationId;
+      return matchDest && isReady;
+    });
+  }, [houseBills, destinationFilter]);
+
+  // Selected House Bills objects
+  const selectedHouseBills = useMemo(() => {
+    return houseBills.filter(h => selectedHblIds.includes(h.id) || selectedHblIds.includes(h.hblNumber));
+  }, [houseBills, selectedHblIds]);
+
   // Form State for Consolidation
   const [formData, setFormData] = useState({
+    consolidationNumber: `CNS-2026-${Math.floor(100 + Math.random() * 899)}`,
     title: 'LCL Consolidated Ocean Box',
     destinationPort: '',
     destinationCode: '',
@@ -72,20 +89,20 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
     agentName: '',
     vesselName: '',
     voyageNumber: '',
-    carrier: '',
+    carrier: 'Tropical Shipping Line',
     containerNumber: '',
     containerType: "40' Standard GP",
     containerCapacityCbm: 67.7,
     containerCapacityCft: 2390,
     sealNumber: `SEAL-VI-${Math.floor(10000 + Math.random() * 90000)}`,
-    loadingPort: 'Port Everglades (USPEF)',
-    dischargePort: 'Port of Nassau (BSNAS)',
+    loadingPort: 'Port of Miami (USMIA)',
+    dischargePort: '',
     etd: new Date().toISOString().split('T')[0],
     eta: '2026-09-06',
     notes: 'Consolidated commercial imports and retail cargo.'
   });
 
-  // Calculate totals from selected Warehouse Receipts
+  // Calculate totals from selected Warehouse Receipts and House Bills
   const totals = useMemo(() => {
     let totalPieces = 0;
     let totalPackages = 0;
@@ -99,6 +116,14 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
       totalWeightLbs += Number(w.weightLbs || w.weight_lbs || 0);
       totalCft += Number(w.totalCft || w.total_cft || w.cft || 0);
       totalCbm += Number(w.totalCbm || w.total_cbm || w.cbm || 0);
+    });
+
+    selectedHouseBills.forEach(h => {
+      totalPieces += Number(h.totalPieces || h.packageCount || 1);
+      totalPackages += Number(h.totalPackages || h.packageCount || 1);
+      totalWeightLbs += Number(h.totalWeightLbs || 0);
+      totalCft += Number(h.totalCft || 0);
+      totalCbm += Number(h.totalCbm || 0);
     });
 
     const totalWeightKg = Number((totalWeightLbs * 0.453592).toFixed(1));
@@ -115,6 +140,8 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
     return {
       totalReceipts: selectedReceipts.length,
       receiptIds: selectedReceipts.map(r => r.id || r.receiptNumber),
+      totalHouseBills: selectedHouseBills.length,
+      houseBillIds: selectedHouseBills.map(h => h.hblNumber || h.id),
       totalPackages,
       totalPieces,
       totalWeightLbs,
@@ -125,10 +152,16 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
       remainingCft,
       fillPercentage
     };
-  }, [selectedReceipts, formData.containerCapacityCbm, formData.containerCapacityCft]);
+  }, [selectedReceipts, selectedHouseBills, formData.containerCapacityCbm, formData.containerCapacityCft]);
 
   const toggleWrSelect = (id) => {
     setSelectedWrIds(prev =>
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    );
+  };
+
+  const toggleHblSelect = (id) => {
+    setSelectedHblIds(prev =>
       prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
     );
   };
@@ -138,9 +171,15 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
     setSelectedWrIds(ids);
   };
 
+  const selectAllHbls = () => {
+    const ids = availableHouseBills.map(h => h.hblNumber || h.id);
+    setSelectedHblIds(ids);
+  };
+
   const handleDestinationChange = (destCode) => {
     setDestinationFilter(destCode);
     setSelectedWrIds([]);
+    setSelectedHblIds([]);
     const portObj = allAvailablePorts.find(p => p.code === destCode || p.port_code === destCode);
     const portName = portObj ? `${portObj.code || portObj.port_code} - ${portObj.name}` : (destCode === 'ALL' ? 'All Destinations' : `${destCode} Port`);
     const dischargeName = portObj ? `Port of ${portObj.name}` : `${destCode} Port`;
@@ -157,8 +196,11 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
   const handleCreate = async () => {
     const payload = {
       ...formData,
+      consolidationNumber: formData.consolidationNumber,
       receiptIds: totals.receiptIds,
+      houseBillIds: totals.houseBillIds,
       totalReceipts: totals.totalReceipts,
+      totalHouseBills: totals.totalHouseBills,
       totalPackages: totals.totalPackages,
       totalPieces: totals.totalPieces,
       totalWeightLbs: totals.totalWeightLbs,
@@ -168,12 +210,8 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
       containerFillPercentage: totals.fillPercentage
     };
 
-    const created = await createConsolidation(payload);
-    if (created?.assignedShipmentId) {
-      onNavigate('shipments', created.assignedShipmentId);
-    } else {
-      onNavigate('consolidations');
-    }
+    await createConsolidation(payload);
+    onNavigate('consolidations');
   };
 
   return (
@@ -287,73 +325,170 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
             </div>
           </div>
 
+          {/* Cargo Source Switcher: Warehouse Receipts vs House Bills */}
+          <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid #E2E8F0', paddingBottom: '0.5rem' }}>
+            <button
+              type="button"
+              onClick={() => setCargoTab('wr')}
+              className={`btn btn-sm ${cargoTab === 'wr' ? 'btn-primary' : 'btn-outline'}`}
+              style={{ fontSize: '0.8rem' }}
+            >
+              <Package size={14} />
+              <span>Warehouse Receipts ({selectedWrIds.length} / {availableReceipts.length} selected)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setCargoTab('hbl')}
+              className={`btn btn-sm ${cargoTab === 'hbl' ? 'btn-primary' : 'btn-outline'}`}
+              style={{ fontSize: '0.8rem' }}
+            >
+              <FileText size={14} />
+              <span>House Bills of Lading ({selectedHblIds.length} / {availableHouseBills.length} selected)</span>
+            </button>
+          </div>
+
           {/* Table of Available Staged Warehouse Receipts */}
-          {availableReceipts.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '3rem 1rem', background: '#F8FAFC', borderRadius: '8px', border: '1px dashed #CBD5E1' }}>
-              <Package size={36} style={{ color: '#94A3B8', margin: '0 auto 0.5rem' }} />
-              <div style={{ fontWeight: 700, fontSize: '1rem', color: '#0A192F' }}>No Staged Cargo Yet for {destinationFilter}</div>
-              <div style={{ fontSize: '0.825rem', color: '#64748B', marginTop: '4px' }}>
-                Create a Warehouse Receipt to add cargo to the consolidation queue.
+          {cargoTab === 'wr' && (
+            availableReceipts.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '3rem 1rem', background: '#F8FAFC', borderRadius: '8px', border: '1px dashed #CBD5E1' }}>
+                <Package size={36} style={{ color: '#94A3B8', margin: '0 auto 0.5rem' }} />
+                <div style={{ fontWeight: 700, fontSize: '1rem', color: '#0A192F' }}>No Staged Cargo Yet for {destinationFilter}</div>
+                <div style={{ fontSize: '0.825rem', color: '#64748B', marginTop: '4px' }}>
+                  Create a Warehouse Receipt to add cargo to the consolidation queue.
+                </div>
+                <button
+                  onClick={() => onNavigate('warehouse-receipts', 'create')}
+                  className="btn btn-primary btn-sm mt-3"
+                >
+                  + Create Warehouse Receipt
+                </button>
               </div>
-              <button
-                onClick={() => onNavigate('warehouse-receipts', 'create')}
-                className="btn btn-primary btn-sm mt-3"
-              >
-                + Create Warehouse Receipt
-              </button>
-            </div>
-          ) : (
-            <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '8px' }}>
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th style={{ width: '45px', textAlign: 'center' }}>Select</th>
-                    <th>WR #</th>
-                    <th>Customer / Consignee</th>
-                    <th>Cargo Description</th>
-                    <th>Pieces</th>
-                    <th>Weight</th>
-                    <th>Volume (CFT / CBM)</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {availableReceipts.map(wr => {
-                    const isSelected = selectedWrIds.includes(wr.id) || selectedWrIds.includes(wr.receiptNumber);
-                    return (
-                      <tr
-                        key={wr.id}
-                        onClick={() => toggleWrSelect(wr.id || wr.receiptNumber)}
-                        style={{
-                          cursor: 'pointer',
-                          background: isSelected ? '#EFF6FF' : '#FFFFFF'
-                        }}
-                      >
-                        <td style={{ textAlign: 'center' }}>
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => {}}
-                            style={{ cursor: 'pointer' }}
-                          />
-                        </td>
-                        <td style={{ fontWeight: 800, color: '#D97706', fontFamily: 'JetBrains Mono, monospace' }}>
-                          {wr.receiptNumber}
-                        </td>
-                        <td style={{ fontWeight: 600 }}>{wr.customer || wr.customerName || wr.customer_name || wr.consignee}</td>
-                        <td style={{ fontSize: '0.8rem', color: '#334155' }}>{wr.cargoDescription || wr.cargo_description}</td>
-                        <td style={{ fontWeight: 700 }}>{wr.totalPieces || wr.total_pieces || wr.packageCount} pcs</td>
-                        <td>{(Number(wr.weightLbs || wr.weight_lbs || 0)).toLocaleString()} lbs</td>
-                        <td>
-                          <strong style={{ color: '#D97706' }}>{Number(wr.totalCft || wr.total_cft || wr.cft || 0)} CFT</strong> <span style={{ color: '#0284C7', fontSize: '0.75rem' }}>({Number(wr.totalCbm || wr.total_cbm || wr.cbm || 0)} CBM)</span>
-                        </td>
-                        <td><StatusBadge status={wr.status} size="sm" /></td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            ) : (
+              <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '8px' }}>
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: '45px', textAlign: 'center' }}>Select</th>
+                      <th>WR #</th>
+                      <th>Customer / Consignee</th>
+                      <th>Cargo Description</th>
+                      <th>Pieces</th>
+                      <th>Weight</th>
+                      <th>Volume (CFT / CBM)</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {availableReceipts.map(wr => {
+                      const isSelected = selectedWrIds.includes(wr.id) || selectedWrIds.includes(wr.receiptNumber);
+                      return (
+                        <tr
+                          key={wr.id}
+                          onClick={() => toggleWrSelect(wr.id || wr.receiptNumber)}
+                          style={{
+                            cursor: 'pointer',
+                            background: isSelected ? '#EFF6FF' : '#FFFFFF'
+                          }}
+                        >
+                          <td style={{ textAlign: 'center' }}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => {}}
+                              style={{ cursor: 'pointer' }}
+                            />
+                          </td>
+                          <td style={{ fontWeight: 800, color: '#D97706', fontFamily: 'JetBrains Mono, monospace' }}>
+                            {wr.receiptNumber}
+                          </td>
+                          <td style={{ fontWeight: 600 }}>{wr.customer || wr.customerName || wr.customer_name || wr.consignee}</td>
+                          <td style={{ fontSize: '0.8rem', color: '#334155' }}>{wr.cargoDescription || wr.cargo_description}</td>
+                          <td style={{ fontWeight: 700 }}>{wr.totalPieces || wr.total_pieces || wr.packageCount} pcs</td>
+                          <td>{(Number(wr.weightLbs || wr.weight_lbs || 0)).toLocaleString()} lbs</td>
+                          <td>
+                            <strong style={{ color: '#D97706' }}>{Number(wr.totalCft || wr.total_cft || wr.cft || 0)} CFT</strong> <span style={{ color: '#0284C7', fontSize: '0.75rem' }}>({Number(wr.totalCbm || wr.total_cbm || wr.cbm || 0)} CBM)</span>
+                          </td>
+                          <td><StatusBadge status={wr.status} size="sm" /></td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )
+          )}
+
+          {/* Table of Available House Bills of Lading */}
+          {cargoTab === 'hbl' && (
+            availableHouseBills.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '3rem 1rem', background: '#F8FAFC', borderRadius: '8px', border: '1px dashed #CBD5E1' }}>
+                <FileText size={36} style={{ color: '#94A3B8', margin: '0 auto 0.5rem' }} />
+                <div style={{ fontWeight: 700, fontSize: '1rem', color: '#0A192F' }}>No Unconsolidated House B/Ls for {destinationFilter}</div>
+                <div style={{ fontSize: '0.825rem', color: '#64748B', marginTop: '4px' }}>
+                  Issue a customer House B/L to consolidate by House B/L reference.
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('house-bills', 'create')}
+                  className="btn btn-primary btn-sm mt-3"
+                >
+                  + Issue House B/L
+                </button>
+              </div>
+            ) : (
+              <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '8px' }}>
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: '45px', textAlign: 'center' }}>Select</th>
+                      <th>House B/L #</th>
+                      <th>Consignee</th>
+                      <th>Shipper</th>
+                      <th>Pieces</th>
+                      <th>Weight</th>
+                      <th>Volume</th>
+                      <th>Destination</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {availableHouseBills.map(hb => {
+                      const isSelected = selectedHblIds.includes(hb.id) || selectedHblIds.includes(hb.hblNumber);
+                      const cft = hb.totalCft || (hb.totalCbm ? Number((hb.totalCbm * 35.3147).toFixed(1)) : 0);
+                      return (
+                        <tr
+                          key={hb.id || hb.hblNumber}
+                          onClick={() => toggleHblSelect(hb.hblNumber || hb.id)}
+                          style={{
+                            cursor: 'pointer',
+                            background: isSelected ? '#EFF6FF' : '#FFFFFF'
+                          }}
+                        >
+                          <td style={{ textAlign: 'center' }}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => {}}
+                              style={{ cursor: 'pointer' }}
+                            />
+                          </td>
+                          <td style={{ fontWeight: 800, color: '#0284C7', fontFamily: 'JetBrains Mono, monospace' }}>
+                            {hb.hblNumber}
+                          </td>
+                          <td style={{ fontWeight: 600 }}>{hb.consignee?.name || hb.consignee || 'Consignee'}</td>
+                          <td style={{ fontSize: '0.8rem', color: '#334155' }}>{hb.shipper?.name || hb.shipper || 'Shipper'}</td>
+                          <td style={{ fontWeight: 700 }}>{hb.totalPieces || hb.totalPackages || 1} pcs</td>
+                          <td>{(Number(hb.totalWeightLbs || 0)).toLocaleString()} lbs</td>
+                          <td>
+                            <strong style={{ color: '#D97706' }}>{cft} CFT</strong> <span style={{ color: '#0284C7', fontSize: '0.75rem' }}>({hb.totalCbm || 0} CBM)</span>
+                          </td>
+                          <td style={{ color: '#0284C7' }}>{hb.destinationPort}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )
           )}
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '1rem', borderTop: '1px solid #E2E8F0' }}>
@@ -596,6 +731,33 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
           </div>
 
           {/* Prompt Section 8: Vessel, Voyage, Container, Seal */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="form-group">
+              <label className="form-label">Consolidation Number <span className="required">*</span></label>
+              <input
+                type="text"
+                className="form-control"
+                style={{ fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: '#0284C7' }}
+                value={formData.consolidationNumber}
+                onChange={(e) => setFormData({ ...formData, consolidationNumber: e.target.value })}
+                placeholder="e.g. CNS-2026-0819"
+                required
+              />
+              <span style={{ fontSize: '0.72rem', color: '#64748B' }}>Auto-generated, or customize to match your booking/consolidation reference.</span>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Consolidation Title <span className="required">*</span></label>
+              <input
+                type="text"
+                className="form-control"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="form-group">
               <label className="form-label">Ocean Vessel <span className="required">*</span></label>

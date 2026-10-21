@@ -57,6 +57,11 @@ export const ManifestsList = ({ onNavigate }) => {
             {item.manifestNumber}
           </div>
           <div style={{ fontSize: '0.72rem', color: '#64748B' }}>{item.createdAt}</div>
+          {item.masterBLNumber && (
+            <div style={{ fontSize: '0.7rem', color: '#0284C7', fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', marginTop: '2px' }}>
+              Master B/L: {item.masterBLNumber}
+            </div>
+          )}
         </div>
       )
     },

@@ -16,6 +16,11 @@ export async function manifestsRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.DOCUMENTATION_STAFF)] },
     manifestsController.create
   );
+  app.post(
+    '/from-master-bl/:blId',
+    { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.DOCUMENTATION_STAFF)] },
+    manifestsController.createFromMasterBL
+  );
   app.patch(
     '/:id',
     { preHandler: [requireRole(ROLES.SUPER_ADMIN, ROLES.DOCUMENTATION_STAFF)] },

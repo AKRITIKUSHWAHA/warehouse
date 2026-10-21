@@ -12,9 +12,10 @@ export const ConsolidationModal = ({
   const hasInitializedRef = useRef(false);
 
   const getPortCode = (p) => p?.portCode || p?.code || 'PORT';
-  const defaultPort = ports[0] ? `${getPortCode(ports[0])} - ${ports[0].name}` : 'NAS - Nassau, Bahamas';
+  const defaultPort = ports[0] ? `${getPortCode(ports[0])} - ${ports[0].name}` : '';
 
   const [formData, setFormData] = useState({
+    consolidationNumber: '',
     title: '',
     containerNumber: '',
     sealNumber: '',
@@ -36,6 +37,7 @@ export const ConsolidationModal = ({
 
     if (consolidation) {
       setFormData({
+        consolidationNumber: consolidation.consolidationNumber || '',
         title: consolidation.title || '',
         containerNumber: consolidation.containerNumber || '',
         sealNumber: consolidation.sealNumber || '',
@@ -45,6 +47,19 @@ export const ConsolidationModal = ({
         carrier: consolidation.carrier || 'Tropical Shipping',
         destinationPort: consolidation.destinationPort || defaultPort,
         status: consolidation.status || 'Loaded'
+      });
+    } else {
+      setFormData({
+        consolidationNumber: `CNS-2026-${Math.floor(100 + Math.random() * 899)}`,
+        title: '',
+        containerNumber: '',
+        sealNumber: '',
+        containerType: '40ft High Cube Dry',
+        vesselName: vessels[0]?.name || '',
+        voyageNumber: '',
+        carrier: 'Tropical Shipping',
+        destinationPort: defaultPort,
+        status: 'Loaded'
       });
     }
   }, [consolidation, isOpen, defaultPort, vessels]);
@@ -63,7 +78,7 @@ export const ConsolidationModal = ({
         <div className="modal-header">
           <div className="modal-title">
             <Layers size={20} style={{ color: '#1E4D8C' }} />
-            <span>Edit Consolidation {consolidation?.consolidationNumber}</span>
+            <span>{consolidation ? `Edit Consolidation ${formData.consolidationNumber}` : 'New Ocean Container Consolidation'}</span>
           </div>
           <button type="button" onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}>
             <X size={18} />
@@ -79,15 +94,29 @@ export const ConsolidationModal = ({
           }}
         >
           <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '72vh', overflowY: 'auto' }}>
-            <div className="form-group">
-              <label className="form-label">Consolidation Title <span className="required">*</span></label>
-              <input
-                type="text"
-                required
-                className="form-control"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="form-group">
+                <label className="form-label">Consolidation Number <span className="required">*</span></label>
+                <input
+                  type="text"
+                  required
+                  className="form-control"
+                  style={{ fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: '#0284C7' }}
+                  value={formData.consolidationNumber}
+                  onChange={(e) => setFormData({ ...formData, consolidationNumber: e.target.value })}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Consolidation Title <span className="required">*</span></label>
+                <input
+                  type="text"
+                  required
+                  className="form-control"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-3 gap-4">

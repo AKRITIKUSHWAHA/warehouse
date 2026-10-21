@@ -24,6 +24,7 @@ export const createBillOfLadingSchema = z.object({
   shipmentId: z.string().optional(),
   shipmentNumber: z.string().optional(),
   consolidationId: z.string().nullish(),
+  consolidationNumber: z.string().nullish(),
   houseBillIds: z.array(z.string()).optional().default([]),
 
   createdDate: z.string().optional(),

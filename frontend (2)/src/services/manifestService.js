@@ -85,6 +85,115 @@ export const manifestService = {
     return createdManifest;
   },
 
+  async generateFromMasterBL(blId, currentUser = "Documentation Staff") {
+    let createdManifest = null;
+    try {
+      const res = await apiClient.post(`manifests/from-master-bl/${encodeURIComponent(blId)}`);
+      if (res && res.data) {
+        createdManifest = res.data;
+      }
+    } catch (err) {
+      console.warn('Backend manifests/from-master-bl failed, attempting fallback:', err?.message || err);
+    }
+
+    if (!createdManifest) {
+      const blList = getStored(KEYS.BILLS_OF_LADING, []);
+      const matchedBL = blList.find(b => b.id === blId || b.blNumber === blId);
+      const hblList = getStored(KEYS.HOUSE_BILLS, []);
+      const linkedHbls = matchedBL ? hblList.filter(h =>
+        matchedBL.houseBillIds?.includes(h.id) ||
+        matchedBL.houseBillIds?.includes(h.hblNumber) ||
+        h.assignedMasterBLId === matchedBL.id ||
+        h.assignedMasterBLId === matchedBL.blNumber
+      ) : [];
+
+      const list = getStored(KEYS.MANIFESTS, []);
+      const manifestNumber = `MNF-2026-${443 + list.length}`;
+      const lineItems = linkedHbls.length > 0 ? linkedHbls.map((hb, idx) => ({
+        itemNumber: idx + 1,
+        hblNumber: hb.hblNumber,
+        blNumber: matchedBL?.blNumber || 'DIRECT',
+        shipper: hb.shipper?.name || String(hb.shipper || 'Miami CFS Hub'),
+        consignee: hb.consignee?.name || String(hb.consignee || 'Consignee'),
+        notifyParty: hb.notifyParty?.name || String(hb.notifyParty || matchedBL?.agentName || 'Destination Agent'),
+        destinationPort: hb.destinationPort || matchedBL?.portOfDischarge || '',
+        containerNumber: matchedBL?.containerNumber || 'MSKU-829104-5',
+        sealNumber: matchedBL?.sealNumber || 'SEAL-VI-8821',
+        packageCount: Number(hb.totalPackages) || Number(hb.totalPieces) || 1,
+        totalPieces: Number(hb.totalPieces) || Number(hb.totalPackages) || 1,
+        packageType: 'Cartons / Pallets',
+        cargoDescription: hb.cargoDescription || 'Consolidated Cargo Goods',
+        grossWeightKg: Number(hb.totalWeightKg) || Number(((Number(hb.totalWeightLbs) || 0) * 0.453592).toFixed(1)),
+        grossWeightLbs: Number(hb.totalWeightLbs) || 0,
+        cbm: Number(hb.totalCbm) || 0,
+        cft: Number(hb.totalCft) || Number(((Number(hb.totalCbm) || 0) * 35.3147).toFixed(1)),
+        customsValueUsd: 25000.00
+      })) : [
+        {
+          itemNumber: 1,
+          hblNumber: 'DIRECT',
+          blNumber: matchedBL?.blNumber || 'BL-VI-2026-0092',
+          shipper: matchedBL?.shipper?.name || 'KERS Global Freight Forwarding Inc.',
+          consignee: matchedBL?.consignee?.name || 'General Consignee',
+          notifyParty: matchedBL?.notifyParty?.name || matchedBL?.agentName || 'Destination Agent',
+          destinationPort: matchedBL?.portOfDischarge || '',
+          containerNumber: matchedBL?.containerNumber || '',
+          sealNumber: matchedBL?.sealNumber || '',
+          packageCount: Number(matchedBL?.packageCount) || 1,
+          totalPieces: Number(matchedBL?.totalPieces) || Number(matchedBL?.packageCount) || 1,
+          packageType: matchedBL?.packageType || 'Packages',
+          cargoDescription: matchedBL?.cargoDescription || 'General Cargo',
+          grossWeightKg: Number(matchedBL?.grossWeightKg) || 0,
+          grossWeightLbs: Number(matchedBL?.grossWeightLbs) || 0,
+          cbm: Number(matchedBL?.cbm) || 0,
+          cft: Number(matchedBL?.cft) || 0,
+          customsValueUsd: 25000.00
+        }
+      ];
+
+      const isOnHold = matchedBL?.status === 'On Hold' || matchedBL?.holdDetails?.isOnHold;
+      const status = isOnHold ? 'Generated (Subject to B/L Hold)' : 'Generated';
+
+      createdManifest = await this.generateManifest({
+        manifestNumber,
+        title: `Ocean Cargo Manifest - ${matchedBL?.portOfDischarge || 'Destination'} (${matchedBL?.oceanVessel || 'Vessel'} / ${matchedBL?.voyageNumber || 'General'})`,
+        vesselName: matchedBL?.oceanVessel || 'M/V Regional Carrier',
+        voyageNumber: matchedBL?.voyageNumber || 'VOY-001',
+        flag: '',
+        carrier: matchedBL?.carrier || 'Tropical Shipping',
+        portOfLoading: matchedBL?.portOfLoading || 'Port of Miami (USMIA)',
+        portOfDischarge: matchedBL?.portOfDischarge || '',
+        departureDate: matchedBL?.issueDate || matchedBL?.createdDate || new Date().toISOString().split('T')[0],
+        totalBLs: 1,
+        totalHouseBills: linkedHbls.length,
+        totalContainers: 1,
+        totalPackages: Number(matchedBL?.packageCount) || lineItems.reduce((acc, cur) => acc + cur.packageCount, 0),
+        totalPieces: Number(matchedBL?.totalPieces) || lineItems.reduce((acc, cur) => acc + cur.totalPieces, 0),
+        totalWeightLbs: Number(matchedBL?.grossWeightLbs) || lineItems.reduce((acc, cur) => acc + cur.grossWeightLbs, 0),
+        totalWeightKg: Number(matchedBL?.grossWeightKg) || lineItems.reduce((acc, cur) => acc + cur.grossWeightKg, 0),
+        totalCbm: Number(matchedBL?.cbm) || lineItems.reduce((acc, cur) => acc + cur.cbm, 0),
+        totalCft: Number(matchedBL?.cft) || lineItems.reduce((acc, cur) => acc + cur.cft, 0),
+        status,
+        masterBLNumber: matchedBL?.blNumber || blId,
+        lineItems,
+      }, currentUser);
+    } else {
+      const list = getStored(KEYS.MANIFESTS, []);
+      const updated = [createdManifest, ...list.filter(m => m.id !== createdManifest.id && m.manifestNumber !== createdManifest.manifestNumber)];
+      setStored(KEYS.MANIFESTS, updated);
+
+      await auditService.logAction(
+        currentUser,
+        "Shipping Manifest",
+        "Generated Manifest from Master B/L (1-Click)",
+        createdManifest.manifestNumber || createdManifest.id,
+        `Generated 1-Click Manifest ${createdManifest.manifestNumber || createdManifest.id} from Master B/L ${blId}.`
+      );
+    }
+
+    return createdManifest;
+  },
+
   async updateManifest(id, updates, currentUser = "Documentation Staff") {
     let updatedManifest = null;
     try {

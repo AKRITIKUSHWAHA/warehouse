@@ -340,7 +340,7 @@ export class ConsolidationService {
           title: `Ocean Cargo Manifest - ${destinationPort} (${input.vesselName || 'Ocean Vessel'} / ${input.voyageNumber || 'Voyage'})`,
           vesselName: input.vesselName || 'Ocean Carrier',
           voyageNumber: input.voyageNumber || 'V.001',
-          flag: 'Bahamas',
+          flag: '',
           masterName: 'Capt. E. Smith',
           portOfLoading: loadingPort,
           portOfDischarge: dischargePort,

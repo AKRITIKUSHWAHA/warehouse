@@ -672,6 +672,18 @@ export const AppDataProvider = ({ children }) => {
     }
   };
 
+  const generateManifestFromMasterBL = async (blId) => {
+    try {
+      const created = await manifestService.generateFromMasterBL(blId, currentUser?.name || "Documentation Staff");
+      await fetchMenuApi('manifests');
+      showToast(`Shipping Manifest ${created.manifestNumber || created.id} generated in 1 click from Master B/L.`, 'success', '1-Click Manifest Ready');
+      return created;
+    } catch (err) {
+      showToast(err?.message || 'Failed to generate manifest from Master B/L', 'error', 'Generation Error');
+      throw err;
+    }
+  };
+
   const updateManifest = async (id, updates) => {
     const updated = await manifestService.updateManifest(id, updates, currentUser?.name || "Documentation Staff");
     await fetchMenuApi('manifests');
@@ -977,6 +989,8 @@ export const AppDataProvider = ({ children }) => {
       // Manifests
       generateManifest,
       createManifest: generateManifest,
+      generateManifestFromMasterBL,
+      createManifestFromMasterBL: generateManifestFromMasterBL,
       updateManifest,
       deleteManifest,
       // Vessels & Voyages
