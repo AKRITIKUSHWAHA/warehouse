@@ -99,22 +99,50 @@ export const CreateHouseBill = ({ onNavigate }) => {
     taxId: ''
   });
 
-  // Optional: populate shipper from first selected WR only if shipperParty is untouched
+  // Auto-populate shipper & consignee from linked WR and selected customer
   React.useEffect(() => {
-    if (selectedWrs.length > 0 && selectedWrs[0]?.shipper) {
-      setShipperParty(prev => {
-        if (!prev.id && prev.name === 'Global Retail Suppliers Inc.' && selectedWrs[0].shipper) {
-          const sLines = selectedWrs[0].shipper.split('\n');
+    if (selectedWrs.length > 0) {
+      const firstWr = selectedWrs[0];
+      if (firstWr?.shipper) {
+        setShipperParty(prev => {
+          if (!prev.id && (prev.name === 'Global Retail Suppliers Inc.' || !prev.name)) {
+            const sLines = firstWr.shipper.split('\n');
+            return {
+              id: firstWr.shipperId || '',
+              name: sLines[0],
+              address: sLines.slice(1).join(', ') || 'Miami CFS Cargo Hub, FL'
+            };
+          }
+          return prev;
+        });
+      }
+
+      setConsigneeParty(prev => {
+        if (!prev.name) {
+          const cLines = (firstWr?.consignee || '').split('\n');
           return {
-            id: selectedWrs[0].shipperId || '',
-            name: sLines[0],
-            address: sLines.slice(1).join(', ') || 'Miami CFS Cargo Hub, FL'
+            id: selectedCustomer?.id || firstWr?.customerId || '',
+            name: cLines[0] || selectedCustomer?.name || 'Caribbean Fresh Mart Ltd.',
+            address: cLines.slice(1).join(', ') || selectedCustomer?.address || selectedCustomer?.destinationPort || firstWr?.destinationPort || 'Destination Port Area',
+            taxId: selectedCustomer?.taxId || ''
+          };
+        }
+        return prev;
+      });
+    } else if (selectedCustomer) {
+      setConsigneeParty(prev => {
+        if (!prev.name) {
+          return {
+            id: selectedCustomer.id || '',
+            name: selectedCustomer.name || '',
+            address: selectedCustomer.address || selectedCustomer.destinationPort || 'Destination Port Area',
+            taxId: selectedCustomer.taxId || ''
           };
         }
         return prev;
       });
     }
-  }, [selectedWrs]);
+  }, [selectedWrs, selectedCustomer]);
 
   // Calculate combined totals from selected WRs
   const combinedTotals = useMemo(() => {
@@ -841,8 +869,8 @@ export const CreateHouseBill = ({ onNavigate }) => {
               <h4 style={{ fontSize: '0.85rem', color: '#0A192F', marginBottom: '0.5rem' }}>Party Information</h4>
               <div><strong>Customer Profile:</strong> {selectedCustomer?.name}</div>
               <div><strong>Shipper:</strong> {shipperParty.name}</div>
-              <div><strong>Consignee:</strong> {consigneeParty.name}</div>
-              <div><strong>Destination Port:</strong> {selectedCustomer?.destinationPort}</div>
+              <div><strong>Consignee:</strong> {consigneeParty.name || selectedCustomer?.name}</div>
+              <div><strong>Destination Port:</strong> {selectedCustomer?.destinationPort || selectedWrs[0]?.destinationPort || 'STT - Port of Charlotte Amalie, St. Thomas'}</div>
               <div><strong>Terms:</strong> <span style={{ color: '#0284C7', fontWeight: 700 }}>{formData.freightTerms}</span></div>
             </div>
 
