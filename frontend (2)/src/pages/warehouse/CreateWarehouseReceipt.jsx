@@ -838,10 +838,6 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
                 <strong style={{ color: '#0284C7' }}>{formData.destinationPort}</strong>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '0.5rem' }}>
-                <span style={{ color: '#64748B' }}>Staging Location:</span>
-                <strong style={{ color: '#059669' }}>{formData.warehouseLocation}</strong>
-              </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '0.5rem' }}>
                 <span style={{ color: '#64748B' }}>Total Pieces:</span>
