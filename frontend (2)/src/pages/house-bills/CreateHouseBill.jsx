@@ -87,32 +87,26 @@ export const CreateHouseBill = ({ onNavigate }) => {
 
   // Parties state (Shipper & Consignee decoupled from customer profile)
   const [shipperParty, setShipperParty] = useState({
+    id: '',
     name: 'Global Retail Suppliers Inc.',
     address: 'Miami CFS Cargo Hub, FL'
   });
 
   const [consigneeParty, setConsigneeParty] = useState({
+    id: '',
     name: '',
     address: '',
     taxId: ''
   });
 
-  React.useEffect(() => {
-    if (selectedCustomer) {
-      setConsigneeParty(prev => ({
-        name: prev.name || selectedCustomer.name || '',
-        address: prev.address || selectedCustomer.address || '',
-        taxId: prev.taxId || selectedCustomer.taxId || ''
-      }));
-    }
-  }, [selectedCustomer]);
-
+  // Optional: populate shipper from first selected WR only if shipperParty is untouched
   React.useEffect(() => {
     if (selectedWrs.length > 0 && selectedWrs[0]?.shipper) {
       setShipperParty(prev => {
-        if (prev.name === 'Global Retail Suppliers Inc.' && selectedWrs[0].shipper) {
+        if (!prev.id && prev.name === 'Global Retail Suppliers Inc.' && selectedWrs[0].shipper) {
           const sLines = selectedWrs[0].shipper.split('\n');
           return {
+            id: selectedWrs[0].shipperId || '',
             name: sLines[0],
             address: sLines.slice(1).join(', ') || 'Miami CFS Cargo Hub, FL'
           };
@@ -209,11 +203,15 @@ export const CreateHouseBill = ({ onNavigate }) => {
       hblNumber: formData.hblNumber,
       customerId: selectedCustomer?.id || null,
       customerName: customerName,
+      shipperId: shipperParty.id || null,
+      consigneeId: consigneeParty.id || null,
       shipper: {
+        id: shipperParty.id || null,
         name: shipperParty.name || firstWr?.shipper || "Global Retail Suppliers Inc.",
         address: shipperParty.address || "Miami CFS Cargo Hub, FL"
       },
       consignee: {
+        id: consigneeParty.id || null,
         name: consigneeParty.name || customerName,
         address: consigneeParty.address || selectedCustomer?.address || firstWr?.destinationPort || "Destination Port Area",
         taxId: consigneeParty.taxId || selectedCustomer?.taxId || ""
@@ -675,6 +673,7 @@ export const CreateHouseBill = ({ onNavigate }) => {
                       const c = customers.find(cust => cust.id === e.target.value);
                       if (c) {
                         setShipperParty({
+                          id: c.id,
                           name: c.name,
                           address: c.address || 'Miami CFS Cargo Hub, FL'
                         });
@@ -717,6 +716,7 @@ export const CreateHouseBill = ({ onNavigate }) => {
                       const c = customers.find(cust => cust.id === e.target.value);
                       if (c) {
                         setConsigneeParty({
+                          id: c.id,
                           name: c.name,
                           address: c.address || 'Destination Port Area',
                           taxId: c.taxId || ''

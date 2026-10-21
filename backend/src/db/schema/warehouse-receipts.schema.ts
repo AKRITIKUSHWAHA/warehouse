@@ -28,7 +28,9 @@ export const warehouseReceipts = pgTable('warehouse_receipts', {
   
   customerId: uuid('customer_id').references(() => customers.id),
   customerName: text('customer_name').notNull(),
+  shipperId: uuid('shipper_id').references(() => customers.id),
   shipper: text('shipper'),
+  consigneeId: uuid('consignee_id').references(() => customers.id),
   consignee: text('consignee'),
   
   agentId: uuid('agent_id').references(() => agents.id),

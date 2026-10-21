@@ -52,7 +52,9 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
     customerId: '',
     customer: '',
     customerName: '',
+    shipperId: '',
     shipper: '',
+    consigneeId: '',
     consignee: '',
     agentId: initialAgent?.id || null,
     agentName: initialAgentName,
@@ -84,7 +86,7 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
   const [showAddCustomerModal, setShowAddCustomerModal] = useState(false);
   const [customerCreationTarget, setCustomerCreationTarget] = useState(null);
 
-  // Handle Customer Selection -> Auto-populate customer and destination ONLY (Unlinked from Consignee)
+  // Handle Customer Selection -> Auto-populate customer profile and destination ONLY (Independent: does NOT affect Consignee or Shipper)
   const handleCustomerSelect = (custId) => {
     if (!custId) {
       setFormData(prev => ({
@@ -109,7 +111,7 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
     }
   };
 
-  // Quick fill Consignee from registered accounts (Independent: does NOT overwrite customer profile)
+  // Quick fill Consignee from unified Customers list (Independent: does NOT overwrite customer profile or shipper)
   const handleConsigneeSelect = (custId) => {
     if (!custId) return;
     if (custId === 'CREATE_NEW') {
@@ -121,12 +123,13 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
     if (selected) {
       setFormData(prev => ({
         ...prev,
-        consignee: `${selected.name}\n${selected.address || ''}\nAttn: ${selected.contactPerson || ''} (${selected.telephone || ''})`.trim()
+        consigneeId: selected.id,
+        consignee: `${selected.name}\n${selected.address || ''}\nAttn: ${selected.contactPerson || ''} (${selected.telephone || selected.phone || ''})`.trim()
       }));
     }
   };
 
-  // Quick fill Shipper from registered contacts
+  // Quick fill Shipper from unified Customers list (Independent: does NOT overwrite consignee or customer profile)
   const handleShipperSelect = (custId) => {
     if (!custId) return;
     if (custId === 'CREATE_NEW') {
@@ -138,7 +141,8 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
     if (selected) {
       setFormData(prev => ({
         ...prev,
-        shipper: `${selected.name}\n${selected.address || ''}\nPhone: ${selected.telephone || ''}`.trim()
+        shipperId: selected.id,
+        shipper: `${selected.name}\n${selected.address || ''}\nPhone: ${selected.telephone || selected.phone || ''}`.trim()
       }));
     }
   };
@@ -256,8 +260,11 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
       ...formData,
       receivedBy: currentUser?.name ? `${currentUser.name} (${currentUser.role || 'Super Administrator'})` : 'CFS Receiving Operations',
       receivedByRole: currentUser?.role || 'Receiving Officer',
-      customer: formData.customer || formData.customerName || (formData.customerId ? customers.find(c => c.id === formData.customerId)?.name : '') || (formData.shipper ? formData.shipper.split('\n')[0] : '') || 'General Cargo',
-      customerName: formData.customerName || formData.customer || (formData.customerId ? customers.find(c => c.id === formData.customerId)?.name : '') || (formData.shipper ? formData.shipper.split('\n')[0] : '') || 'General Cargo',
+      customerId: formData.customerId || formData.shipperId || formData.consigneeId || null,
+      shipperId: formData.shipperId || null,
+      consigneeId: formData.consigneeId || null,
+      customer: formData.customer || formData.customerName || (formData.customerId ? customers.find(c => c.id === formData.customerId)?.name : '') || (formData.shipper ? formData.shipper.split('\n')[0] : '') || (formData.consignee ? formData.consignee.split('\n')[0] : '') || 'General Cargo',
+      customerName: formData.customerName || formData.customer || (formData.customerId ? customers.find(c => c.id === formData.customerId)?.name : '') || (formData.shipper ? formData.shipper.split('\n')[0] : '') || (formData.consignee ? formData.consignee.split('\n')[0] : '') || 'General Cargo',
       packages,
       packageCount: packages.length,
       totalPieces: totals.totalPieces || 1,

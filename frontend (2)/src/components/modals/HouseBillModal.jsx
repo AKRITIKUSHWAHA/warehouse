@@ -15,8 +15,10 @@ export const HouseBillModal = ({
     freightTerms: 'Freight Prepaid',
     status: 'Active',
     notes: '',
+    shipperId: '',
     shipperName: '',
     shipperAddress: '',
+    consigneeId: '',
     consigneeName: '',
     consigneeAddress: '',
     rateBasis: 'cft',
@@ -40,8 +42,10 @@ export const HouseBillModal = ({
         freightTerms: hbl.freightTerms || 'Freight Prepaid',
         status: hbl.status || 'Active',
         notes: hbl.notes || '',
+        shipperId: hbl.shipperId || (typeof hbl.shipper === 'object' ? hbl.shipper?.id : '') || '',
         shipperName: typeof hbl.shipper === 'object' ? hbl.shipper.name : hbl.shipper || '',
         shipperAddress: typeof hbl.shipper === 'object' ? hbl.shipper.address : '',
+        consigneeId: hbl.consigneeId || (typeof hbl.consignee === 'object' ? hbl.consignee?.id : '') || '',
         consigneeName: typeof hbl.consignee === 'object' ? hbl.consignee.name : hbl.consignee || '',
         consigneeAddress: typeof hbl.consignee === 'object' ? hbl.consignee.address : '',
         rateBasis: hbl.freightCharges?.rateBasis || 'cft',
@@ -81,11 +85,15 @@ export const HouseBillModal = ({
       freightTerms: formData.freightTerms,
       status: formData.status,
       notes: formData.notes,
+      shipperId: formData.shipperId || undefined,
+      consigneeId: formData.consigneeId || undefined,
       shipper: {
+        id: formData.shipperId || undefined,
         name: formData.shipperName,
         address: formData.shipperAddress
       },
       consignee: {
+        id: formData.consigneeId || undefined,
         name: formData.consigneeName,
         address: formData.consigneeAddress
       },
@@ -153,6 +161,7 @@ export const HouseBillModal = ({
                       if (c) {
                         setFormData(prev => ({
                           ...prev,
+                          shipperId: c.id,
                           shipperName: c.name,
                           shipperAddress: c.address || prev.shipperAddress
                         }));
@@ -183,6 +192,7 @@ export const HouseBillModal = ({
                       if (c) {
                         setFormData(prev => ({
                           ...prev,
+                          consigneeId: c.id,
                           consigneeName: c.name,
                           consigneeAddress: c.address || prev.consigneeAddress
                         }));

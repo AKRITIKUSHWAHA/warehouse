@@ -1,6 +1,7 @@
 import { pgTable, uuid, text, integer, numeric, jsonb, timestamp } from 'drizzle-orm/pg-core';
 import { consolidations } from './consolidations.schema.js';
 import { agents } from './agents.schema.js';
+import { customers } from './customers.schema.js';
 
 export interface HoldDetails {
   isOnHold: boolean;
@@ -36,7 +37,9 @@ export const billsOfLading = pgTable('bills_of_lading', {
   createdDate: text('created_date').notNull(),
   issueDate: text('issue_date'),
   
+  shipperId: uuid('shipper_id').references(() => customers.id),
   shipper: jsonb('shipper').notNull(),
+  consigneeId: uuid('consignee_id').references(() => customers.id),
   consignee: jsonb('consignee').notNull(),
   notifyParty: jsonb('notify_party'),
   

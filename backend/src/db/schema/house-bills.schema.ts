@@ -28,8 +28,9 @@ export const houseBills = pgTable('house_bills', {
   
   customerId: uuid('customer_id').references(() => customers.id),
   customerName: text('customer_name').notNull(),
-  
+  shipperId: uuid('shipper_id').references(() => customers.id),
   shipper: jsonb('shipper').$type<ShipperInfo>().notNull(),
+  consigneeId: uuid('consignee_id').references(() => customers.id),
   consignee: jsonb('consignee').$type<ConsigneeInfo>().notNull(),
   notifyParty: jsonb('notify_party').$type<NotifyPartyInfo>(),
   
