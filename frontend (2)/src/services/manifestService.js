@@ -25,7 +25,6 @@ export const manifestService = {
         item.manifestNumber?.toLowerCase().includes(q) ||
         item.title?.toLowerCase().includes(q) ||
         item.vesselName?.toLowerCase().includes(q) ||
-        item.voyageNumber?.toLowerCase().includes(q) ||
         item.portOfDischarge?.toLowerCase().includes(q)
       );
     }
@@ -79,7 +78,7 @@ export const manifestService = {
       "Shipping Manifest",
       "Generated Shipping Manifest",
       createdManifest.manifestNumber || createdManifest.id,
-      `Generated Manifest ${createdManifest.manifestNumber || createdManifest.id} for Vessel ${createdManifest.vesselName} (Voyage ${createdManifest.voyageNumber}).`
+      `Generated Manifest ${createdManifest.manifestNumber || createdManifest.id} for Vessel ${createdManifest.vesselName}.`
     );
 
     return createdManifest;
@@ -156,9 +155,8 @@ export const manifestService = {
 
       createdManifest = await this.generateManifest({
         manifestNumber,
-        title: `Ocean Cargo Manifest - ${matchedBL?.portOfDischarge || 'Destination'} (${matchedBL?.oceanVessel || 'Vessel'} / ${matchedBL?.voyageNumber || 'General'})`,
+        title: `Ocean Cargo Manifest - ${matchedBL?.portOfDischarge || 'Destination'} (${matchedBL?.oceanVessel || 'Vessel'})`,
         vesselName: matchedBL?.oceanVessel || 'M/V Regional Carrier',
-        voyageNumber: matchedBL?.voyageNumber || 'VOY-001',
         flag: '',
         carrier: matchedBL?.carrier || 'Tropical Shipping',
         portOfLoading: matchedBL?.portOfLoading || 'Port of Miami (USMIA)',
@@ -350,7 +348,7 @@ export const manifestService = {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `KERS_Manifest_${manifest.manifestNumber}_${manifest.voyageNumber || 'export'}.csv`);
+    link.setAttribute("download", `KERS_Manifest_${manifest.manifestNumber}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -368,7 +366,6 @@ export const manifestService = {
     xml += `    <MessageType>OUTWARD_CARGO_MANIFEST</MessageType>\n`;
     xml += `    <Carrier>${manifest.carrier || 'VI Customs Brokers & Logistics'}</Carrier>\n`;
     xml += `    <VesselName>${manifest.vesselName}</VesselName>\n`;
-    xml += `    <VoyageNumber>${manifest.voyageNumber}</VoyageNumber>\n`;
     xml += `    <PortOfLoading>${manifest.portOfLoading}</PortOfLoading>\n`;
     xml += `    <PortOfDischarge>${manifest.portOfDischarge}</PortOfDischarge>\n`;
     xml += `    <DepartureDate>${manifest.departureDate}</DepartureDate>\n`;

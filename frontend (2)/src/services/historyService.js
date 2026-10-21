@@ -94,19 +94,18 @@ function enrichShipmentFallback(s) {
     {
       stageNumber: 4,
       key: 'transit',
-      name: 'Ocean Transit & Voyage',
+      name: 'Ocean Transit',
       subtitle: 'Vessel Underway to Destination',
       status: getStageStatus(4),
       date: s.etd || 'Scheduled Departure',
       location: `At Sea — ${s.vesselName || 'Ocean Carrier'}`,
       details: {
         vessel: s.vesselName || 'M/V Tropical Express',
-        voyage: s.voyageNumber || 'VOY-2026-01',
         carrier: s.carrier || 'Tropical Shipping',
         etd: s.etd,
         eta: s.eta,
       },
-      calculationNotes: `Ocean voyage en route from ${s.origin} to ${s.destinationPort}.`,
+      calculationNotes: `Ocean transit en route from ${s.origin} to ${s.destinationPort}.`,
     },
     {
       stageNumber: 5,

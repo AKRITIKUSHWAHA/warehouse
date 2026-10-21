@@ -131,7 +131,6 @@ export const AgentBLDetail = ({ blId, onNavigate }) => {
             contact: "+1 (242) 393-4555"
           },
           vesselName: shipment.vesselName || "MV Caribbean Carrier",
-          voyageNumber: shipment.voyageNumber || "V.2026-14N",
           portOfLoading: shipment.origin || "Port of Miami (USMIA)",
           portOfDischarge: shipment.destinationPort || "Nassau Container Port (NAS)",
           destinationPort: shipment.destinationPort || "NAS - Nassau Container Port",
@@ -199,7 +198,6 @@ export const AgentBLDetail = ({ blId, onNavigate }) => {
           contact: "+1 (242) 393-4555"
         },
         vesselName: "MV Caribbean Carrier",
-        voyageNumber: "V.2026-14N",
         portOfLoading: "Port of Miami (USMIA)",
         portOfDischarge: "Nassau Container Port (NAS)",
         destinationPort: "NAS - Nassau Container Port",

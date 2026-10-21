@@ -13,7 +13,6 @@ export const createManifestSchema = z.object({
   type: z.string().nullish().default('Ocean Cargo Inward / Outward Manifest'),
   title: z.string().nullish().default('Ocean Cargo Customs Manifest'),
   vesselName: z.string().nullish().default(''),
-  voyageNumber: z.string().nullish().default(''),
   flag: z.string().nullish(),
   masterName: z.string().nullish(),
   portOfLoading: z.string().nullish().default('Port of Miami, USA (USMIA)'),

@@ -77,13 +77,13 @@ export const ShipmentsList = ({ onNavigate }) => {
       )
     },
     {
-      header: 'Voyage / ETD-ETA',
-      accessor: 'voyageNumber',
+      header: 'ETD / ETA',
+      accessor: 'etd',
       render: (item) => (
         <div>
-          <div style={{ fontWeight: 600, fontSize: '0.78rem' }}>{item.voyageNumber}</div>
+          <div style={{ fontWeight: 600, fontSize: '0.78rem' }}>{item.etd || 'TBD'}</div>
           <div style={{ fontSize: '0.72rem', color: '#0284C7' }}>
-            {item.etd} â†’ {item.eta}
+            → {item.eta || 'TBD'}
           </div>
         </div>
       )
@@ -162,7 +162,7 @@ export const ShipmentsList = ({ onNavigate }) => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       <PageHeader
         title="Master Shipments"
-        subtitle="Track ocean freight containers, vessel schedules, and transit milestones."
+        subtitle="Track ocean freight shipments, routes, and transit milestones."
         icon={Ship}
         breadcrumbs={[
           { label: 'Operations', href: '#' },

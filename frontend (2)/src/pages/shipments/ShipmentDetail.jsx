@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { PageHeader } from '../../components/common/PageHeader';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { HoldAlertBanner } from '../../components/common/HoldAlertBanner';
-import { ContainerFillBar } from '../../components/common/ContainerFillBar';
 import { MasterBLViewer } from '../../components/documents/MasterBLViewer';
 import { CargoLabelModal } from '../../components/modals/CargoLabelModal';
 import { ClearHoldModal } from '../../components/modals/ClearHoldModal';
@@ -37,7 +36,7 @@ import { WorkflowIndicator } from '../../components/common/WorkflowIndicator';
 
 export const ShipmentDetail = ({ shipmentId, onNavigate }) => {
   const { currentUser } = useAuth();
-  const { shipments, warehouseReceipts, billsOfLading, containers, consolidations, updateConsolidation, auditLogs, clearBLHold, placeBLHold, updateShipment, updateContainer, deleteShipment } = useAppData();
+  const { shipments, warehouseReceipts, billsOfLading, consolidations, updateConsolidation, auditLogs, clearBLHold, placeBLHold, updateShipment, deleteShipment } = useAppData();
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedCargoForLabel, setSelectedCargoForLabel] = useState(null);
   const [showClearHoldModal, setShowClearHoldModal] = useState(false);
@@ -104,7 +103,6 @@ export const ShipmentDetail = ({ shipmentId, onNavigate }) => {
     b.shipmentId === shipment.id ||
     b.shipmentId === shipment.shipmentNumber
   );
-  const linkedContainer = containers.find(c => c.containerNumber === shipment.containerNumber);
 
   const isHoldActive = linkedBL?.status === 'On Hold' || linkedBL?.holdDetails?.isOnHold || shipment.blStatus === 'On Hold';
 
@@ -143,8 +141,8 @@ export const ShipmentDetail = ({ shipmentId, onNavigate }) => {
       icon: Ship,
       actionBtn: 'Mark as In Transit (Departed)',
       color: '#16A34A',
-      generateNotes: (s, u) => `Vessel ${s.vesselName || 'Ocean Vessel'}${s.voyageNumber ? ` (Voyage ${s.voyageNumber})` : ''} departed from ${s.origin || 'origin port'}. Sailing to ${s.destinationPort || 'destination'}. Carrier: ${s.carrier || 'Ocean Line'}. Logged by ${u?.name || 'Operations'}.`,
-      getLocation: (s) => `${s.vesselName || 'Ocean Vessel'}${s.voyageNumber ? ` (${s.voyageNumber})` : ''}`
+      generateNotes: (s, u) => `Vessel ${s.vesselName || 'Ocean Vessel'} departed from ${s.origin || 'origin port'}. Sailing to ${s.destinationPort || 'destination'}. Carrier: ${s.carrier || 'Ocean Line'}. Logged by ${u?.name || 'Operations'}.`,
+      getLocation: (s) => s.vesselName || 'Ocean Vessel'
     },
     {
       key: 'Arrived at Port',
@@ -234,30 +232,6 @@ export const ShipmentDetail = ({ shipmentId, onNavigate }) => {
       const targetId = shipment.id || shipment.shipmentNumber;
       await updateShipment(targetId, updates);
 
-      // Dynamically sync linked container fleet equipment
-      if (updateContainer && linkedContainer?.id) {
-        try {
-          const containerStatus = targetStageKey === 'Loaded & Sealed'
-            ? 'Loaded & Sealed'
-            : targetStageKey === 'In Transit'
-            ? 'In Transit'
-            : targetStageKey === 'Arrived at Port'
-            ? 'Arrived at Port'
-            : targetStageKey === 'Delivered / Released'
-            ? 'Available'
-            : linkedContainer.status;
-
-          await updateContainer(linkedContainer.id, {
-            ...linkedContainer,
-            status: containerStatus,
-            location: newLocation,
-            sealNumber: shipment.sealNumber || linkedContainer.sealNumber
-          });
-        } catch (cErr) {
-          console.warn('[ShipmentDetail] Container sync notice:', cErr);
-        }
-      }
-
       // Dynamically sync linked consolidation status
       const linkedConsolidation = (consolidations || []).find(c =>
         c.id === shipment.consolidationId ||
@@ -287,20 +261,11 @@ export const ShipmentDetail = ({ shipmentId, onNavigate }) => {
     }
   };
 
-  const getContainerMaxCbm = (containerType, containerObj) => {
-    if (containerObj?.maxVolumeCbm) return Number(containerObj.maxVolumeCbm);
-    const typeStr = (containerType || '').toLowerCase();
-    if (typeStr.includes('20')) return 33.2;
-    if (typeStr.includes('45')) return 86.0;
-    if (typeStr.includes('high') || typeStr.includes('hq') || typeStr.includes('40')) return 76.2;
-    return 67.7;
-  };
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '1400px', margin: '0 auto' }}>
       <PageHeader
         title={`Shipment ${shipment.shipmentNumber}`}
-        subtitle={`${shipment.origin || 'Origin'} → ${shipment.destinationPort || 'Destination'}${shipment.vesselName ? ` via ${shipment.vesselName}` : ''}${shipment.voyageNumber ? ` (${shipment.voyageNumber})` : ''}`}
+        subtitle={`${shipment.origin || 'Origin'} → ${shipment.destinationPort || 'Destination'}${shipment.vesselName ? ` via ${shipment.vesselName}` : ''}`}
         icon={Ship}
         breadcrumbs={[
           { label: 'Shipments', href: '#' },
@@ -511,7 +476,7 @@ export const ShipmentDetail = ({ shipmentId, onNavigate }) => {
           { id: 'overview', label: 'Overview', icon: Ship },
           { id: 'cargo', label: `Cargo Items (${linkedReceipts.length})`, icon: Package },
           { id: 'bl', label: 'Master Bill of Lading', icon: FileText },
-          { id: 'container', label: 'Container & Fleet', icon: Box },
+          { id: 'container', label: 'Container Details', icon: Box },
           { id: 'documents', label: 'Documents', icon: FileStack },
           { id: 'tracking', label: 'Tracking Checkpoints', icon: Compass },
           { id: 'activity', label: 'Activity & Audit', icon: Activity }
@@ -550,14 +515,10 @@ export const ShipmentDetail = ({ shipmentId, onNavigate }) => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 600 }}>Ocean Vessel</div>
                   <div style={{ fontWeight: 700 }}>{shipment.vesselName}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 600 }}>Voyage Number</div>
-                  <div style={{ fontWeight: 700 }}>{shipment.voyageNumber}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 600 }}>Ocean Carrier</div>
@@ -739,7 +700,7 @@ export const ShipmentDetail = ({ shipmentId, onNavigate }) => {
       {activeTab === 'container' && (
         <div className="card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <h3 style={{ fontSize: '1.05rem', color: '#0A192F', borderBottom: '1px solid #E2E8F0', paddingBottom: '0.5rem' }}>
-            Container &amp; Equipment Details
+            Container Details
           </h3>
 
           <div className="grid grid-cols-3 gap-4">
@@ -759,19 +720,6 @@ export const ShipmentDetail = ({ shipmentId, onNavigate }) => {
               <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 600 }}>Container Type</div>
               <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{shipment.containerType}</div>
             </div>
-          </div>
-
-          <div style={{ background: '#F8FAFC', padding: '1.25rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-            <h4 style={{ fontSize: '0.9rem', color: '#0A192F', marginBottom: '0.75rem' }}>
-              Space Utilization &amp; Payload
-            </h4>
-            <ContainerFillBar
-              fillPercentage={Number(((shipment.totalCbm / getContainerMaxCbm(shipment.containerType, linkedContainer)) * 100).toFixed(1))}
-              currentCbm={shipment.totalCbm}
-              maxCbm={getContainerMaxCbm(shipment.containerType, linkedContainer)}
-              containerType={shipment.containerType}
-              containerNumber={shipment.containerNumber}
-            />
           </div>
         </div>
       )}

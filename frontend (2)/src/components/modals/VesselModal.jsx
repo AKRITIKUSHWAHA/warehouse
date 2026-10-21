@@ -10,46 +10,25 @@ export const VesselModal = ({
 }) => {
   const [formData, setFormData] = useState({
     name: '',
-    imoNumber: '',
-    carrier: 'Island Merchant Line',
-    type: 'Merchant Vessel / Island Trader (80-120 ft)',
-    lengthFeet: 110,
-    capacityTeu: 10,
-    deadweightTonnage: 350,
-    flag: 'Bahamas (BHS)',
-    activeRoute: 'Miami → Bahamas Out-Islands Loop',
-    currentVoyage: 'VOY-2026-088',
-    status: 'In Port (Loading)'
+    type: 'Container Vessel',
+    carrier: '',
+    notes: ''
   });
 
   useEffect(() => {
     if (vessel && isEdit) {
       setFormData({
         name: vessel.name || '',
-        imoNumber: vessel.imoNumber || '',
-        carrier: vessel.carrier || 'Island Merchant Line',
-        type: vessel.type || 'Merchant Vessel / Island Trader (80-120 ft)',
-        lengthFeet: vessel.lengthFeet || 110,
-        capacityTeu: vessel.capacityTeu !== undefined ? vessel.capacityTeu : 10,
-        deadweightTonnage: vessel.deadweightTonnage !== undefined ? vessel.deadweightTonnage : 350,
-        flag: vessel.flag || 'Bahamas (BHS)',
-        activeRoute: vessel.activeRoute || 'Miami → Bahamas Out-Islands Loop',
-        currentVoyage: vessel.currentVoyage || 'VOY-2026-088',
-        status: vessel.status || 'At Sea (In Transit)'
+        type: vessel.type || 'Container Vessel',
+        carrier: vessel.carrier || '',
+        notes: vessel.notes || ''
       });
     } else {
       setFormData({
         name: '',
-        imoNumber: `IMO-${Math.floor(9000000 + Math.random() * 999999)}`,
-        carrier: 'Island Merchant Line',
-        type: 'Merchant Vessel / Island Trader (80-120 ft)',
-        lengthFeet: 110,
-        capacityTeu: 10,
-        deadweightTonnage: 350,
-        flag: 'Bahamas (BHS)',
-        activeRoute: 'Miami → Bahamas Out-Islands Loop',
-        currentVoyage: `VOY-2026-${Math.floor(100 + Math.random() * 900)}`,
-        status: 'In Port (Loading)'
+        type: 'Container Vessel',
+        carrier: '',
+        notes: ''
       });
     }
   }, [vessel, isEdit, isOpen]);
@@ -58,22 +37,17 @@ export const VesselModal = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave({
-      ...formData,
-      lengthFeet: Number(formData.lengthFeet) || 0,
-      capacityTeu: Number(formData.capacityTeu) || 0,
-      deadweightTonnage: Number(formData.deadweightTonnage) || 0
-    });
+    onSave(formData);
     onClose();
   };
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-dialog modal-lg" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div className="modal-title">
             <Anchor size={20} style={{ color: '#0284C7' }} />
-            <span>{isEdit ? `Edit Vessel ${formData.name}` : 'Register New Merchant / Ocean Vessel'}</span>
+            <span>{isEdit ? `Edit Vessel: ${formData.name}` : 'Add Vessel to Fleet Directory'}</span>
           </div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}>
             <X size={18} />
@@ -81,154 +55,55 @@ export const VesselModal = ({
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '72vh', overflowY: 'auto' }}>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="form-group">
-                <label className="form-label">Vessel Name <span className="required">*</span></label>
-                <input
-                  type="text"
-                  required
-                  className="form-control"
-                  placeholder="e.g. M/V Island Trader, Lady Rosalind"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Official IMO / Registration Number <span className="required">*</span></label>
-                <input
-                  type="text"
-                  required
-                  className="form-control"
-                  placeholder="e.g. IMO-9382910 or REG-BS-4421"
-                  value={formData.imoNumber}
-                  onChange={(e) => setFormData({ ...formData, imoNumber: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="form-group">
-                <label className="form-label">Operating Carrier / Owner</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="e.g. Island Merchant Line, Tropical Shipping"
-                  value={formData.carrier}
-                  onChange={(e) => setFormData({ ...formData, carrier: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Vessel Classification / Type</label>
-                <select
-                  className="form-select"
-                  value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                >
-                  <option value="Merchant Vessel / Island Trader (80-120 ft)">Merchant Vessel / Island Trader (80-120 ft)</option>
-                  <option value="Coastal Breakbulk Freighter">Coastal Breakbulk Freighter</option>
-                  <option value="Small Cargo Feeder / Mailboat">Small Cargo Feeder / Mailboat</option>
-                  <option value="Geared Feeder Container Vessel">Geared Feeder Container Vessel</option>
-                  <option value="Cellular Container Ship">Cellular Container Ship</option>
-                  <option value="Ro-Ro / Container Carrier">Ro-Ro / Container Carrier</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div className="form-group">
-                <label className="form-label">Vessel Length (Feet)</label>
-                <input
-                  type="number"
-                  min="0"
-                  placeholder="e.g. 95 (ft)"
-                  className="form-control"
-                  value={formData.lengthFeet}
-                  onChange={(e) => setFormData({ ...formData, lengthFeet: e.target.value })}
-                />
-                <div style={{ fontSize: '0.7rem', color: '#64748B', marginTop: '2px' }}>
-                  Small merchant vessels: 80–120 ft.
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Container Capacity (TEU)</label>
-                <input
-                  type="number"
-                  min="0"
-                  className="form-control"
-                  placeholder="e.g. 0 to 50 TEU"
-                  value={formData.capacityTeu}
-                  onChange={(e) => setFormData({ ...formData, capacityTeu: e.target.value })}
-                />
-                <div style={{ fontSize: '0.7rem', color: '#64748B', marginTop: '2px' }}>
-                  Can be 0 or small (e.g. 2-20 TEU).
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Deadweight (DWT / Tons)</label>
-                <input
-                  type="number"
-                  min="0"
-                  placeholder="e.g. 250"
-                  className="form-control"
-                  value={formData.deadweightTonnage}
-                  onChange={(e) => setFormData({ ...formData, deadweightTonnage: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div className="form-group">
-                <label className="form-label">Flag State</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="e.g. Bahamas (BHS)"
-                  value={formData.flag}
-                  onChange={(e) => setFormData({ ...formData, flag: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Active Island Route</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="e.g. Miami → Nassau → Abaco"
-                  value={formData.activeRoute}
-                  onChange={(e) => setFormData({ ...formData, activeRoute: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Current Voyage #</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="e.g. VOY-2026-088"
-                  value={formData.currentVoyage}
-                  onChange={(e) => setFormData({ ...formData, currentVoyage: e.target.value })}
-                />
-              </div>
+          <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="form-group">
+              <label className="form-label">Vessel Name <span className="required">*</span></label>
+              <input
+                type="text"
+                required
+                className="form-control"
+                placeholder="e.g. M/V Tropic Island, Lady Rosalind"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                autoFocus
+              />
             </div>
 
             <div className="form-group">
-              <label className="form-label">Operational Status</label>
+              <label className="form-label">Vessel Classification / Type</label>
               <select
                 className="form-select"
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                value={formData.type}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
               >
-                <option value="At Sea (In Transit)">At Sea (In Transit)</option>
-                <option value="In Port (Discharging)">In Port (Discharging)</option>
-                <option value="In Port (Loading)">In Port (Loading)</option>
-                <option value="Scheduled">Scheduled</option>
-                <option value="Drydock / Maintenance">Drydock / Maintenance</option>
+                <option value="Container Vessel">Container Vessel</option>
+                <option value="Merchant Vessel / Island Trader">Merchant Vessel / Island Trader</option>
+                <option value="Coastal Breakbulk Freighter">Coastal Breakbulk Freighter</option>
+                <option value="Small Cargo Feeder / Mailboat">Small Cargo Feeder / Mailboat</option>
+                <option value="Ro-Ro Carrier">Ro-Ro Carrier</option>
               </select>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Carrier / Shipping Line (Optional)</label>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="e.g. Tropical Shipping, MSC, Seaboard"
+                value={formData.carrier}
+                onChange={(e) => setFormData({ ...formData, carrier: e.target.value })}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Notes (Optional)</label>
+              <textarea
+                className="form-control"
+                rows={3}
+                placeholder="Optional notes or operational remarks..."
+                value={formData.notes}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              />
             </div>
           </div>
 
@@ -238,7 +113,7 @@ export const VesselModal = ({
             </button>
             <button type="submit" className="btn btn-primary btn-sm">
               {isEdit ? <Save size={14} /> : <Plus size={14} />}
-              <span>{isEdit ? 'Save Vessel Changes' : 'Register Vessel'}</span>
+              <span>{isEdit ? 'Save Changes' : 'Add Vessel'}</span>
             </button>
           </div>
         </form>

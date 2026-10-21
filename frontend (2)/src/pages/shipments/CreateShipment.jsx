@@ -19,7 +19,6 @@ export const CreateShipment = ({ onNavigate }) => {
     agentId: agents[0]?.id || null,
     agentName: agents[0]?.name || '',
     vesselName: vessels[0]?.name || '',
-    voyageNumber: '',
     carrier: '',
     containerNumber: '',
     containerType: "40' High Cube",
@@ -100,7 +99,7 @@ export const CreateShipment = ({ onNavigate }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <div className="form-group">
             <label className="form-label">Ocean Vessel <span className="required">*</span></label>
             <select
@@ -112,16 +111,6 @@ export const CreateShipment = ({ onNavigate }) => {
                 <option key={v.id} value={v.name}>{v.name}</option>
               ))}
             </select>
-          </div>
-          <div className="form-group">
-            <label className="form-label">Voyage Number</label>
-            <input
-              type="text"
-              className="form-control"
-              value={formData.voyageNumber}
-              onChange={(e) => setFormData({ ...formData, voyageNumber: e.target.value })}
-              required
-            />
           </div>
           <div className="form-group">
             <label className="form-label">Carrier</label>

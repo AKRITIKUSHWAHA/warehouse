@@ -74,8 +74,6 @@ export const AppLayout = ({
           } else if (type === 'bills') {
             onSelectTab('bills-of-lading');
             if (onNavigateDetail) onNavigateDetail('bills-of-lading', id);
-          } else if (type === 'containers') {
-            onSelectTab('containers');
           } else if (type === 'agents') {
             onSelectTab('agents');
           }

@@ -123,7 +123,7 @@ export const AgentDetail = ({ agentId, onNavigate }) => {
                     <div>
                       <strong style={{ color: '#0A192F' }}>{s.shipmentNumber}</strong>
                       <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
-                        Vessel: {s.vesselName} ({s.voyageNumber}) • ETA: {s.eta}
+                        Vessel: {s.vesselName || 'Ocean Vessel'} • ETA: {s.eta}
                       </div>
                     </div>
                     <StatusBadge status={s.status} />

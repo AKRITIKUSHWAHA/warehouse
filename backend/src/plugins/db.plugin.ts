@@ -39,7 +39,6 @@ export async function registerDbPlugin(app: FastifyInstance): Promise<void> {
           agent_id UUID,
           agent_name TEXT,
           vessel_name TEXT,
-          voyage_number TEXT,
           carrier TEXT,
           container_number TEXT,
           container_type TEXT,

@@ -23,7 +23,6 @@ export class ConsolidationRepository {
           ilike(consolidations.containerNumber, q),
           ilike(consolidations.sealNumber, q),
           ilike(consolidations.vesselName, q),
-          ilike(consolidations.voyageNumber, q),
           ilike(consolidations.carrier, q),
           sql`${consolidations.receiptIds}::text ILIKE ${q}`,
           sql`${consolidations.houseBillIds}::text ILIKE ${q}`

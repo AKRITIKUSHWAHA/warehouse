@@ -78,12 +78,12 @@ export const ManifestsList = ({ onNavigate }) => {
       )
     },
     {
-      header: 'Vessel & Voyage',
+      header: 'Vessel & Carrier',
       accessor: 'vesselName',
       render: (item) => (
         <div>
           <div style={{ fontWeight: 600, fontSize: '0.8rem' }}>{item.vesselName}</div>
-          <div style={{ fontSize: '0.72rem', color: '#64748B' }}>{item.voyageNumber} • {item.carrier}</div>
+          <div style={{ fontSize: '0.72rem', color: '#64748B' }}>{item.carrier}</div>
         </div>
       )
     },
@@ -221,7 +221,7 @@ export const ManifestsList = ({ onNavigate }) => {
       <ResponsiveTable
         columns={columns}
         data={visibleManifests}
-        searchPlaceholder="Search manifests, vessel, voyage, destination..."
+        searchPlaceholder="Search manifests, vessel, carrier, destination..."
         pageSize={8}
         onRowClick={(item) => onNavigate('manifests', item.id)}
         emptyTitle="No shipping manifests created yet"

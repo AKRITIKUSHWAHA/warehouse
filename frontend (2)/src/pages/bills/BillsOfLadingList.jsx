@@ -97,12 +97,12 @@ export const BillsOfLadingList = ({ onNavigate }) => {
       )
     },
     {
-      header: 'Vessel & Voyage',
+      header: 'Vessel & Carrier',
       accessor: 'oceanVessel',
       render: (item) => (
         <div>
           <div style={{ fontWeight: 600, fontSize: '0.8rem' }}>{item.oceanVessel}</div>
-          <div style={{ fontSize: '0.72rem', color: '#64748B' }}>{item.voyageNumber} • {item.carrier}</div>
+          <div style={{ fontSize: '0.72rem', color: '#64748B' }}>{item.carrier}</div>
         </div>
       )
     },

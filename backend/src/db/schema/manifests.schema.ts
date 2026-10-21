@@ -27,7 +27,6 @@ export const manifests = pgTable('manifests', {
   type: text('type').default('Ocean Cargo Inward / Outward Manifest').notNull(),
   title: text('title').notNull(),
   vesselName: text('vessel_name').notNull(),
-  voyageNumber: text('voyage_number').notNull(),
   flag: text('flag'),
   masterName: text('master_name'),
   portOfLoading: text('port_of_loading').notNull(),

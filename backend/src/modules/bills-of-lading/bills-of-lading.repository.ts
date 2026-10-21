@@ -103,8 +103,7 @@ export class BillsOfLadingRepository {
 
     return {
       ...bl,
-      oceanVessel: bl.oceanVessel || linkedShipment?.vesselName || 'M/V Caribbean Voyager',
-      voyageNumber: bl.voyageNumber || linkedShipment?.voyageNumber || 'VOY-2026-088',
+      oceanVessel: bl.oceanVessel || linkedShipment?.vesselName || 'Ocean Vessel',
       carrier: bl.carrier || linkedShipment?.carrier || 'Tropical Shipping',
       containerNumber: bl.containerNumber || linkedShipment?.containerNumber || '',
       sealNumber: bl.sealNumber || linkedShipment?.sealNumber || '',

@@ -39,7 +39,6 @@ export const createBillOfLadingSchema = z.object({
 
   preCarriageBy: z.string().optional(),
   oceanVessel: z.string().optional().default(''),
-  voyageNumber: z.string().optional().default(''),
   carrier: z.string().optional().default(''),
   portOfLoading: z.string().default('Port of Miami, USA (USMIA)'),
   portOfDischarge: z.string().default(''),

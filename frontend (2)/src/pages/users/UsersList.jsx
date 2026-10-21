@@ -53,7 +53,7 @@ const ROLE_DEFINITIONS = [
     shortTitle: 'Operations',
     color: '#0284C7',
     badgeColor: '#0EA5E9',
-    desc: 'Consolidations, ocean voyages, cargo movement & tracking'
+    desc: 'Consolidations, ocean freight, cargo movement & tracking'
   },
   {
     roleKey: 'warehouse',
@@ -77,7 +77,7 @@ const ROLE_DEFINITIONS = [
     shortTitle: 'Agent',
     color: '#7C3AED',
     badgeColor: '#8B5CF6',
-    desc: 'Dedicated port portal, container arrival & manifest download'
+    desc: 'Dedicated port portal, shipment arrival & manifest download'
   }
 ];
 
@@ -100,7 +100,6 @@ const MODULE_ICONS = {
   shipments: Ship,
   'bills-of-lading': FileText,
   manifests: FileSpreadsheet,
-  containers: Box,
   vessels: Anchor,
   tracking: Search,
   'agent-portal': ExternalLink,

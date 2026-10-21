@@ -41,7 +41,6 @@ export const BillOfLadingModal = ({
     notifyPartyName: '',
     notifyPartyAddress: '',
     oceanVessel: '',
-    voyageNumber: '',
     carrier: '',
     portOfLoading: '',
     portOfDischarge: '',
@@ -115,8 +114,7 @@ export const BillOfLadingModal = ({
         consigneeAddress: bl.consignee?.address || '',
         notifyPartyName: bl.notifyParty?.name || '',
         notifyPartyAddress: bl.notifyParty?.address || '',
-        oceanVessel: bl.oceanVessel || 'M/V Caribbean Voyager',
-        voyageNumber: bl.voyageNumber || 'VOY-2026-088',
+        oceanVessel: bl.oceanVessel || 'M/V Caribbean Carrier',
         carrier: bl.carrier || 'Tropical Shipping',
         portOfLoading: bl.portOfLoading || pol,
         portOfDischarge: bl.portOfDischarge || pod,
@@ -136,7 +134,6 @@ export const BillOfLadingModal = ({
 
       const generatedBlNumber = `BL-VI-2026-${Math.floor(100 + Math.random() * 899)}`;
       let initialVessel = '';
-      let initialVoyage = '';
       let initialCarrier = 'Tropical Shipping';
       let initialPod = pod;
       let initialContainer = '';
@@ -148,7 +145,6 @@ export const BillOfLadingModal = ({
         const found = consolidations.find(c => c.consolidationNumber === initConsolNum || c.id === initConsolNum);
         if (found) {
           initialVessel = found.vesselName || '';
-          initialVoyage = found.voyageNumber || '';
           initialCarrier = found.carrier || 'Tropical Shipping';
           initialPod = found.destinationPort || found.dischargePort || pod;
           initialContainer = found.containerNumber || '';
@@ -178,7 +174,6 @@ export const BillOfLadingModal = ({
         notifyPartyName: 'Same as Consignee',
         notifyPartyAddress: initialPod,
         oceanVessel: initialVessel,
-        voyageNumber: initialVoyage,
         carrier: initialCarrier,
         portOfLoading: pol,
         portOfDischarge: initialPod,
@@ -240,7 +235,6 @@ export const BillOfLadingModal = ({
     setFormData(prev => ({
       ...prev,
       oceanVessel: selectedConsol.vesselName || prev.oceanVessel,
-      voyageNumber: selectedConsol.voyageNumber || prev.voyageNumber,
       carrier: selectedConsol.carrier || prev.carrier,
       portOfDischarge: destPortName,
       consigneeName: prev.consigneeName || (selectedConsol.agentName ? `${selectedConsol.agentName} (Destination Agent)` : 'To Order of Destination Agent'),
@@ -354,7 +348,6 @@ export const BillOfLadingModal = ({
         address: formData.notifyPartyAddress
       },
       oceanVessel: formData.oceanVessel,
-      voyageNumber: formData.voyageNumber,
       carrier: formData.carrier,
       portOfLoading: formData.portOfLoading,
       portOfDischarge: formData.portOfDischarge,
@@ -451,7 +444,7 @@ export const BillOfLadingModal = ({
                 <div style={{ fontSize: '0.8rem', color: '#475569', background: '#FFFFFF', padding: '0.65rem 0.85rem', borderRadius: '6px', border: '1px solid #BAE6FD' }}>
                   {selectedConsolObj ? (
                     <div>
-                      <strong>{selectedConsolObj.vesselName || 'Ocean Vessel'}</strong> ({selectedConsolObj.voyageNumber || 'General'}) • Container: <strong>{selectedConsolObj.containerNumber || 'TBD'}</strong>
+                      <strong>{selectedConsolObj.vesselName || 'Ocean Vessel'}</strong> • Container: <strong>{selectedConsolObj.containerNumber || 'TBD'}</strong>
                       <div style={{ fontSize: '0.72rem', color: '#0284C7', marginTop: '2px' }}>
                         Discharge Port: {selectedConsolObj.destinationPort} • Seal: {selectedConsolObj.sealNumber || 'N/A'}
                       </div>
@@ -693,27 +686,16 @@ export const BillOfLadingModal = ({
               </div>
             </div>
 
-            {/* Ocean Vessel, Voyage & Carrier */}
-            <div className="grid grid-cols-3 gap-4">
+            {/* Ocean Vessel & Carrier */}
+            <div className="grid grid-cols-2 gap-4">
               <div className="form-group">
                 <label className="form-label">Ocean Vessel</label>
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="e.g. M/V Caribbean Voyager"
+                  placeholder="e.g. M/V Caribbean Carrier"
                   value={formData.oceanVessel}
                   onChange={(e) => setFormData({ ...formData, oceanVessel: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Voyage Number</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="e.g. VOY-2026-088"
-                  value={formData.voyageNumber}
-                  onChange={(e) => setFormData({ ...formData, voyageNumber: e.target.value })}
                 />
               </div>
 

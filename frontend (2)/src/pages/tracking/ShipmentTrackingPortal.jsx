@@ -40,7 +40,6 @@ export const ShipmentTrackingPortal = ({ initialQuery = '', onNavigate }) => {
     origin: 'CFS Receiving Dock (Port Everglades, FL)',
     destinationPort: wr.destinationPort || 'NAS - Nassau, Bahamas',
     vesselName: 'Awaiting Consolidation Assignment',
-    voyageNumber: 'N/A',
     eta: 'Pending Consolidation',
     currentLocation: `Staged at ${wr.warehouseLocation || 'Bay A-01'} • CFS Intake Facility`,
     trackingCheckpoints: [
@@ -76,7 +75,7 @@ export const ShipmentTrackingPortal = ({ initialQuery = '', onNavigate }) => {
         status: 'Pending',
         date: 'Pending',
         location: 'Ocean Freight Terminal',
-        notes: 'Ocean carrier voyage pending.'
+        notes: 'Ocean carrier transit pending.'
       },
       {
         id: 'cp5',
@@ -178,7 +177,6 @@ export const ShipmentTrackingPortal = ({ initialQuery = '', onNavigate }) => {
         origin: 'CFS Receiving Yard (Port Everglades, FL)',
         destinationPort: 'NAS - Nassau, Bahamas',
         vesselName: 'M/V Tropic Sun',
-        voyageNumber: 'V-2026-42W',
         eta: '2026-10-08',
         currentLocation: 'Port Terminal Staging Bay A-01',
         trackingCheckpoints: [
@@ -236,7 +234,7 @@ export const ShipmentTrackingPortal = ({ initialQuery = '', onNavigate }) => {
         customer: s.consignee || s.destinationPort,
         origin: s.origin || 'Port Everglades, FL',
         destinationPort: s.destinationPort,
-        vesselInfo: s.vesselName ? `${s.vesselName} (${s.voyageNumber || 'N/A'})` : 'Awaiting Assignment',
+        vesselInfo: s.vesselName || 'Awaiting Assignment',
         container: s.containerNumber || 'Pending',
         eta: s.eta || s.etd || '—',
         status: s.status,
@@ -408,7 +406,7 @@ export const ShipmentTrackingPortal = ({ initialQuery = '', onNavigate }) => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '1100px', margin: '0 auto' }}>
       <PageHeader
         title="Cargo Tracking &amp; Milestone Timeline"
-        subtitle="Real-time status tracking for shipments, bills of lading, warehouse receipts, and containers."
+        subtitle="Real-time status tracking for shipments, bills of lading, and warehouse receipts."
         icon={Compass}
         breadcrumbs={[
           { label: 'Tracking', href: '#' },
@@ -521,8 +519,8 @@ export const ShipmentTrackingPortal = ({ initialQuery = '', onNavigate }) => {
                 <div style={{ fontWeight: 800, color: '#0284C7' }}>{searchResult.destinationPort}</div>
               </div>
               <div>
-                <span style={{ color: '#64748B', fontSize: '0.75rem' }}>Vessel &amp; Voyage</span>
-                <div style={{ fontWeight: 700 }}>{searchResult.vesselName} ({searchResult.voyageNumber})</div>
+                <span style={{ color: '#64748B', fontSize: '0.75rem' }}>Ocean Vessel</span>
+                <div style={{ fontWeight: 700 }}>{searchResult.vesselName}</div>
               </div>
               <div>
                 <span style={{ color: '#64748B', fontSize: '0.75rem' }}>Estimated Arrival</span>

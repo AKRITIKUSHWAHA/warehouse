@@ -160,7 +160,7 @@ export const DocumentCenter = ({ onNavigate }) => {
           docType: 'Shipping Manifest',
           type: 'Shipping Manifest',
           entityType: 'MANIFEST',
-          title: `Ocean Manifest — ${m.vesselName || 'Vessel'} (${m.voyageNumber || 'Voyage'})`,
+          title: `Ocean Manifest — ${m.vesselName || 'Ocean Vessel'}`,
           date: m.createdAt?.split(' ')[0] || m.createdAt?.split('T')[0] || '2026-10-04',
           party: `${m.portOfLoading || 'Origin'} → ${m.portOfDischarge || 'Destination'}`,
           status: (m.status || '').includes('Hold') ? 'On Hold' : 'Generated',

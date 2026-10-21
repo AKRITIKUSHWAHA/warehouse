@@ -43,7 +43,7 @@ export const LoginPage = ({ onLoginSuccess }) => {
       category: 'Consolidation',
       badgeColor: '#059669',
       icon: Ship,
-      summary: 'Consolidate cargo into containers & book shipments'
+      summary: 'Consolidate cargo & book ocean shipments'
     },
     'USR-002': {
       roleKey: 'documentation',

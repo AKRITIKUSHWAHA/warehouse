@@ -16,7 +16,6 @@ export class ManifestsRepository {
           ilike(manifests.manifestNumber, `%${filters.search}%`),
           ilike(manifests.title, `%${filters.search}%`),
           ilike(manifests.vesselName, `%${filters.search}%`),
-          ilike(manifests.voyageNumber, `%${filters.search}%`),
           ilike(manifests.portOfDischarge, `%${filters.search}%`),
           ilike(manifests.portOfLoading, `%${filters.search}%`),
           ilike(manifests.carrier, `%${filters.search}%`)

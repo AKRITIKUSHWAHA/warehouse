@@ -85,7 +85,6 @@ export class BillsOfLadingService {
       agentName: input.agentName || null,
       preCarriageBy: input.preCarriageBy || null,
       oceanVessel: input.oceanVessel || '',
-      voyageNumber: input.voyageNumber || '',
       carrier: input.carrier || '',
       portOfLoading: input.portOfLoading || 'Port of Miami, USA (USMIA)',
       portOfDischarge: input.portOfDischarge || '',

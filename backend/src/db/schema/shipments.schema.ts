@@ -28,7 +28,6 @@ export const shipments = pgTable('shipments', {
   agentName: text('agent_name'),
   
   vesselName: text('vessel_name'),
-  voyageNumber: text('voyage_number'),
   carrier: text('carrier'),
   
   containerNumber: text('container_number'),

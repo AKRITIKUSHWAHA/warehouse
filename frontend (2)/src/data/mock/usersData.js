@@ -83,7 +83,7 @@ export const initialRolesPermissions = [
   {
     roleKey: "operations",
     roleName: "Operations Coordinator",
-    description: "Builds consolidations, assigns containers, manages voyages/vessels, and tracks cargo movement.",
+    description: "Builds consolidations, manages vessels, and tracks cargo movement.",
     userCount: 2,
     permissions: {
       warehouseReceipts: { view: true, create: false, edit: false, delete: false },

@@ -23,7 +23,6 @@ export const ManifestModal = ({
     masterBLId: '',
     carrier: '',
     vesselName: '',
-    voyageNumber: '',
     portOfLoading: 'Port of Miami (USMIA), FL',
     portOfDischarge: defaultPod,
     departureDate: new Date().toISOString().split('T')[0],
@@ -54,7 +53,6 @@ export const ManifestModal = ({
         masterBLId: manifest.masterBLId || '',
         carrier: manifest.carrier || '',
         vesselName: manifest.vesselName || '',
-        voyageNumber: manifest.voyageNumber || '',
         portOfLoading: manifest.portOfLoading || 'Port of Miami (USMIA), FL',
         portOfDischarge: manifest.portOfDischarge || curPod,
         departureDate: manifest.departureDate || '',
@@ -77,7 +75,6 @@ export const ManifestModal = ({
         masterBLId: '',
         carrier: '',
         vesselName: '',
-        voyageNumber: '',
         portOfLoading: 'Port of Miami (USMIA), FL',
         portOfDischarge: curPod,
         departureDate: new Date().toISOString().split('T')[0],
@@ -183,10 +180,9 @@ export const ManifestModal = ({
       setFormData(prev => ({
         ...prev,
         masterBLId: bl.id || bl.blNumber,
-        title: `Ocean Cargo Manifest — ${bl.oceanVessel || 'Vessel'} (${bl.voyageNumber || 'Voyage'})`,
+        title: `Ocean Cargo Manifest — ${bl.oceanVessel || 'Vessel'}`,
         carrier: bl.carrier || 'Tropical Shipping',
         vesselName: bl.oceanVessel || bl.vesselName || '',
-        voyageNumber: bl.voyageNumber || '',
         portOfLoading: bl.portOfLoading || prev.portOfLoading,
         portOfDischarge: bl.portOfDischarge || prev.portOfDischarge,
         arrivalDate: bl.etaDate || '',
@@ -248,12 +244,12 @@ export const ManifestModal = ({
                   <option value="">-- Choose Master B/L or fill blank slate manually below --</option>
                   {billsOfLading.map(b => (
                     <option key={b.id} value={b.id}>
-                      {b.blNumber} — {b.oceanVessel || b.vesselName} ({b.voyageNumber}) → {b.portOfDischarge}
+                      {b.blNumber} — {b.oceanVessel || b.vesselName} → {b.portOfDischarge}
                     </option>
                   ))}
                 </select>
                 <div style={{ fontSize: '0.72rem', color: '#1E40AF', marginTop: '4px' }}>
-                  Choosing a Master B/L automatically loads Vessel, Voyage, Port of Loading, Port of Discharge, and all linked House B/L cargo lines into this manifest.
+                  Choosing a Master B/L automatically loads Vessel, Port of Loading, Port of Discharge, and all linked House B/L cargo lines into this manifest.
                 </div>
               </div>
             )}
@@ -284,7 +280,7 @@ export const ManifestModal = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="form-group">
                 <label className="form-label">Vessel Name <span className="required">*</span></label>
                 <input
@@ -294,17 +290,6 @@ export const ManifestModal = ({
                   className="form-control"
                   value={formData.vesselName}
                   onChange={(e) => setFormData({ ...formData, vesselName: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Voyage Number</label>
-                <input
-                  type="text"
-                  placeholder="e.g. VOY-2026-19"
-                  className="form-control"
-                  value={formData.voyageNumber}
-                  onChange={(e) => setFormData({ ...formData, voyageNumber: e.target.value })}
                 />
               </div>
 

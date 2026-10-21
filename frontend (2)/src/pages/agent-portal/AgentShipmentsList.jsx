@@ -52,12 +52,12 @@ export const AgentShipmentsList = ({ onNavigate }) => {
       )
     },
     {
-      header: 'Vessel / Voyage',
+      header: 'Vessel / Carrier',
       accessor: 'vesselName',
       render: (item) => (
         <div>
           <div style={{ fontWeight: 600 }}>{item.vesselName}</div>
-          <div style={{ fontSize: '0.72rem', color: '#64748B' }}>{item.voyageNumber} • {item.carrier}</div>
+          <div style={{ fontSize: '0.72rem', color: '#64748B' }}>{item.carrier}</div>
         </div>
       )
     },

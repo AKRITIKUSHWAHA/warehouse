@@ -62,7 +62,7 @@ export class SettingsRepository {
         ipAddress: ipAddress || '127.0.0.1',
         metadata: {
           timestamp: nowStr,
-          preservedTables: ['audit_logs', 'users', 'roles', 'permissions', 'ports', 'agents', 'vessels', 'voyages', 'containers', 'settings'],
+          preservedTables: ['audit_logs', 'users', 'roles', 'permissions', 'ports', 'agents', 'vessels', 'settings'],
           clearedTables: ['tracking_events', 'manifests', 'bills_of_lading', 'shipments', 'consolidations', 'house_bills', 'cargo', 'warehouse_receipts', 'customers']
         },
       });

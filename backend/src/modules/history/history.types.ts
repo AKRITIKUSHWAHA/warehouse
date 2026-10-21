@@ -26,7 +26,6 @@ export interface EnrichedHistoryShipment {
   agentName?: string | null;
   carrier?: string | null;
   vesselName?: string | null;
-  voyageNumber?: string | null;
   containerNumber?: string | null;
   containerType?: string | null;
   sealNumber?: string | null;

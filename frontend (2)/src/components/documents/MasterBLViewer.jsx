@@ -255,8 +255,8 @@ export const MasterBLViewer = ({ bl, linkedHbls = [], onNavigate }) => {
             <div style={{ fontSize: '0.75rem', fontWeight: 600 }}>{bl.placeOfReceipt || 'CFS Miami'}</div>
           </div>
           <div style={{ padding: '0.5rem', borderRight: '1px solid #0A192F' }}>
-            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#64748B' }}>OCEAN VESSEL &amp; VOYAGE</div>
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0A192F' }}>{bl.oceanVessel} ({bl.voyageNumber})</div>
+            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#64748B' }}>OCEAN VESSEL</div>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0A192F' }}>{bl.oceanVessel}</div>
           </div>
           <div style={{ padding: '0.5rem' }}>
             <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#64748B' }}>PORT OF LOADING</div>

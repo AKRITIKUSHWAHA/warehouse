@@ -84,7 +84,7 @@ export class ShipmentsService {
             status: input.status === 'In Transit' ? 'Active' : input.status?.includes('Deliver') ? 'Completed' : 'Pending',
             date: input.etd || createdDate,
             time: '06:00 PM',
-            location: `${input.vesselName || 'Ocean Vessel'} (Voyage ${input.voyageNumber || 'N/A'})`,
+            location: `${input.vesselName || 'Ocean Vessel'}`,
             notes: `Ocean freight vessel en route to ${destinationPort}.`,
           },
           {
@@ -120,7 +120,6 @@ export class ShipmentsService {
       agentId: validAgentId,
       agentName: input.agentName || null,
       vesselName: input.vesselName || null,
-      voyageNumber: input.voyageNumber || null,
       carrier: input.carrier || '',
       containerNumber: input.containerNumber || null,
       containerType: input.containerType || "40' Standard Dry",

@@ -1,7 +1,5 @@
 import { pgTable, uuid, text, integer, numeric, jsonb, timestamp } from 'drizzle-orm/pg-core';
-import { containers } from './containers.schema.js';
 import { vessels } from './vessels.schema.js';
-import { voyages } from './voyages.schema.js';
 
 export const consolidations = pgTable('consolidations', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -12,16 +10,12 @@ export const consolidations = pgTable('consolidations', {
   createdDate: text('created_date').notNull(),
   status: text('status').default('Planning').notNull(), // 'Planning' | 'Loaded' | 'Sealed' | 'Completed'
   
-  containerId: uuid('container_id').references(() => containers.id),
   containerNumber: text('container_number'),
   containerType: text('container_type'),
-  containerCapacityCbm: numeric('container_capacity_cbm', { precision: 10, scale: 2 }),
   sealNumber: text('seal_number'),
   
   vesselId: uuid('vessel_id').references(() => vessels.id),
   vesselName: text('vessel_name'),
-  voyageId: uuid('voyage_id').references(() => voyages.id),
-  voyageNumber: text('voyage_number'),
   carrier: text('carrier'),
   
   loadingPort: text('loading_port').default('Port of Miami (USMIA)').notNull(),
@@ -39,7 +33,6 @@ export const consolidations = pgTable('consolidations', {
   totalWeightKg: numeric('total_weight_kg', { precision: 10, scale: 2 }).default('0.00'),
   totalCft: numeric('total_cft', { precision: 10, scale: 2 }).default('0.00'),
   totalCbm: numeric('total_cbm', { precision: 10, scale: 2 }).default('0.00'),
-  containerFillPercentage: numeric('container_fill_percentage', { precision: 5, scale: 2 }).default('0.00'),
   
   assignedShipmentId: text('assigned_shipment_id'),
   assignedMasterBLId: text('assigned_master_bl_id'),

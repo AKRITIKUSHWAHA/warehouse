@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import { PageHeader } from '../../components/common/PageHeader';
-import { ContainerFillBar } from '../../components/common/ContainerFillBar';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { WorkflowIndicator } from '../../components/common/WorkflowIndicator';
 import {
@@ -21,7 +20,7 @@ import { useAppData } from '../../context/AppDataContext';
 import { useAuth } from '../../context/AuthContext';
 
 export const NewConsolidationWizard = ({ onNavigate }) => {
-  const { warehouseReceipts, houseBills, vessels, voyages, containers, agents, ports, createConsolidation } = useAppData();
+  const { warehouseReceipts, houseBills, vessels, agents, ports, createConsolidation } = useAppData();
   const { currentUser, isAgent } = useAuth();
 
   const allAvailablePorts = useMemo(() => {
@@ -35,7 +34,7 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
   }, [ports, warehouseReceipts]);
 
   const defaultVessels = [
-    { id: 'VES-001', name: 'MV Island Voyager', type: 'Feeder Boat' },
+    { id: 'VES-001', name: 'MV Island Explorer', type: 'Feeder Boat' },
     { id: 'VES-002', name: 'MV Atlantic Trader', type: 'Feeder Boat' },
     { id: 'VES-003', name: 'MV Caribbean Star', type: 'Feeder Boat' }
   ];
@@ -88,12 +87,9 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
     agentId: '',
     agentName: '',
     vesselName: '',
-    voyageNumber: '',
     carrier: 'Tropical Shipping Line',
     containerNumber: '',
     containerType: "40' Standard GP",
-    containerCapacityCbm: 67.7,
-    containerCapacityCft: 2390,
     sealNumber: `SEAL-VI-${Math.floor(10000 + Math.random() * 90000)}`,
     loadingPort: 'Port of Miami (USMIA)',
     dischargePort: '',
@@ -130,13 +126,6 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
     totalCft = Number(totalCft.toFixed(2));
     totalCbm = Number(totalCbm.toFixed(2));
 
-    const capacityCbm = formData.containerCapacityCbm || 67.7;
-    const capacityCft = formData.containerCapacityCft || 2390;
-
-    const remainingCbm = Math.max(0, Number((capacityCbm - totalCbm).toFixed(2)));
-    const remainingCft = Math.max(0, Number((capacityCft - totalCft).toFixed(1)));
-    const fillPercentage = Number(((totalCbm / capacityCbm) * 100).toFixed(1));
-
     return {
       totalReceipts: selectedReceipts.length,
       receiptIds: selectedReceipts.map(r => r.id || r.receiptNumber),
@@ -147,12 +136,9 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
       totalWeightLbs,
       totalWeightKg,
       totalCft,
-      totalCbm,
-      remainingCbm,
-      remainingCft,
-      fillPercentage
+      totalCbm
     };
-  }, [selectedReceipts, selectedHouseBills, formData.containerCapacityCbm, formData.containerCapacityCft]);
+  }, [selectedReceipts, selectedHouseBills]);
 
   const toggleWrSelect = (id) => {
     setSelectedWrIds(prev =>
@@ -206,8 +192,7 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
       totalWeightLbs: totals.totalWeightLbs,
       totalWeightKg: totals.totalWeightKg,
       totalCft: totals.totalCft,
-      totalCbm: totals.totalCbm,
-      containerFillPercentage: totals.fillPercentage
+      totalCbm: totals.totalCbm
     };
 
     await createConsolidation(payload);
@@ -607,7 +592,7 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
               <span>Step 3: Container</span>
             </h3>
             <p style={{ fontSize: '0.825rem', color: '#64748B', margin: '4px 0 0' }}>
-              Configure ocean container equipment and verify capacity utilization.
+              Assign ocean container number and type for destination shipment.
             </p>
           </div>
 
@@ -618,27 +603,17 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
               <select
                 className="form-select"
                 value={formData.containerType}
-                onChange={(e) => {
-                  const type = e.target.value;
-                  const capCbm = type.includes('20') ? 33.2 : type.includes('45') ? 86.0 : type.includes('HC') ? 76.2 : 67.7;
-                  const capCft = Math.round(capCbm * 35.3147);
-                  setFormData({
-                    ...formData,
-                    containerType: type,
-                    containerCapacityCbm: capCbm,
-                    containerCapacityCft: capCft
-                  });
-                }}
+                onChange={(e) => setFormData({ ...formData, containerType: e.target.value })}
               >
-                <option value="40' Standard GP">40' Standard GP (67.7 CBM / ~2,390 CFT)</option>
-                <option value="40' High Cube">40' High Cube (76.2 CBM / ~2,690 CFT)</option>
-                <option value="20' Standard GP">20' Standard GP (33.2 CBM / ~1,170 CFT)</option>
-                <option value="45' High Cube">45' High Cube (86.0 CBM / ~3,035 CFT)</option>
+                <option value="40' Standard GP">40' Standard GP</option>
+                <option value="40' High Cube">40' High Cube</option>
+                <option value="20' Standard GP">20' Standard GP</option>
+                <option value="45' High Cube">45' High Cube</option>
               </select>
             </div>
 
             <div className="form-group">
-              <label className="form-label">Container Equipment Number <span className="required">*</span></label>
+              <label className="form-label">Container Number <span className="required">*</span></label>
               <input
                 type="text"
                 className="form-control"
@@ -650,8 +625,7 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
             </div>
           </div>
 
-          {/* Prompt Section 8: Show: Container Type, Used Volume, Remaining Volume, Fill % */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }} className="grid-cols-4-mobile">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
             <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '1.15rem', borderRadius: '8px' }}>
               <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>
                 CONTAINER TYPE
@@ -659,50 +633,20 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
               <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0A192F', marginTop: '4px' }}>
                 {formData.containerType}
               </div>
-              <div style={{ fontSize: '0.75rem', color: '#64748B' }}>Capacity: {formData.containerCapacityCbm} CBM</div>
             </div>
 
             <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', padding: '1.15rem', borderRadius: '8px' }}>
               <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#1E40AF', textTransform: 'uppercase' }}>
-                USED VOLUME
+                TOTAL CARGO VOLUME
               </div>
               <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0284C7', marginTop: '4px' }}>
                 {totals.totalCft} CFT
               </div>
-              <div style={{ fontSize: '0.75rem', color: '#1E40AF' }}>({totals.totalCbm} CBM)</div>
-            </div>
-
-            <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', padding: '1.15rem', borderRadius: '8px' }}>
-              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#166534', textTransform: 'uppercase' }}>
-                REMAINING VOLUME
-              </div>
-              <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#16A34A', marginTop: '4px' }}>
-                {totals.remainingCft} CFT
-              </div>
-              <div style={{ fontSize: '0.75rem', color: '#166534' }}>({totals.remainingCbm} CBM available)</div>
-            </div>
-
-            <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', padding: '1.15rem', borderRadius: '8px' }}>
-              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#92400E', textTransform: 'uppercase' }}>
-                FILL %
-              </div>
-              <div style={{ fontSize: '1.35rem', fontWeight: 900, color: '#D97706', marginTop: '4px' }}>
-                {totals.fillPercentage}%
-              </div>
-              <div style={{ fontSize: '0.75rem', color: '#92400E' }}>Utilization</div>
+              <div style={{ fontSize: '0.75rem', color: '#1E40AF' }}>({totals.totalCbm} CBM • {totals.totalWeightLbs?.toLocaleString()} lbs)</div>
             </div>
           </div>
 
-          {/* Visual Container Fill Bar */}
-          <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '1.25rem', borderRadius: '8px' }}>
-            <ContainerFillBar
-              fillPercentage={totals.fillPercentage}
-              currentCbm={totals.totalCbm}
-              maxCbm={formData.containerCapacityCbm || 67.7}
-              containerType={formData.containerType}
-              containerNumber={formData.containerNumber}
-            />
-          </div>
+
 
           <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '1rem', borderTop: '1px solid #E2E8F0' }}>
             <button onClick={() => setCurrentStep(2)} className="btn btn-outline">
@@ -730,34 +674,7 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
             </p>
           </div>
 
-          {/* Prompt Section 8: Vessel, Voyage, Container, Seal */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="form-group">
-              <label className="form-label">Consolidation Number <span className="required">*</span></label>
-              <input
-                type="text"
-                className="form-control"
-                style={{ fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: '#0284C7' }}
-                value={formData.consolidationNumber}
-                onChange={(e) => setFormData({ ...formData, consolidationNumber: e.target.value })}
-                placeholder="e.g. CNS-2026-0819"
-                required
-              />
-              <span style={{ fontSize: '0.72rem', color: '#64748B' }}>Auto-generated, or customize to match your booking/consolidation reference.</span>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Consolidation Title <span className="required">*</span></label>
-              <input
-                type="text"
-                className="form-control"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                required
-              />
-            </div>
-          </div>
-
+          {/* Section: Vessel, Container, Seal */}
           <div className="grid grid-cols-2 gap-4">
             <div className="form-group">
               <label className="form-label">Ocean Vessel <span className="required">*</span></label>
@@ -767,13 +684,11 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
                 onChange={(e) => {
                   const selectedVesselName = e.target.value;
                   const vPrefix = selectedVesselName.split(' ').map(w => w[0]).join('').toUpperCase();
-                  const newVoyage = `V.2026-${vPrefix}-${Math.floor(10 + Math.random() * 90)}`;
                   const newContainer = `${vPrefix}U-${Math.floor(100000 + Math.random() * 900000)}-${Math.floor(Math.random() * 9)}`;
                   const newSeal = `SEAL-VI-${Math.floor(10000 + Math.random() * 90000)}`;
                   setFormData(prev => ({
                     ...prev,
                     vesselName: selectedVesselName,
-                    voyageNumber: newVoyage,
                     containerNumber: newContainer,
                     sealNumber: newSeal
                   }));
@@ -786,14 +701,12 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Voyage Number <span className="required">*</span></label>
+              <label className="form-label">Carrier</label>
               <input
                 type="text"
                 className="form-control"
-                value={formData.voyageNumber}
-                onChange={(e) => setFormData({ ...formData, voyageNumber: e.target.value })}
-                placeholder="e.g. V.2026-19E"
-                required
+                value={formData.carrier}
+                onChange={(e) => setFormData({ ...formData, carrier: e.target.value })}
               />
             </div>
           </div>
@@ -826,7 +739,7 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
           <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '1rem 1.25rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
             <div>
               <div style={{ fontWeight: 700, color: '#0A192F', fontSize: '0.95rem' }}>
-                {formData.vesselName} ({formData.voyageNumber}) • {formData.dischargePort}
+                {formData.vesselName} • {formData.dischargePort}
               </div>
               <div style={{ fontSize: '0.8rem', color: '#64748B' }}>
                 Container: {formData.containerNumber} ({formData.containerType}) • Seal: {formData.sealNumber}
@@ -837,7 +750,7 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
                 {totals.totalCft} CFT ({totals.totalCbm} CBM)
               </div>
               <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
-                {totals.totalReceipts} WRs • {totals.totalPieces} Pieces • {totals.fillPercentage}% full
+                {totals.totalReceipts} WRs • {totals.totalPieces} Pieces
               </div>
             </div>
           </div>

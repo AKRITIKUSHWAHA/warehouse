@@ -26,7 +26,6 @@ export const createShipmentSchema = z.object({
   agentName: z.string().optional(),
 
   vesselName: z.string().optional(),
-  voyageNumber: z.string().optional(),
   carrier: z.string().optional(),
 
   containerNumber: z.string().optional(),

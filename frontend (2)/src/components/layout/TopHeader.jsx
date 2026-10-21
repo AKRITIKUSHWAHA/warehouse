@@ -73,7 +73,7 @@ export const TopHeader = ({
         >
           <Search size={15} style={{ color: '#64748B', flexShrink: 0 }} />
           <span style={{ fontSize: '0.8rem', color: '#64748B', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            Search Shipments, B/L, Receipts, Containers...
+            Search Shipments, B/L, Receipts...
           </span>
           <span style={{
             fontSize: '0.65rem',
@@ -245,7 +245,7 @@ export const TopHeader = ({
                     <CheckCircle2 size={14} style={{ color: '#10B981' }} /> Manifest MNF-0441 Generated
                   </div>
                   <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '2px' }}>
-                    MV Caribbean Carrier (Voyage 2026-18W) manifest ready for customs export.
+                    MV Caribbean Carrier manifest ready for customs export.
                   </div>
                 </div>
               </div>

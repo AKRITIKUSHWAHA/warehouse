@@ -615,7 +615,6 @@ async function runTests() {
         containerNumber: 'MSKU-829104-5',
         sealNumber: 'SEAL-VI-8821',
         vesselName: 'M/V Tropic Carib',
-        voyageNumber: 'TC-2026-081',
         carrier: 'Tropical Shipping Line',
         totalPackages: 10,
         totalWeightLbs: 500,

@@ -69,8 +69,7 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
           { id: 'shipments', label: 'Ocean Shipments', icon: Ship, moduleId: 'shipments' },
           { id: 'bills-of-lading', label: roleKey === 'documentation' ? 'Master Bills (MBL)' : 'Master Bills of Lading', icon: FileText, moduleId: 'bills-of-lading' },
           { id: 'manifests', label: 'Customs Manifests', icon: FileSpreadsheet, moduleId: 'manifests' },
-          { id: 'containers', label: 'Containers', icon: Box, moduleId: 'containers' },
-          { id: 'vessels', label: 'Vessels & Trips', icon: Anchor, moduleId: 'vessels' },
+          { id: 'vessels', label: 'Fleet Directory', icon: Anchor, moduleId: 'vessels' },
           { id: 'tracking', label: roleKey === 'warehouse' ? 'Search & Track Cargo' : 'Cargo Tracking', icon: Search, moduleId: 'tracking' }
         ]
       },

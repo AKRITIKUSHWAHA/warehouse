@@ -101,9 +101,7 @@ export class ConsolidationService {
       const loadingPort = input.loadingPort || 'Port of Miami (USMIA)';
       const title = input.title || `Consolidation - ${destinationPort || 'General'} (${createdDate})`;
 
-      const validContainerId = input.containerId && UUID_REGEX.test(input.containerId) ? input.containerId : null;
       const validVesselId = input.vesselId && UUID_REGEX.test(input.vesselId) ? input.vesselId : null;
-      const validVoyageId = input.voyageId && UUID_REGEX.test(input.voyageId) ? input.voyageId : null;
 
       let validAgentId: string | null = null;
       if (input.agentId && UUID_REGEX.test(input.agentId)) {
@@ -132,15 +130,11 @@ export class ConsolidationService {
           destinationCode: input.destinationCode || '',
           createdDate,
           status: input.status || 'Planning',
-          containerId: validContainerId,
           containerNumber: input.containerNumber || null,
           containerType: input.containerType || "40' Standard Dry",
-          containerCapacityCbm: input.containerCapacityCbm ? String(Number(input.containerCapacityCbm).toFixed(2)) : '67.70',
           sealNumber: input.sealNumber || null,
           vesselId: validVesselId,
           vesselName: input.vesselName || null,
-          voyageId: validVoyageId,
-          voyageNumber: input.voyageNumber || null,
           carrier: input.carrier || 'Tropical Shipping Line',
           loadingPort,
           dischargePort,
@@ -154,7 +148,6 @@ export class ConsolidationService {
           totalWeightKg: String(weightKg.toFixed(2)),
           totalCft: String((Number(input.totalCft) || 0).toFixed(2)),
           totalCbm: String((Number(input.totalCbm) || 0).toFixed(2)),
-          containerFillPercentage: String((Number(input.containerFillPercentage) || 0).toFixed(2)),
           assignedShipmentId: shipmentNumber,
           assignedMasterBLId: blNumber,
           notes: input.notes || null,
@@ -258,7 +251,6 @@ export class ConsolidationService {
           agentId: validAgentId,
           agentName: input.agentName || null,
           vesselName: input.vesselName || null,
-          voyageNumber: input.voyageNumber || null,
           carrier: input.carrier || '',
           containerNumber: input.containerNumber || null,
           containerType: input.containerType || "40' Standard Dry",
@@ -310,7 +302,6 @@ export class ConsolidationService {
           preCarriageBy: 'Truck / Drayage',
           placeOfReceipt: 'Miami CFS Facility',
           oceanVessel: input.vesselName || null,
-          voyageNumber: input.voyageNumber || null,
           carrier: input.carrier || 'Tropical Shipping Line',
           portOfLoading: loadingPort,
           portOfDischarge: dischargePort,
@@ -337,9 +328,8 @@ export class ConsolidationService {
         .values({
           manifestNumber,
           type: 'Ocean Cargo Inward / Outward Manifest',
-          title: `Ocean Cargo Manifest - ${destinationPort} (${input.vesselName || 'Ocean Vessel'} / ${input.voyageNumber || 'Voyage'})`,
+          title: `Ocean Cargo Manifest - ${destinationPort} (${input.vesselName || 'Ocean Vessel'})`,
           vesselName: input.vesselName || 'Ocean Carrier',
-          voyageNumber: input.voyageNumber || 'V.001',
           flag: '',
           masterName: 'Capt. E. Smith',
           portOfLoading: loadingPort,
@@ -448,14 +438,8 @@ export class ConsolidationService {
     }
 
     const updatePayload: Record<string, unknown> = { ...input };
-    if (input.containerId !== undefined) {
-      updatePayload.containerId = input.containerId && UUID_REGEX.test(input.containerId) ? input.containerId : null;
-    }
     if (input.vesselId !== undefined) {
       updatePayload.vesselId = input.vesselId && UUID_REGEX.test(input.vesselId) ? input.vesselId : null;
-    }
-    if (input.voyageId !== undefined) {
-      updatePayload.voyageId = input.voyageId && UUID_REGEX.test(input.voyageId) ? input.voyageId : null;
     }
     if (input.totalWeightLbs !== undefined) {
       updatePayload.totalWeightLbs = String((Number(input.totalWeightLbs) || 0).toFixed(2));
@@ -468,12 +452,6 @@ export class ConsolidationService {
     }
     if (input.totalCbm !== undefined) {
       updatePayload.totalCbm = String((Number(input.totalCbm) || 0).toFixed(2));
-    }
-    if (input.containerCapacityCbm !== undefined) {
-      updatePayload.containerCapacityCbm = String((Number(input.containerCapacityCbm) || 67.7).toFixed(2));
-    }
-    if (input.containerFillPercentage !== undefined) {
-      updatePayload.containerFillPercentage = String((Number(input.containerFillPercentage) || 0).toFixed(2));
     }
 
     const updated = await this.repo.update(id, updatePayload);

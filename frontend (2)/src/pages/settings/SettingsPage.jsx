@@ -394,7 +394,7 @@ export const SettingsPage = () => {
                   Option A: Clear All Data (Start Fresh Blank Slate)
                 </h3>
                 <p style={{ fontSize: '0.85rem', color: '#475569', margin: '6px 0 1rem 0' }}>
-                  Wipes out all temporary mock transactions and master data (Customers, Ports, Vessels, Agents, Containers, etc.) so you can test entering your own real data from a completely empty, clean slate.
+                  Wipes out all temporary mock transactions and master data (Customers, Ports, Vessels, Agents, etc.) so you can test entering your own real data from a completely empty, clean slate.
                   <br />
                   <em>Only Staff Logins and System Settings will remain saved!</em>
                 </p>

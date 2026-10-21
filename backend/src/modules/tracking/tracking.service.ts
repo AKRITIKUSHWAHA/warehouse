@@ -37,7 +37,6 @@ export class TrackingService {
       destination: shipment.destination,
       destinationPort: shipment.destinationPort,
       vesselName: shipment.vesselName,
-      voyageNumber: shipment.voyageNumber,
       containerNumber: shipment.containerNumber,
       etd: shipment.etd,
       eta: shipment.eta,
@@ -54,8 +53,7 @@ export class TrackingService {
         status: 'In Transit',
         origin: 'Port of Miami (USMIA)',
         destination: 'Destination Port',
-        vesselName: 'Feeder Boat',
-        voyageNumber: 'VOY-2026-01'
+        vesselName: 'Feeder Boat'
       }
     ];
   }

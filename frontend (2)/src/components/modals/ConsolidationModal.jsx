@@ -21,7 +21,6 @@ export const ConsolidationModal = ({
     sealNumber: '',
     containerType: '40ft High Cube Dry',
     vesselName: vessels[0]?.name || '',
-    voyageNumber: '',
     carrier: 'Tropical Shipping',
     destinationPort: defaultPort,
     status: 'Loaded'
@@ -43,7 +42,6 @@ export const ConsolidationModal = ({
         sealNumber: consolidation.sealNumber || '',
         containerType: consolidation.containerType || '40ft High Cube Dry',
         vesselName: consolidation.vesselName || (vessels[0]?.name || ''),
-        voyageNumber: consolidation.voyageNumber || '',
         carrier: consolidation.carrier || 'Tropical Shipping',
         destinationPort: consolidation.destinationPort || defaultPort,
         status: consolidation.status || 'Loaded'
@@ -56,7 +54,6 @@ export const ConsolidationModal = ({
         sealNumber: '',
         containerType: '40ft High Cube Dry',
         vesselName: vessels[0]?.name || '',
-        voyageNumber: '',
         carrier: 'Tropical Shipping',
         destinationPort: defaultPort,
         status: 'Loaded'
@@ -156,7 +153,7 @@ export const ConsolidationModal = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="form-group">
                 <label className="form-label">Vessel Name</label>
                 <input
@@ -164,16 +161,6 @@ export const ConsolidationModal = ({
                   className="form-control"
                   value={formData.vesselName}
                   onChange={(e) => setFormData({ ...formData, vesselName: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Voyage Number</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={formData.voyageNumber}
-                  onChange={(e) => setFormData({ ...formData, voyageNumber: e.target.value })}
                 />
               </div>
 

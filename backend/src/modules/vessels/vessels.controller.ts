@@ -13,7 +13,6 @@ export class VesselsController {
 
     const { data, total } = await this.service.listVessels({
       search: query.search,
-      status: query.status,
       limit,
       offset,
     });

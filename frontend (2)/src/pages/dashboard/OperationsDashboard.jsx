@@ -33,7 +33,7 @@ import { useAuth } from '../../context/AuthContext';
 import { adminService } from '../../services';
 
 export const OperationsDashboard = ({ onNavigate }) => {
-  const { customers, warehouseReceipts, houseBills, consolidations, shipments, billsOfLading, manifests, containers, cargoItems } = useAppData();
+  const { customers, warehouseReceipts, houseBills, consolidations, shipments, billsOfLading, manifests, cargoItems } = useAppData();
   const { currentUser } = useAuth();
 
   const roleKey = currentUser?.roleKey || 'super_admin';
@@ -378,13 +378,13 @@ export const OperationsDashboard = ({ onNavigate }) => {
           style={{ padding: '1rem', cursor: 'pointer', borderLeft: '4px solid #10B981' }}
         >
           <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#10B981', textTransform: 'uppercase' }}>
-            Maritime Fleet
+            Maritime Shipments
           </div>
           <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0A192F', margin: '0.2rem 0' }}>
             {dbMetrics?.totalShipments ?? activeShipments.length} In Transit
           </div>
           <div style={{ fontSize: '0.72rem', color: '#64748B' }}>
-            {dbMetrics?.totalContainers ? `${dbMetrics.totalContainers} Fleet Containers` : 'Active Ocean Shipments'}
+            Active Ocean Freight Shipments
           </div>
         </div>
       </div>
@@ -475,7 +475,7 @@ export const OperationsDashboard = ({ onNavigate }) => {
       case 'warehouse':
         return `Welcome, ${currentUser?.name}. Intake cargo, measure package dimensions, and print 4x6 labels.`;
       case 'operations':
-        return `Welcome, ${currentUser?.name}. Consolidate staged cargo into ocean containers and dispatch vessels.`;
+        return `Welcome, ${currentUser?.name}. Consolidate staged cargo and dispatch shipments.`;
       case 'documentation':
         return `Welcome, ${currentUser?.name}. Review Bills of Lading, manage holds, and export customs manifests.`;
       default:
@@ -579,7 +579,7 @@ export const OperationsDashboard = ({ onNavigate }) => {
                 <div>
                   <h3 style={{ fontSize: '1rem', color: '#0A192F' }}>Active Master Shipments</h3>
                   <p style={{ fontSize: '0.75rem', color: '#64748B', margin: 0 }}>
-                    Real-time status of consolidated ocean freight containers
+                    Real-time status of consolidated ocean freight shipments
                   </p>
                 </div>
                 <button

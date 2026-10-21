@@ -7,15 +7,12 @@ export class VesselsRepository {
   async findMany(filters: VesselFilterParams) {
     const conditions = [];
 
-    if (filters.status && filters.status !== 'All') {
-      conditions.push(eq(vessels.status, filters.status));
-    }
     if (filters.search) {
       conditions.push(
         or(
           ilike(vessels.name, `%${filters.search}%`),
-          ilike(vessels.imoNumber, `%${filters.search}%`),
-          ilike(vessels.carrier, `%${filters.search}%`)
+          ilike(vessels.carrier, `%${filters.search}%`),
+          ilike(vessels.type, `%${filters.search}%`)
         )
       );
     }
@@ -39,38 +36,38 @@ export class VesselsRepository {
 
   async findById(id: string) {
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-    const condition = isUuid
-      ? or(eq(vessels.id, id), eq(vessels.imoNumber, id))
-      : eq(vessels.imoNumber, id);
-    const result = await db.select().from(vessels).where(condition).limit(1);
+    if (!isUuid) {
+      const byName = await db.select().from(vessels).where(ilike(vessels.name, id)).limit(1);
+      return byName[0] || null;
+    }
+    const result = await db.select().from(vessels).where(eq(vessels.id, id)).limit(1);
     return result[0] || null;
   }
 
   async create(data: Record<string, unknown>) {
-    const isUuid = typeof data.id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.id);
-    const insertData: any = { ...data };
-    if (!isUuid) delete insertData.id;
-    delete insertData.lengthFeet;
-    if (insertData.capacityTeu !== undefined) insertData.capacityTeu = Number(insertData.capacityTeu);
-    if (insertData.deadweightTonnage !== undefined) insertData.deadweightTonnage = Number(insertData.deadweightTonnage);
-    if (insertData.builtYear !== undefined) insertData.builtYear = Number(insertData.builtYear);
+    const insertData: any = {
+      name: data.name,
+      type: data.type || 'Container Vessel',
+      notes: data.notes || '',
+      carrier: data.carrier || ''
+    };
+    if (typeof data.id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.id)) {
+      insertData.id = data.id;
+    }
 
     const [created] = await db.insert(vessels).values(insertData).returning();
     return created;
   }
 
   async update(id: string, data: Record<string, unknown>) {
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-    const condition = isUuid
-      ? or(eq(vessels.id, id), eq(vessels.imoNumber, id))
-      : eq(vessels.imoNumber, id);
+    const updateData: any = { updatedAt: new Date() };
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.type !== undefined) updateData.type = data.type;
+    if (data.notes !== undefined) updateData.notes = data.notes;
+    if (data.carrier !== undefined) updateData.carrier = data.carrier;
 
-    const updateData: Record<string, unknown> = { ...data, updatedAt: new Date() };
-    delete updateData.id;
-    delete updateData.lengthFeet;
-    if (updateData.capacityTeu !== undefined) updateData.capacityTeu = Number(updateData.capacityTeu);
-    if (updateData.deadweightTonnage !== undefined) updateData.deadweightTonnage = Number(updateData.deadweightTonnage);
-    if (updateData.builtYear !== undefined) updateData.builtYear = Number(updateData.builtYear);
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    const condition = isUuid ? eq(vessels.id, id) : ilike(vessels.name, id);
 
     const [updated] = await db.update(vessels).set(updateData).where(condition).returning();
     return updated || null;
@@ -78,9 +75,7 @@ export class VesselsRepository {
 
   async delete(id: string) {
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-    const condition = isUuid
-      ? or(eq(vessels.id, id), eq(vessels.imoNumber, id))
-      : eq(vessels.imoNumber, id);
+    const condition = isUuid ? eq(vessels.id, id) : ilike(vessels.name, id);
 
     const [deleted] = await db.delete(vessels).where(condition).returning();
     return !!deleted;

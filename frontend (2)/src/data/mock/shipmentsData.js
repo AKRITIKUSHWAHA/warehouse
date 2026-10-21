@@ -1,2 +1,2 @@
-// Active Shipments & Voyage Trackers - Clean initial state
+// Active Shipments - Clean initial state
 export const initialShipments = [];

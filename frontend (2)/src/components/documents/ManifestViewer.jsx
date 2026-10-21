@@ -179,15 +179,11 @@ export const ManifestViewer = ({ manifest }) => {
           </div>
         </div>
 
-        {/* Voyage Information Matrix */}
-        <div style={{ display: 'grid', gridTemplateColumns: isLandscape ? 'repeat(6, 1fr)' : 'repeat(3, 1fr)', border: '1px solid #0A192F', background: '#F8FAFC', marginBottom: '1rem', fontSize: '0.75rem' }}>
+        {/* Vessel & Transport Information Matrix */}
+        <div style={{ display: 'grid', gridTemplateColumns: isLandscape ? 'repeat(5, 1fr)' : 'repeat(3, 1fr)', border: '1px solid #0A192F', background: '#F8FAFC', marginBottom: '1rem', fontSize: '0.75rem' }}>
           <div style={{ padding: '0.5rem', borderRight: '1px solid #E2E8F0', borderBottom: isLandscape ? 'none' : '1px solid #E2E8F0' }}>
             <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#64748B' }}>VESSEL NAME</div>
             <div style={{ fontWeight: 800 }}>{activeManifest.vesselName}</div>
-          </div>
-          <div style={{ padding: '0.5rem', borderRight: '1px solid #E2E8F0', borderBottom: isLandscape ? 'none' : '1px solid #E2E8F0' }}>
-            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#64748B' }}>VOYAGE NUMBER</div>
-            <div style={{ fontWeight: 800 }}>{activeManifest.voyageNumber}</div>
           </div>
           <div style={{ padding: '0.5rem', borderRight: isLandscape ? '1px solid #E2E8F0' : 'none', borderBottom: isLandscape ? 'none' : '1px solid #E2E8F0' }}>
             <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#64748B' }}>CARRIER</div>

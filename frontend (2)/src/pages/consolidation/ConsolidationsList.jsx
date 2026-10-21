@@ -3,7 +3,6 @@ import { PageHeader } from '../../components/common/PageHeader';
 import { ResponsiveTable } from '../../components/tables/ResponsiveTable';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { WorkflowIndicator } from '../../components/common/WorkflowIndicator';
-import { ContainerFillBar } from '../../components/common/ContainerFillBar';
 import { ConsolidationModal } from '../../components/modals/ConsolidationModal';
 import { BillOfLadingModal } from '../../components/modals/BillOfLadingModal';
 import { DeleteConfirmModal } from '../../components/modals/DeleteConfirmModal';
@@ -79,12 +78,12 @@ export const ConsolidationsList = ({ onNavigate }) => {
       )
     },
     {
-      header: 'Vessel / Voyage',
+      header: 'Vessel & Carrier',
       accessor: 'vesselName',
       render: (item) => (
         <div>
           <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{item.vesselName}</div>
-          <div style={{ fontSize: '0.72rem', color: '#64748B' }}>{item.voyageNumber} • {item.carrier}</div>
+          <div style={{ fontSize: '0.72rem', color: '#64748B' }}>{item.carrier}</div>
         </div>
       )
     },
@@ -100,20 +99,7 @@ export const ConsolidationsList = ({ onNavigate }) => {
         </div>
       )
     },
-    {
-      header: 'Container Fill',
-      accessor: 'containerFillPercentage',
-      render: (item) => (
-        <div style={{ minWidth: '130px' }}>
-          <ContainerFillBar
-            fillPercentage={item.containerFillPercentage}
-            currentCbm={item.totalCbm}
-            maxCbm={item.containerCapacityCbm || 76.2}
-            containerType={item.containerType}
-          />
-        </div>
-      )
-    },
+
     {
       header: 'Status',
       accessor: 'status',

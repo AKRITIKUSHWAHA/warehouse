@@ -23,7 +23,6 @@ export const ShipmentModal = ({
     destinationPort: defaultDest,
     destinationCode: defaultDestCode,
     vesselName: vessels[0]?.name || '',
-    voyageNumber: '',
     carrier: '',
     containerNumber: '',
     sealNumber: '',
@@ -53,7 +52,6 @@ export const ShipmentModal = ({
         destinationPort: shipment.destinationPort || defaultDest,
         destinationCode: shipment.destinationCode || defaultDestCode,
         vesselName: shipment.vesselName || (vessels[0]?.name || ''),
-        voyageNumber: shipment.voyageNumber || '',
         carrier: shipment.carrier || '',
         containerNumber: shipment.containerNumber || '',
         sealNumber: shipment.sealNumber || '',
@@ -74,7 +72,6 @@ export const ShipmentModal = ({
         destinationPort: defaultDest,
         destinationCode: defaultDestCode,
         vesselName: vessels[0]?.name || '',
-        voyageNumber: '',
         carrier: '',
         containerNumber: '',
         sealNumber: '',
@@ -192,7 +189,7 @@ export const ShipmentModal = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="form-group">
                 <label className="form-label">Vessel Name</label>
                 <input
@@ -200,16 +197,6 @@ export const ShipmentModal = ({
                   className="form-control"
                   value={formData.vesselName}
                   onChange={(e) => setFormData({ ...formData, vesselName: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Voyage Number</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={formData.voyageNumber}
-                  onChange={(e) => setFormData({ ...formData, voyageNumber: e.target.value })}
                 />
               </div>
 

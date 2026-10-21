@@ -42,7 +42,7 @@ export const ManifestDetail = ({ manifestId, onNavigate }) => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       <PageHeader
         title={`Shipping Manifest ${currentManifest.manifestNumber}`}
-        subtitle={`${currentManifest.vesselName} (${currentManifest.voyageNumber}) — ${currentManifest.portOfLoading} to ${currentManifest.portOfDischarge}`}
+        subtitle={`${currentManifest.vesselName || 'Ocean Vessel'} — ${currentManifest.portOfLoading} to ${currentManifest.portOfDischarge}`}
         icon={FileSpreadsheet}
         breadcrumbs={[
           { label: 'Shipping Manifests', href: '#' },

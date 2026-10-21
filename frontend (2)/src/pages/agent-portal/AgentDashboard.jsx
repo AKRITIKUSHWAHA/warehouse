@@ -205,7 +205,7 @@ export const AgentDashboard = ({ onNavigate }) => {
                   <thead>
                     <tr>
                       <th>Shipment #</th>
-                      <th>Vessel &amp; Voyage</th>
+                      <th>Vessel &amp; Carrier</th>
                       <th>Cargo Volume</th>
                       <th>ETA (Nassau)</th>
                       <th>B/L Status</th>
@@ -228,7 +228,7 @@ export const AgentDashboard = ({ onNavigate }) => {
                           </td>
                           <td>
                             <div style={{ fontWeight: 600 }}>{s.vesselName}</div>
-                            <div style={{ fontSize: '0.72rem', color: '#64748B' }}>{s.voyageNumber} • {s.carrier}</div>
+                            <div style={{ fontSize: '0.72rem', color: '#64748B' }}>{s.carrier}</div>
                           </td>
                           <td>
                             <strong>{s.totalCbm} CBM</strong>

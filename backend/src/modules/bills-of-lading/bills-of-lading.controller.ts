@@ -83,7 +83,6 @@ export class BillsOfLadingController {
       agentId: resolvedAgentId,
       agentName: body.agentName || (user?.roleKey === 'agent' ? user.name : ''),
       oceanVessel: body.oceanVessel || '',
-      voyageNumber: body.voyageNumber || '',
       carrier: body.carrier || '',
       portOfLoading: body.portOfLoading || 'Port of Miami, USA (USMIA)',
       portOfDischarge: body.portOfDischarge || '',

@@ -16,7 +16,6 @@ export interface TrackingLookupResult {
   destination: string;
   destinationPort: string;
   vesselName?: string | null;
-  voyageNumber?: string | null;
   containerNumber?: string | null;
   etd?: string | null;
   eta?: string | null;

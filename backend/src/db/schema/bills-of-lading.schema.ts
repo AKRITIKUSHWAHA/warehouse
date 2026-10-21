@@ -46,7 +46,6 @@ export const billsOfLading = pgTable('bills_of_lading', {
   preCarriageBy: text('pre_carriage_by'),
   placeOfReceipt: text('place_of_receipt'),
   oceanVessel: text('ocean_vessel'),
-  voyageNumber: text('voyage_number'),
   carrier: text('carrier'),
   portOfLoading: text('port_of_loading').notNull(),
   portOfDischarge: text('port_of_discharge').notNull(),

@@ -78,7 +78,6 @@ export const ShipmentHistoryArchive = ({ onNavigate }) => {
       'Origin',
       'Destination Port',
       'Vessel',
-      'Voyage',
       'Container #',
       'Seal #',
       'B/L Number',
@@ -104,7 +103,6 @@ export const ShipmentHistoryArchive = ({ onNavigate }) => {
       `"${s.origin}"`,
       `"${s.destinationPort}"`,
       `"${s.vesselName || ''}"`,
-      `"${s.voyageNumber || ''}"`,
       `"${s.containerNumber || ''}"`,
       `"${s.sealNumber || ''}"`,
       `"${s.billOfLadingNumber || ''}"`,
@@ -203,7 +201,7 @@ export const ShipmentHistoryArchive = ({ onNavigate }) => {
             <span>{item.vesselName || 'Ocean Carrier'}</span>
           </div>
           <div style={{ fontSize: '0.72rem', color: '#64748B', marginTop: '1px' }}>
-            Voyage: {item.voyageNumber || 'N/A'}
+            Carrier: {item.carrier || 'Ocean Line'}
           </div>
           <div style={{ fontSize: '0.7rem', color: '#475569', marginTop: '1px', fontFamily: 'JetBrains Mono, monospace' }}>
             {item.containerNumber ? `Box: ${item.containerNumber}` : 'Pending Container'}
@@ -387,7 +385,7 @@ export const ShipmentHistoryArchive = ({ onNavigate }) => {
               {metrics ? metrics.deliveredCount : 0}
             </div>
             <div style={{ fontSize: '0.72rem', color: '#0284C7', fontWeight: 600, marginTop: '2px' }}>
-              {metrics ? `${metrics.inTransitCount} In Transit / Ocean Voyage` : 'Live Tracking'}
+              {metrics ? `${metrics.inTransitCount} In Transit / Ocean Freight` : 'Live Tracking'}
             </div>
           </div>
         </div>
@@ -580,7 +578,7 @@ export const ShipmentHistoryArchive = ({ onNavigate }) => {
                   </div>
                 </div>
 
-                {/* Additional Equipment & Voyage Details */}
+                {/* Additional Equipment Details */}
                 <div
                   style={{
                     display: 'grid',
