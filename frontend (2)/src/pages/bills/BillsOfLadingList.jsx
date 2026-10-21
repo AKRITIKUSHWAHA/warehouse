@@ -285,7 +285,7 @@ export const BillsOfLadingList = ({ onNavigate }) => {
                   title="Issue customer House Bill of Lading"
                 >
                   <Plus size={15} />
-                  <span>+ Issue House B/L</span>
+                  <span>Issue House B/L</span>
                 </button>
                 <button
                   onClick={() => setShowAddModal(true)}
@@ -293,7 +293,7 @@ export const BillsOfLadingList = ({ onNavigate }) => {
                   title="Issue ocean carrier Master Bill of Lading"
                 >
                   <Plus size={15} />
-                  <span>+ Issue Master B/L</span>
+                  <span>Issue Master B/L</span>
                 </button>
               </>
             )}
