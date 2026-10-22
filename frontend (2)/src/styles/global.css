@@ -371,18 +371,19 @@ button {
 /* Page Header component styles */
 .page-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 1.25rem;
   margin-bottom: 1.25rem;
+  flex-wrap: wrap;
 }
 
 .page-header-title {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  flex: 1;
-  min-width: 0;
+  min-width: 260px;
+  flex-shrink: 0;
 }
 
 .page-header-title h1 {
@@ -392,6 +393,7 @@ button {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  white-space: nowrap;
 }
 
 .page-header-desc {
@@ -403,8 +405,8 @@ button {
 .page-header-actions {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  flex-shrink: 0;
+  gap: 0.5rem;
+  flex-wrap: wrap;
   margin-left: auto;
 }
 
@@ -473,8 +475,8 @@ button {
   }
 
   .page-header-title h1 {
-    font-size: 1.35rem;
-    word-break: break-word;
+    font-size: 1.25rem;
+    white-space: nowrap;
   }
 
   @media (max-width: 580px) {
