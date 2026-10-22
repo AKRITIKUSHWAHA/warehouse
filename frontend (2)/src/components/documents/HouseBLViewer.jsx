@@ -93,6 +93,52 @@ export const HouseBLViewer = ({ hbl, onNavigate }) => {
 
   return (
     <div className="house-bl-viewer-wrapper" style={{ maxWidth: '900px', margin: '0 auto' }}>
+      {/* Dynamic Print Styles for House B/L to ensure single sheet A4 & zero blank pages */}
+      <style>{`
+        @media print {
+          @page {
+            size: A4 portrait !important;
+            margin: 8mm !important;
+          }
+          html, body {
+            width: 100% !important;
+            height: auto !important;
+            min-height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          .house-bl-viewer-wrapper {
+            max-width: 100% !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          .printable-document-hbl {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 auto !important;
+            box-sizing: border-box !important;
+            page-break-before: avoid !important;
+            break-before: avoid !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            page-break-after: avoid !important;
+            break-after: avoid !important;
+            box-shadow: none !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            min-height: 268mm !important;
+            max-height: 275mm !important;
+            height: auto !important;
+            padding: 6mm 8mm !important;
+          }
+        }
+      `}</style>
+
       {/* Top Action Bar (hidden in print) */}
       <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', background: '#FFFFFF', padding: '0.75rem 1.25rem', borderRadius: '8px', border: '1px solid #E2E8F0', flexWrap: 'wrap', gap: '0.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

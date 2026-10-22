@@ -61,7 +61,7 @@ export const HouseBillDetail = ({ hblId, onNavigate }) => {
   );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '1100px', margin: '0 auto' }}>
+    <div className="hbl-detail-container" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '1100px', margin: '0 auto' }}>
       <div className="no-print">
         <PageHeader
           title={`House Bill of Lading ${hbl.hblNumber}`}

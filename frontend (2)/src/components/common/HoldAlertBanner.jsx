@@ -12,7 +12,7 @@ export const HoldAlertBanner = ({
   const canClear = !isAgent && (currentRole === 'super_admin' || currentRole === 'documentation');
 
   return (
-    <div className={`hold-banner ${variant === 'danger' ? 'hold-banner-danger' : ''}`}>
+    <div className={`hold-banner no-print ${variant === 'danger' ? 'hold-banner-danger' : ''}`}>
       <div className="hold-banner-icon">
         <ShieldAlert size={22} />
       </div>

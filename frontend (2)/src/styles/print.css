@@ -29,6 +29,10 @@
   .tabs-container,
   .breadcrumb,
   .workflow-indicator-card,
+  .hold-banner,
+  .hold-banner-danger,
+  .hold-alert-banner,
+  .agent-status-banner,
   nav,
   header {
     display: none !important;
@@ -84,7 +88,7 @@
     display: none !important;
   }
 
-  #root, .main-wrapper, .main-content, .app-container, .house-bl-viewer-wrapper, .receipt-viewer-wrapper, .wr-detail-container, .manifest-viewer-wrapper {
+  #root, .main-wrapper, .main-content, .app-container, .house-bl-viewer-wrapper, .receipt-viewer-wrapper, .wr-detail-container, .manifest-viewer-wrapper, .master-bl-viewer-wrapper, .agent-bl-detail-container, .bl-detail-container, .hbl-detail-container {
     padding: 0 !important;
     margin: 0 !important;
     max-width: 100% !important;
@@ -151,16 +155,26 @@
     padding: 0.12in !important;
   }
 
+  /* Eliminate any blank second page for HBL */
+  body:has(.printable-document-hbl) {
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
   .printable-document-hbl {
     width: 100% !important;
     max-width: 100% !important;
-    min-height: 275mm !important;
-    height: 275mm !important;
+    min-height: 268mm !important;
+    max-height: 275mm !important;
+    height: auto !important;
     margin: 0 auto !important;
     border: 2.5px solid #0A192F !important;
-    padding: 0.22in !important;
+    padding: 6mm 8mm !important;
     box-sizing: border-box !important;
     box-shadow: none !important;
+    page-break-before: avoid !important;
+    break-before: avoid !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
     page-break-after: avoid !important;
@@ -195,22 +209,25 @@
   /* --------------------------------------------------------------------------
      Master B/L Document Print Specifics (Standard Full-Page A4 Portrait)
      -------------------------------------------------------------------------- */
-  @page bl-document-page {
-    size: A4 portrait;
-    margin: 8mm;
+  body:has(.printable-document-bl) {
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
   }
 
   .printable-document-bl {
-    page: bl-document-page;
     width: 100% !important;
     max-width: 100% !important;
-    min-height: 275mm !important;
-    height: 275mm !important;
+    min-height: 268mm !important;
+    max-height: 275mm !important;
+    height: auto !important;
     margin: 0 auto !important;
     border: 2.5px solid #0A192F !important;
-    padding: 8mm !important;
+    padding: 6mm 8mm !important;
     box-sizing: border-box !important;
     box-shadow: none !important;
+    page-break-before: avoid !important;
+    break-before: avoid !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
     page-break-after: avoid !important;

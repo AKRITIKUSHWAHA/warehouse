@@ -110,196 +110,198 @@ export const BillOfLadingDetail = ({ blId, onNavigate }) => {
   const displayConsolidationNumber = bl.consolidationNumber || linkedConsolidation?.consolidationNumber || (bl.consolidationId && !bl.consolidationId.includes('-4') && !bl.consolidationId.includes('-2e35') ? bl.consolidationId : 'CNS-2026-487');
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '1100px', margin: '0 auto' }}>
-      <PageHeader
-        title={`Master Bill of Lading ${bl.blNumber}`}
-        subtitle={
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '2px' }}>
-            <span>Consigned to {bl.consignee?.name || bl.consignee} via {bl.oceanVessel} ({bl.portOfDischarge})</span>
-            {(bl.consolidationNumber || bl.consolidationId || linkedConsolidation) && (
-              <span
-                onClick={() => onNavigate('consolidations', linkedConsolidation?.id || linkedConsolidation?.consolidationNumber || bl.consolidationId)}
-                style={{
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  color: '#0369A1',
-                  background: '#E0F2FE',
-                  padding: '0.15rem 0.5rem',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
-                title="View linked Consolidation"
-              >
-                <Layers size={12} />
-                <span>Consolidation: {displayConsolidationNumber}</span>
-              </span>
-            )}
-          </div>
-        }
-        icon={FileText}
-        breadcrumbs={[
-          { label: 'Bills of Lading', href: '#' },
-          { label: bl.blNumber }
-        ]}
-        actions={
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            <button
-              onClick={() => onNavigate('bills-of-lading')}
-              className="btn btn-outline btn-sm"
-            >
-              <ArrowLeft size={15} />
-              <span>Back</span>
-            </button>
-            <button
-              onClick={handleOneClickManifest}
-              disabled={isGeneratingManifest}
-              className="btn btn-primary btn-sm"
-              style={{ background: '#0284C7', borderColor: '#0284C7', color: '#FFFFFF', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '5px' }}
-              title="Generate customs cargo manifest from this Master B/L in 1 click"
-            >
-              <FileSpreadsheet size={15} />
-              <span>{isGeneratingManifest ? 'Generating...' : '⚡ Generate Manifest (1-Click)'}</span>
-            </button>
-            {bl.shipmentId && (
+    <div className="bl-detail-container" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '1100px', margin: '0 auto' }}>
+      <div className="no-print" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <PageHeader
+          title={`Master Bill of Lading ${bl.blNumber}`}
+          subtitle={
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '2px' }}>
+              <span>Consigned to {bl.consignee?.name || bl.consignee} via {bl.oceanVessel} ({bl.portOfDischarge})</span>
+              {(bl.consolidationNumber || bl.consolidationId || linkedConsolidation) && (
+                <span
+                  onClick={() => onNavigate('consolidations', linkedConsolidation?.id || linkedConsolidation?.consolidationNumber || bl.consolidationId)}
+                  style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    color: '#0369A1',
+                    background: '#E0F2FE',
+                    padding: '0.15rem 0.5rem',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                  title="View linked Consolidation"
+                >
+                  <Layers size={12} />
+                  <span>Consolidation: {displayConsolidationNumber}</span>
+                </span>
+              )}
+            </div>
+          }
+          icon={FileText}
+          breadcrumbs={[
+            { label: 'Bills of Lading', href: '#' },
+            { label: bl.blNumber }
+          ]}
+          actions={
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
               <button
-                onClick={() => onNavigate('shipments', bl.shipmentId)}
+                onClick={() => onNavigate('bills-of-lading')}
                 className="btn btn-outline btn-sm"
               >
-                <Ship size={15} />
-                <span>View Shipment</span>
+                <ArrowLeft size={15} />
+                <span>Back</span>
+              </button>
+              <button
+                onClick={handleOneClickManifest}
+                disabled={isGeneratingManifest}
+                className="btn btn-primary btn-sm"
+                style={{ background: '#0284C7', borderColor: '#0284C7', color: '#FFFFFF', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '5px' }}
+                title="Generate customs cargo manifest from this Master B/L in 1 click"
+              >
+                <FileSpreadsheet size={15} />
+                <span>{isGeneratingManifest ? 'Generating...' : '⚡ Generate Manifest (1-Click)'}</span>
+              </button>
+              {bl.shipmentId && (
+                <button
+                  onClick={() => onNavigate('shipments', bl.shipmentId)}
+                  className="btn btn-outline btn-sm"
+                >
+                  <Ship size={15} />
+                  <span>View Shipment</span>
+                </button>
+              )}
+              <button
+                onClick={() => setShowEditModal(true)}
+                className="btn btn-secondary btn-sm"
+              >
+                <Edit2 size={15} />
+                <span>Edit B/L</span>
+              </button>
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                className="btn btn-danger btn-sm"
+              >
+                <Trash2 size={15} />
+                <span>Delete B/L</span>
+              </button>
+              {!isAgent && bl.status !== 'Cancelled' && (
+                <>
+                  {isOnHold ? (
+                    <button
+                      onClick={() => setShowClearModal(true)}
+                      className="btn btn-success btn-sm"
+                    >
+                      <CheckCircle2 size={15} />
+                      <span>Clear Hold &amp; Release B/L</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setShowPlaceModal(true)}
+                      className="btn btn-warning btn-sm"
+                    >
+                      <ShieldAlert size={15} />
+                      <span>Place B/L On Hold</span>
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          }
+        />
+
+        {/* Primary Workflow Journey Indicator */}
+        <WorkflowIndicator currentStage="bills-of-lading" onStageClick={(stageId) => onNavigate(stageId)} />
+
+        {/* Status + Next Step Action Guide */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '1rem',
+          padding: '0.875rem 1.25rem',
+          background: isOnHold ? '#FEF2F2' : '#F0FDF4',
+          border: `1px solid ${isOnHold ? '#FECACA' : '#BBF7D0'}`,
+          borderRadius: '10px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{
+              background: isOnHold ? '#DC2626' : '#16A34A',
+              color: '#FFFFFF',
+              borderRadius: '6px',
+              padding: '0.35rem 0.65rem',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              letterSpacing: '0.04em'
+            }}>
+              CURRENT STATUS: {bl.status?.toUpperCase() || 'DRAFT'}
+            </div>
+            <span style={{ fontSize: '0.85rem', color: isOnHold ? '#991B1B' : '#166534', fontWeight: 600 }}>
+              {isOnHold
+                ? `Hold Active: ${bl.holdDetails?.reason || 'Requires supervisor resolution before release'}`
+                : bl.status === 'Released'
+                ? 'Ready for Customs Port Manifest generation & Destination Agent clearance'
+                : 'Review cargo & shipper details, link House B/Ls, then release'}
+            </span>
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            {isOnHold ? (
+              <button
+                onClick={() => setShowClearModal(true)}
+                className="btn btn-danger btn-sm"
+                style={{ fontSize: '0.8rem' }}
+              >
+                Clear Hold
+              </button>
+            ) : (
+              <button
+                onClick={handleOneClickManifest}
+                disabled={isGeneratingManifest}
+                className="btn btn-primary btn-sm"
+                style={{ fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <FileSpreadsheet size={13} />
+                <span>⚡ 1-Click Manifest</span>
               </button>
             )}
             <button
-              onClick={() => setShowEditModal(true)}
-              className="btn btn-secondary btn-sm"
+              onClick={() => onNavigate('house-bills')}
+              className="btn btn-outline btn-sm"
+              style={{ fontSize: '0.8rem', background: '#FFFFFF' }}
             >
-              <Edit2 size={15} />
-              <span>Edit B/L</span>
+              Manage House B/Ls
             </button>
-            <button
-              onClick={() => setShowDeleteModal(true)}
-              className="btn btn-danger btn-sm"
-            >
-              <Trash2 size={15} />
-              <span>Delete B/L</span>
-            </button>
-            {!isAgent && bl.status !== 'Cancelled' && (
-              <>
-                {isOnHold ? (
-                  <button
-                    onClick={() => setShowClearModal(true)}
-                    className="btn btn-success btn-sm"
-                  >
-                    <CheckCircle2 size={15} />
-                    <span>Clear Hold &amp; Release B/L</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setShowPlaceModal(true)}
-                    className="btn btn-warning btn-sm"
-                  >
-                    <ShieldAlert size={15} />
-                    <span>Place B/L On Hold</span>
-                  </button>
-                )}
-              </>
-            )}
           </div>
-        }
-      />
+        </div>
 
-      {/* Primary Workflow Journey Indicator */}
-      <WorkflowIndicator currentStage="bills-of-lading" onStageClick={(stageId) => onNavigate(stageId)} />
-
-      {/* Status + Next Step Action Guide */}
-      <div className="no-print" style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '1rem',
-        padding: '0.875rem 1.25rem',
-        background: isOnHold ? '#FEF2F2' : '#F0FDF4',
-        border: `1px solid ${isOnHold ? '#FECACA' : '#BBF7D0'}`,
-        borderRadius: '10px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div style={{
-            background: isOnHold ? '#DC2626' : '#16A34A',
-            color: '#FFFFFF',
-            borderRadius: '6px',
-            padding: '0.35rem 0.65rem',
-            fontSize: '0.75rem',
-            fontWeight: 700,
-            letterSpacing: '0.04em'
-          }}>
-            CURRENT STATUS: {bl.status?.toUpperCase() || 'DRAFT'}
+        {/* Cancelled B/L Banner */}
+        {bl.status === 'Cancelled' && (
+          <div style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '0.85rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#475569' }}>
+            <AlertTriangle size={20} style={{ color: '#64748B', flexShrink: 0 }} />
+            <div>
+              <strong style={{ color: '#0F172A' }}>Master B/L Cancelled &amp; Voided:</strong> This Bill of Lading has been cancelled and cannot be cleared, released or dispatched for delivery.
+            </div>
           </div>
-          <span style={{ fontSize: '0.85rem', color: isOnHold ? '#991B1B' : '#166534', fontWeight: 600 }}>
-            {isOnHold
-              ? `Hold Active: ${bl.holdDetails?.reason || 'Requires supervisor resolution before release'}`
-              : bl.status === 'Released'
-              ? 'Ready for Customs Port Manifest generation & Destination Agent clearance'
-              : 'Review cargo & shipper details, link House B/Ls, then release'}
-          </span>
-        </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          {isOnHold ? (
-            <button
-              onClick={() => setShowClearModal(true)}
-              className="btn btn-danger btn-sm"
-              style={{ fontSize: '0.8rem' }}
-            >
-              Clear Hold
-            </button>
-          ) : (
-            <button
-              onClick={handleOneClickManifest}
-              disabled={isGeneratingManifest}
-              className="btn btn-primary btn-sm"
-              style={{ fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}
-            >
-              <FileSpreadsheet size={13} />
-              <span>⚡ 1-Click Manifest</span>
-            </button>
-          )}
-          <button
-            onClick={() => onNavigate('house-bills')}
-            className="btn btn-outline btn-sm"
-            style={{ fontSize: '0.8rem', background: '#FFFFFF' }}
-          >
-            Manage House B/Ls
-          </button>
-        </div>
+        )}
+
+        {/* Prominent Hold Warning Banner */}
+        {isOnHold && (
+          <HoldAlertBanner
+            blNumber={bl.blNumber}
+            holdDetails={bl.holdDetails}
+            onClearHoldClick={() => setShowClearModal(true)}
+          />
+        )}
       </div>
-
-      {/* Cancelled B/L Banner */}
-      {bl.status === 'Cancelled' && (
-        <div style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '0.85rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#475569' }}>
-          <AlertTriangle size={20} style={{ color: '#64748B', flexShrink: 0 }} />
-          <div>
-            <strong style={{ color: '#0F172A' }}>Master B/L Cancelled &amp; Voided:</strong> This Bill of Lading has been cancelled and cannot be cleared, released or dispatched for delivery.
-          </div>
-        </div>
-      )}
-
-      {/* Prominent Hold Warning Banner */}
-      {isOnHold && (
-        <HoldAlertBanner
-          blNumber={bl.blNumber}
-          holdDetails={bl.holdDetails}
-          onClearHoldClick={() => setShowClearModal(true)}
-        />
-      )}
 
       {/* Authentic Master B/L Document Layout */}
       <MasterBLViewer bl={bl} linkedHbls={linkedHbls} onNavigate={onNavigate} />
 
       {/* Linked House Bills of Lading Explorer Card */}
-      <div className="card" style={{ padding: '1.25rem' }}>
+      <div className="card no-print" style={{ padding: '1.25rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Layers size={18} style={{ color: '#2563EB' }} />
