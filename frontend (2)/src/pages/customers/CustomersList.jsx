@@ -297,7 +297,7 @@ export const CustomersList = ({ onNavigate }) => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       <PageHeader
         title="Customers"
-        subtitle="Manage master shipping customer profiles. The same customer can act as Shipper or Consignee across all shipments and documentation."
+        subtitle="Manage master shipping customer profiles (Shippers & Consignees)."
         icon={Building2}
         breadcrumbs={[
           { label: 'Management', href: '#' },
