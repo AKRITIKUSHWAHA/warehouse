@@ -61,12 +61,14 @@ export const ConsolidationsList = ({ onNavigate }) => {
       )
     },
     {
-      header: 'Title & Destination',
-      accessor: 'title',
+      header: 'Destination Port',
+      accessor: 'destinationPort',
       render: (item) => (
         <div>
-          <div style={{ fontWeight: 600, color: '#0A192F' }}>{item.title}</div>
-          <div style={{ fontSize: '0.72rem', color: '#0284C7', fontWeight: 600 }}>{item.destinationPort}</div>
+          <div style={{ fontWeight: 600, color: '#0A192F' }}>{item.destinationPort}</div>
+          <div style={{ fontSize: '0.72rem', color: '#0284C7', fontWeight: 600 }}>
+            {item.loadingPort || 'Port of Miami (USMIA)'} ➔ {item.destinationCode || 'STT'}
+          </div>
         </div>
       )
     },

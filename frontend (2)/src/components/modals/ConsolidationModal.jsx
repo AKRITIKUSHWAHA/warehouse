@@ -65,7 +65,8 @@ export const ConsolidationModal = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+    const autoTitle = formData.title || (formData.containerNumber ? `Container ${formData.containerNumber}` : `Consolidation ${formData.consolidationNumber}`);
+    onSave({ ...formData, title: autoTitle });
     onClose();
   };
 
@@ -105,34 +106,26 @@ export const ConsolidationModal = ({
               </div>
 
               <div className="form-group">
-                <label className="form-label">Consolidation Title <span className="required">*</span></label>
-                <input
-                  type="text"
-                  required
-                  className="form-control"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div className="form-group">
                 <label className="form-label">Container Number <span className="required">*</span></label>
                 <input
                   type="text"
                   required
                   className="form-control"
+                  style={{ fontWeight: 600, fontFamily: 'JetBrains Mono, monospace' }}
                   value={formData.containerNumber}
+                  placeholder="e.g. CMAU-109482-7"
                   onChange={(e) => setFormData({ ...formData, containerNumber: e.target.value })}
                 />
               </div>
+            </div>
 
+            <div className="grid grid-cols-2 gap-4">
               <div className="form-group">
                 <label className="form-label">Bolt Seal Number</label>
                 <input
                   type="text"
                   className="form-control"
+                  placeholder="e.g. SEAL-VI-91380"
                   value={formData.sealNumber}
                   onChange={(e) => setFormData({ ...formData, sealNumber: e.target.value })}
                 />
