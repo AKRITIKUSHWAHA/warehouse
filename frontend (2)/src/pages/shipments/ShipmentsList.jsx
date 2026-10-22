@@ -5,7 +5,7 @@ import { StatusBadge } from '../../components/common/StatusBadge';
 import { ShipmentModal } from '../../components/modals/ShipmentModal';
 import { DeleteConfirmModal } from '../../components/modals/DeleteConfirmModal';
 import { WorkflowIndicator } from '../../components/common/WorkflowIndicator';
-import { Ship, Plus, Eye, Edit2, Trash2, Search, ArrowRight, Anchor, FileText, RefreshCw } from 'lucide-react';
+import { Ship, Plus, Eye, Edit2, Trash2, Search, ArrowRight, Anchor, FileText, RefreshCw, MoreVertical } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
 import { useAuth } from '../../context/AuthContext';
 
@@ -16,6 +16,13 @@ export const ShipmentsList = ({ onNavigate }) => {
   const [deletingShipment, setDeletingShipment] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [activeMenuId, setActiveMenuId] = useState(null);
+
+  useEffect(() => {
+    const handleOutsideClick = () => setActiveMenuId(null);
+    window.addEventListener('click', handleOutsideClick);
+    return () => window.removeEventListener('click', handleOutsideClick);
+  }, []);
 
   useEffect(() => {
     if ((!shipments || shipments.length === 0) && fetchMenuApi) {
@@ -105,56 +112,181 @@ export const ShipmentsList = ({ onNavigate }) => {
     {
       header: 'Actions',
       align: 'right',
-      render: (item) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', justifyContent: 'flex-end' }}>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onNavigate('shipments', item.id || item.shipmentNumber);
-            }}
-            className="btn btn-sm btn-primary"
-            style={{ padding: '0.25rem 0.55rem', fontSize: '0.75rem' }}
+      width: '70px',
+      render: (item) => {
+        const menuKey = item.id || item.shipmentNumber;
+        const isOpen = activeMenuId === menuKey;
+
+        return (
+          <div
+            style={{ position: 'relative', display: 'inline-block', textAlign: 'right' }}
+            onClick={(e) => e.stopPropagation()}
           >
-            <Eye size={13} />
-            <span>View</span>
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onNavigate('tracking', item.trackingNumber);
-            }}
-            className="btn btn-sm btn-outline"
-            title="Track Consignment Milestones"
-            style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
-          >
-            <Search size={13} />
-            <span>Track</span>
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setEditingShipment(item);
-            }}
-            className="btn btn-sm btn-secondary"
-            title="Edit Shipment"
-            style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
-          >
-            <Edit2 size={13} />
-            <span className="hide-mobile">Edit</span>
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setDeletingShipment(item);
-            }}
-            className="btn btn-sm btn-ghost"
-            title="Delete Shipment"
-            style={{ padding: '0.25rem 0.45rem', color: '#EF4444' }}
-          >
-            <Trash2 size={13} />
-          </button>
-        </div>
-      )
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveMenuId(isOpen ? null : menuKey);
+              }}
+              className="btn btn-ghost btn-sm"
+              style={{
+                width: '32px',
+                height: '32px',
+                padding: 0,
+                borderRadius: '6px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: isOpen ? '#0284C7' : '#64748B',
+                background: isOpen ? '#F0F9FF' : 'transparent',
+                border: '1px solid',
+                borderColor: isOpen ? '#BAE6FD' : 'transparent',
+                cursor: 'pointer'
+              }}
+              title="Actions"
+              aria-label="Actions"
+            >
+              <MoreVertical size={16} />
+            </button>
+
+            {isOpen && (
+              <div
+                style={{
+                  position: 'absolute',
+                  right: 0,
+                  top: 'calc(100% + 4px)',
+                  background: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '8px',
+                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08)',
+                  zIndex: 9999,
+                  minWidth: '180px',
+                  padding: '6px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '2px',
+                  textAlign: 'left'
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '0.45rem 0.65rem',
+                    fontSize: '0.8rem',
+                    fontWeight: 500,
+                    color: '#1E293B',
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#F8FAFC'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  onClick={() => {
+                    setActiveMenuId(null);
+                    onNavigate('shipments', item.id || item.shipmentNumber);
+                  }}
+                >
+                  <Eye size={14} style={{ color: '#0284C7' }} />
+                  <span>View Details</span>
+                </button>
+
+                <button
+                  type="button"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '0.45rem 0.65rem',
+                    fontSize: '0.8rem',
+                    fontWeight: 500,
+                    color: '#1E293B',
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#F8FAFC'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  onClick={() => {
+                    setActiveMenuId(null);
+                    onNavigate('tracking', item.trackingNumber);
+                  }}
+                >
+                  <Search size={14} style={{ color: '#0284C7' }} />
+                  <span>Track Consignment</span>
+                </button>
+
+                <button
+                  type="button"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '0.45rem 0.65rem',
+                    fontSize: '0.8rem',
+                    fontWeight: 500,
+                    color: '#1E293B',
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#F8FAFC'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  onClick={() => {
+                    setActiveMenuId(null);
+                    setEditingShipment(item);
+                  }}
+                >
+                  <Edit2 size={14} style={{ color: '#D97706' }} />
+                  <span>Edit Shipment</span>
+                </button>
+
+                <div style={{ height: '1px', background: '#F1F5F9', margin: '4px 0' }} />
+
+                <button
+                  type="button"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '0.45rem 0.65rem',
+                    fontSize: '0.8rem',
+                    fontWeight: 500,
+                    color: '#EF4444',
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#FEF2F2'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  onClick={() => {
+                    setActiveMenuId(null);
+                    setDeletingShipment(item);
+                  }}
+                >
+                  <Trash2 size={14} style={{ color: '#EF4444' }} />
+                  <span>Delete Shipment</span>
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      }
     }
   ];
 

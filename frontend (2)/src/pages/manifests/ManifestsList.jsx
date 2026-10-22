@@ -4,7 +4,7 @@ import { ResponsiveTable } from '../../components/tables/ResponsiveTable';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { ManifestModal } from '../../components/modals/ManifestModal';
 import { DeleteConfirmModal } from '../../components/modals/DeleteConfirmModal';
-import { FileSpreadsheet, Eye, Edit2, Trash2, FileCode, Download, Plus, Printer, RefreshCw } from 'lucide-react';
+import { FileSpreadsheet, Eye, Edit2, Trash2, FileCode, Download, Plus, Printer, RefreshCw, MoreVertical } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
 import { manifestService } from '../../services/manifestService';
 import { useToast } from '../../context/ToastContext';
@@ -19,6 +19,13 @@ export const ManifestsList = ({ onNavigate }) => {
   const [deletingManifest, setDeletingManifest] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [activeMenuId, setActiveMenuId] = useState(null);
+
+  useEffect(() => {
+    const handleOutsideClick = () => setActiveMenuId(null);
+    window.addEventListener('click', handleOutsideClick);
+    return () => window.removeEventListener('click', handleOutsideClick);
+  }, []);
 
   useEffect(() => {
     if ((!manifests || manifests.length === 0) && fetchMenuApi) {
@@ -114,70 +121,211 @@ export const ManifestsList = ({ onNavigate }) => {
     {
       header: 'Actions',
       align: 'right',
-      render: (item) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', justifyContent: 'flex-end' }}>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onNavigate('manifests', item.id);
-            }}
-            className="btn btn-sm btn-outline"
-            style={{ padding: '0.25rem 0.55rem', fontSize: '0.78rem' }}
-            title="View Manifest Details"
+      width: '70px',
+      render: (item) => {
+        const menuKey = item.id || item.manifestNumber;
+        const isOpen = activeMenuId === menuKey;
+
+        return (
+          <div
+            style={{ position: 'relative', display: 'inline-block', textAlign: 'right' }}
+            onClick={(e) => e.stopPropagation()}
           >
-            <Eye size={13} />
-            <span>View</span>
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onNavigate('manifests', item.id);
-              setTimeout(() => window.print(), 300);
-            }}
-            className="btn btn-sm btn-secondary"
-            title="Print Manifest"
-            style={{ padding: '0.25rem 0.55rem', fontSize: '0.78rem' }}
-          >
-            <Printer size={13} />
-            <span>Print</span>
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              manifestService.exportCsv(item);
-              showToast(`Exported CSV for ${item.manifestNumber}.`, 'success', 'CSV Exported');
-            }}
-            className="btn btn-sm btn-ghost"
-            title="Export Manifest CSV / XML"
-            style={{ padding: '0.25rem 0.45rem', color: '#0284C7', fontWeight: 600, fontSize: '0.78rem' }}
-          >
-            <Download size={13} />
-            <span>Export</span>
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setEditingManifest(item);
-            }}
-            className="btn btn-sm btn-ghost"
-            title="Edit Manifest"
-            style={{ padding: '0.25rem 0.45rem' }}
-          >
-            <Edit2 size={13} />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setDeletingManifest(item);
-            }}
-            className="btn btn-sm btn-ghost"
-            title="Delete Manifest"
-            style={{ padding: '0.25rem 0.45rem', color: '#EF4444' }}
-          >
-            <Trash2 size={13} />
-          </button>
-        </div>
-      )
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveMenuId(isOpen ? null : menuKey);
+              }}
+              className="btn btn-ghost btn-sm"
+              style={{
+                width: '32px',
+                height: '32px',
+                padding: 0,
+                borderRadius: '6px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: isOpen ? '#0284C7' : '#64748B',
+                background: isOpen ? '#F0F9FF' : 'transparent',
+                border: '1px solid',
+                borderColor: isOpen ? '#BAE6FD' : 'transparent',
+                cursor: 'pointer'
+              }}
+              title="Actions"
+              aria-label="Actions"
+            >
+              <MoreVertical size={16} />
+            </button>
+
+            {isOpen && (
+              <div
+                style={{
+                  position: 'absolute',
+                  right: 0,
+                  top: 'calc(100% + 4px)',
+                  background: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '8px',
+                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08)',
+                  zIndex: 9999,
+                  minWidth: '185px',
+                  padding: '6px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '2px',
+                  textAlign: 'left'
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '0.45rem 0.65rem',
+                    fontSize: '0.8rem',
+                    fontWeight: 500,
+                    color: '#1E293B',
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#F8FAFC'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  onClick={() => {
+                    setActiveMenuId(null);
+                    onNavigate('manifests', item.id);
+                  }}
+                >
+                  <Eye size={14} style={{ color: '#0284C7' }} />
+                  <span>View Details</span>
+                </button>
+
+                <button
+                  type="button"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '0.45rem 0.65rem',
+                    fontSize: '0.8rem',
+                    fontWeight: 500,
+                    color: '#1E293B',
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#F8FAFC'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  onClick={() => {
+                    setActiveMenuId(null);
+                    onNavigate('manifests', item.id);
+                    setTimeout(() => window.print(), 300);
+                  }}
+                >
+                  <Printer size={14} style={{ color: '#059669' }} />
+                  <span>Print Manifest</span>
+                </button>
+
+                <button
+                  type="button"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '0.45rem 0.65rem',
+                    fontSize: '0.8rem',
+                    fontWeight: 500,
+                    color: '#1E293B',
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#F8FAFC'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  onClick={() => {
+                    setActiveMenuId(null);
+                    manifestService.exportCsv(item);
+                    showToast(`Exported CSV for ${item.manifestNumber}.`, 'success', 'CSV Exported');
+                  }}
+                >
+                  <Download size={14} style={{ color: '#0284C7' }} />
+                  <span>Export CSV / XML</span>
+                </button>
+
+                <button
+                  type="button"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '0.45rem 0.65rem',
+                    fontSize: '0.8rem',
+                    fontWeight: 500,
+                    color: '#1E293B',
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#F8FAFC'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  onClick={() => {
+                    setActiveMenuId(null);
+                    setEditingManifest(item);
+                  }}
+                >
+                  <Edit2 size={14} style={{ color: '#D97706' }} />
+                  <span>Edit Manifest</span>
+                </button>
+
+                <div style={{ height: '1px', background: '#F1F5F9', margin: '4px 0' }} />
+
+                <button
+                  type="button"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '0.45rem 0.65rem',
+                    fontSize: '0.8rem',
+                    fontWeight: 500,
+                    color: '#EF4444',
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#FEF2F2'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  onClick={() => {
+                    setActiveMenuId(null);
+                    setDeletingManifest(item);
+                  }}
+                >
+                  <Trash2 size={14} style={{ color: '#EF4444' }} />
+                  <span>Delete Manifest</span>
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      }
     }
   ];
 
