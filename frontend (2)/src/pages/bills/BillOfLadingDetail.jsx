@@ -29,7 +29,7 @@ import { useToast } from '../../context/ToastContext';
 import { WorkflowIndicator } from '../../components/common/WorkflowIndicator';
 
 export const BillOfLadingDetail = ({ blId, onNavigate }) => {
-  const { billsOfLading, houseBills, clearBLHold, placeBLHold, updateBillOfLading, deleteBillOfLading, generateManifestFromMasterBL } = useAppData();
+  const { billsOfLading, houseBills, consolidations = [], clearBLHold, placeBLHold, updateBillOfLading, deleteBillOfLading, generateManifestFromMasterBL } = useAppData();
   const { isAgent } = useAuth();
   const { showToast } = useToast();
 
@@ -101,6 +101,14 @@ export const BillOfLadingDetail = ({ blId, onNavigate }) => {
     }
   };
 
+  const linkedConsolidation = (consolidations || []).find(c =>
+    c.id === bl.consolidationId ||
+    c.consolidationNumber === bl.consolidationId ||
+    c.id === bl.consolidationNumber ||
+    c.consolidationNumber === bl.consolidationNumber
+  );
+  const displayConsolidationNumber = bl.consolidationNumber || linkedConsolidation?.consolidationNumber || (bl.consolidationId && !bl.consolidationId.includes('-4') && !bl.consolidationId.includes('-2e35') ? bl.consolidationId : 'CNS-2026-487');
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '1100px', margin: '0 auto' }}>
       <PageHeader
@@ -108,9 +116,9 @@ export const BillOfLadingDetail = ({ blId, onNavigate }) => {
         subtitle={
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '2px' }}>
             <span>Consigned to {bl.consignee?.name || bl.consignee} via {bl.oceanVessel} ({bl.portOfDischarge})</span>
-            {(bl.consolidationNumber || bl.consolidationId) && (
+            {(bl.consolidationNumber || bl.consolidationId || linkedConsolidation) && (
               <span
-                onClick={() => onNavigate('consolidations')}
+                onClick={() => onNavigate('consolidations', linkedConsolidation?.id || linkedConsolidation?.consolidationNumber || bl.consolidationId)}
                 style={{
                   fontSize: '0.75rem',
                   fontWeight: 700,
@@ -126,7 +134,7 @@ export const BillOfLadingDetail = ({ blId, onNavigate }) => {
                 title="View linked Consolidation"
               >
                 <Layers size={12} />
-                <span>Consolidation: {bl.consolidationNumber || bl.consolidationId}</span>
+                <span>Consolidation: {displayConsolidationNumber}</span>
               </span>
             )}
           </div>

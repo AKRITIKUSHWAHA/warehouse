@@ -36,7 +36,7 @@ export const warehouseReceipts = pgTable('warehouse_receipts', {
   agentId: uuid('agent_id').references(() => agents.id),
   agentName: text('agent_name'),
   
-  destinationPort: text('destination_port').notNull(), // 'STT - Port of Charlotte Amalie, St. Thomas'
+  destinationPort: text('destination_port').notNull(), // 'NAS - Nassau, Bahamas'
   destinationCode: text('destination_code').notNull(), // 'NAS'
   cargoDescription: text('cargo_description'),
   

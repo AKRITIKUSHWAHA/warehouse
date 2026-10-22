@@ -596,8 +596,37 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
             </p>
           </div>
 
-          {/* Container Type Select */}
+          {/* Consolidation Number & Container Type */}
           <div className="grid grid-cols-2 gap-4">
+            <div className="form-group">
+              <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>Consolidation Number <span className="required">*</span></span>
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({
+                    ...prev,
+                    consolidationNumber: `CNS-2026-${Math.floor(100 + Math.random() * 899)}`
+                  }))}
+                  className="btn btn-ghost btn-sm"
+                  style={{ padding: '0 4px', fontSize: '0.72rem', color: '#0284C7', height: 'auto' }}
+                  title="Generate new consolidation number"
+                >
+                  Auto Generate
+                </button>
+              </label>
+              <input
+                type="text"
+                className="form-control font-mono"
+                value={formData.consolidationNumber}
+                onChange={(e) => setFormData({ ...formData, consolidationNumber: e.target.value })}
+                placeholder="e.g. CNS-2026-0001 (or enter custom number)"
+                required
+              />
+              <span style={{ fontSize: '0.72rem', color: '#64748B', marginTop: '2px', display: 'block' }}>
+                Auto-generated reference or client's custom consolidation number.
+              </span>
+            </div>
+
             <div className="form-group">
               <label className="form-label">Container Type <span className="required">*</span></label>
               <select
@@ -611,38 +640,47 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
                 <option value="45' High Cube">45' High Cube</option>
               </select>
             </div>
-
-            <div className="form-group">
-              <label className="form-label">Container Number <span className="required">*</span></label>
-              <input
-                type="text"
-                className="form-control"
-                value={formData.containerNumber}
-                onChange={(e) => setFormData({ ...formData, containerNumber: e.target.value })}
-                placeholder="e.g. CMAU-109482-7"
-                required
-              />
-            </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
-            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '1.15rem', borderRadius: '8px' }}>
+          <div className="form-group">
+            <label className="form-label">Container Number <span className="required">*</span></label>
+            <input
+              type="text"
+              className="form-control font-mono"
+              value={formData.containerNumber}
+              onChange={(e) => setFormData({ ...formData, containerNumber: e.target.value })}
+              placeholder="e.g. CMAU-109482-7"
+              required
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '1rem', borderRadius: '8px' }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>
+                CONSOLIDATION REF
+              </div>
+              <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0369A1', marginTop: '4px', fontFamily: 'JetBrains Mono, monospace' }}>
+                {formData.consolidationNumber}
+              </div>
+            </div>
+
+            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '1rem', borderRadius: '8px' }}>
               <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>
                 CONTAINER TYPE
               </div>
-              <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0A192F', marginTop: '4px' }}>
+              <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0A192F', marginTop: '4px' }}>
                 {formData.containerType}
               </div>
             </div>
 
-            <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', padding: '1.15rem', borderRadius: '8px' }}>
+            <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', padding: '1rem', borderRadius: '8px' }}>
               <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#1E40AF', textTransform: 'uppercase' }}>
                 TOTAL CARGO VOLUME
               </div>
-              <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0284C7', marginTop: '4px' }}>
+              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0284C7', marginTop: '4px' }}>
                 {totals.totalCft} CFT
               </div>
-              <div style={{ fontSize: '0.75rem', color: '#1E40AF' }}>({totals.totalCbm} CBM • {totals.totalWeightLbs?.toLocaleString()} lbs)</div>
+              <div style={{ fontSize: '0.72rem', color: '#1E40AF' }}>({totals.totalCbm} CBM • {totals.totalWeightLbs?.toLocaleString()} lbs)</div>
             </div>
           </div>
 
@@ -739,7 +777,7 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
           <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '1rem 1.25rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
             <div>
               <div style={{ fontWeight: 700, color: '#0A192F', fontSize: '0.95rem' }}>
-                {formData.vesselName} • {formData.dischargePort}
+                {formData.consolidationNumber} • {formData.vesselName} • {formData.dischargePort}
               </div>
               <div style={{ fontSize: '0.8rem', color: '#64748B' }}>
                 Container: {formData.containerNumber} ({formData.containerType}) • Seal: {formData.sealNumber}

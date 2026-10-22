@@ -85,9 +85,9 @@ export async function seedDatabase(): Promise<void> {
     {
       userCode: 'USR-004',
       name: 'Destination Agent Staff',
-      email: 'agent.stt@vicustoms.com',
+      email: 'operations@caribbeanexpressbahamas.com',
       roleKey: ROLES.PORT_AGENT,
-      department: 'St. Thomas Hub (STT) & Eastern Caribbean',
+      department: 'Destination Agency Hub',
       passwordHash: defaultPasswordHash,
       status: 'Active',
       avatar: 'AG',

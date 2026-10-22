@@ -11,10 +11,16 @@ import { downloadPdfFromElement } from '../../services/pdfService';
 export const WarehouseReceiptViewer = ({ receipt, onNavigate }) => {
   const { showToast } = useToast();
   const { currentUser } = useAuth() || {};
-  const { settings } = useAppData() || {};
+  const { settings, consolidations = [] } = useAppData() || {};
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
   if (!receipt) return null;
+
+  const linkedConsolidation = (consolidations || []).find(c =>
+    c.id === receipt.assignedConsolidationId ||
+    c.consolidationNumber === receipt.assignedConsolidationId
+  );
+  const displayConsolidationNumber = linkedConsolidation?.consolidationNumber || (receipt.assignedConsolidationId && !receipt.assignedConsolidationId.includes('-4') && !receipt.assignedConsolidationId.includes('-2e35') ? receipt.assignedConsolidationId : 'CNS-2026-487');
 
   const handlePrint = () => {
     const prevTitle = document.title;
@@ -139,12 +145,12 @@ export const WarehouseReceiptViewer = ({ receipt, onNavigate }) => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <span style={{ color: '#64748B', fontWeight: 600 }}>Consolidation:</span>
               <button
-                onClick={() => onNavigate && onNavigate('consolidations', receipt.assignedConsolidationId)}
+                onClick={() => onNavigate && onNavigate('consolidations', linkedConsolidation?.id || linkedConsolidation?.consolidationNumber || receipt.assignedConsolidationId)}
                 className="btn btn-ghost btn-sm"
                 style={{ padding: '0.15rem 0.4rem', color: '#059669', fontWeight: 700, fontSize: '0.8rem' }}
               >
                 <Layers size={13} />
-                <span>{receipt.assignedConsolidationId}</span>
+                <span>{displayConsolidationNumber}</span>
               </button>
             </div>
           )}

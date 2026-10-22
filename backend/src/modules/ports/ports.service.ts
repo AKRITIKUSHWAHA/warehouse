@@ -25,7 +25,7 @@ export class PortsService {
       return this.repo.create({
         portCode: input.portCode || idOrCode.replace(/^PORT-/, '').toUpperCase(),
         name: input.name || `${idOrCode} Port`,
-        country: input.country || 'Eastern Caribbean',
+        country: input.country || 'Bahamas',
         island: input.island || undefined,
         defaultAgent: input.defaultAgent || undefined,
         status: input.status || 'Active',

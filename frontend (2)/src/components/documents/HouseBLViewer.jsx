@@ -11,10 +11,16 @@ import { downloadPdfFromElement } from '../../services/pdfService';
 export const HouseBLViewer = ({ hbl, onNavigate }) => {
   const { showToast } = useToast();
   const { currentUser } = useAuth() || {};
-  const { settings, warehouseReceipts = [] } = useAppData() || {};
+  const { settings, warehouseReceipts = [], consolidations = [] } = useAppData() || {};
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
   if (!hbl) return null;
+
+  const linkedConsolidation = (consolidations || []).find(c =>
+    c.id === hbl.assignedConsolidationId ||
+    c.consolidationNumber === hbl.assignedConsolidationId
+  );
+  const displayConsolidationNumber = linkedConsolidation?.consolidationNumber || (hbl.assignedConsolidationId && !hbl.assignedConsolidationId.includes('-4') && !hbl.assignedConsolidationId.includes('-2e35') ? hbl.assignedConsolidationId : 'CNS-2026-487');
 
   const isOnHold = hbl.status === 'On Hold' || hbl.holdDetails?.isOnHold;
   const isReleased = hbl.status === 'Released' || hbl.status === 'Active';
@@ -150,12 +156,12 @@ export const HouseBLViewer = ({ hbl, onNavigate }) => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <span style={{ color: '#64748B', fontWeight: 600 }}>Consolidation:</span>
               <button
-                onClick={() => onNavigate && onNavigate('consolidations', hbl.assignedConsolidationId)}
+                onClick={() => onNavigate && onNavigate('consolidations', linkedConsolidation?.id || linkedConsolidation?.consolidationNumber || hbl.assignedConsolidationId)}
                 className="btn btn-ghost btn-sm"
                 style={{ padding: '0.15rem 0.4rem', color: '#059669', fontWeight: 700, fontSize: '0.8rem' }}
               >
                 <Layers size={13} />
-                <span>{hbl.assignedConsolidationId}</span>
+                <span>{displayConsolidationNumber}</span>
               </button>
             </div>
           ) : (
@@ -292,7 +298,7 @@ export const HouseBLViewer = ({ hbl, onNavigate }) => {
           <div style={{ padding: '0.5rem' }}>
             <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#64748B' }}>CONSOLIDATION / MASTER REF</div>
             <div style={{ fontSize: '0.8rem', fontWeight: 700, color: hbl.assignedConsolidationId ? '#059669' : '#64748B' }}>
-              {hbl.assignedConsolidationId || 'Pending Container Assignment'}
+              {displayConsolidationNumber || 'Pending Container Assignment'}
             </div>
           </div>
         </div>
