@@ -3,7 +3,7 @@
  * Allows Super Admin to dynamically configure menu visibility and module access per role.
  */
 
-export const STORAGE_KEY_ROLE_PERMISSIONS = 'kers_role_permissions_map_v2';
+export const STORAGE_KEY_ROLE_PERMISSIONS = 'kers_role_permissions_map_v3';
 
 export const SYSTEM_MODULES = [
   {
@@ -155,27 +155,27 @@ export const SYSTEM_MODULES = [
 export const DEFAULT_ROLE_PERMISSIONS_MAP = {
   super_admin: [
     'dashboard', 'customers', 'warehouse-receipts', 'cargo', 'documents',
-    'house-bills', 'consolidations', 'shipments', 'bills-of-lading', 'manifests',
-    'vessels', 'tracking', 'agent-portal', 'hold-authorization',
-    'users', 'audit', 'history', 'settings'
+    'house-bills', 'consolidations', 'bills-of-lading', 'manifests', 'shipments',
+    'tracking', 'vessels', 'agent-portal', 'hold-authorization',
+    'history', 'audit', 'users', 'settings'
   ],
   operations: [
-    'dashboard', 'customers', 'warehouse-receipts', 'cargo', 'documents',
-    'house-bills', 'consolidations', 'shipments', 'manifests',
-    'vessels', 'tracking', 'history'
+    'dashboard', 'customers', 'warehouse-receipts', 'cargo',
+    'house-bills', 'consolidations', 'bills-of-lading', 'manifests',
+    'shipments', 'tracking', 'vessels', 'history'
   ],
   warehouse: [
     'dashboard', 'customers', 'warehouse-receipts', 'cargo', 'documents',
-    'house-bills', 'consolidations', 'tracking'
+    'consolidations', 'tracking'
   ],
   documentation: [
     'dashboard', 'customers', 'warehouse-receipts', 'documents',
-    'house-bills', 'bills-of-lading', 'manifests', 'consolidations',
-    'vessels', 'tracking', 'history', 'hold-authorization'
+    'house-bills', 'consolidations', 'bills-of-lading', 'manifests',
+    'tracking', 'hold-authorization'
   ],
   agent: [
-    'dashboard', 'agent-portal', 'shipments', 'consolidations', 'manifests',
-    'bills-of-lading', 'cargo', 'tracking', 'documents'
+    'dashboard', 'agent-portal', 'manifests', 'consolidations',
+    'bills-of-lading', 'shipments', 'tracking', 'documents'
   ]
 };
 

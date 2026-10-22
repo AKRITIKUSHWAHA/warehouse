@@ -44,7 +44,6 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
           { id: 'manifests', label: 'Port Manifests & Docs', icon: FileSpreadsheet, moduleId: 'manifests' },
           { id: 'consolidations', label: 'Container Arrivals', icon: Layers, moduleId: 'consolidations' },
           { id: 'bills-of-lading', label: 'Release Documents & B/Ls', icon: FileText, moduleId: 'bills-of-lading' },
-          { id: 'cargo', label: 'Cargo Intake at Port', icon: Box, moduleId: 'cargo' },
           { id: 'shipments', label: 'My Assigned Shipments', icon: Ship, moduleId: 'shipments' },
           { id: 'tracking', label: 'Port Tracking', icon: Search, moduleId: 'tracking' },
           { id: 'documents', label: 'Agent Documents', icon: Tag, moduleId: 'documents' }
