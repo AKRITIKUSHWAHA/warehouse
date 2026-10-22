@@ -225,7 +225,14 @@ export const LoginPage = ({ onLoginSuccess }) => {
                           <Icon size={14} />
                         </div>
                         <span className="role-icon-label">
-                          {details.shortLabel}
+                          {details.shortLabel === 'Super Admin' ? (
+                            <>
+                              <span className="role-icon-label-line">Super</span>
+                              <span className="role-icon-label-line">Admin</span>
+                            </>
+                          ) : (
+                            <span className="role-icon-label-line">{details.shortLabel}</span>
+                          )}
                         </span>
                       </button>
                     );
