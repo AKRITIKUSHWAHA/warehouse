@@ -99,12 +99,12 @@ export const ManifestViewer = ({ manifest }) => {
 
   return (
     <div className="manifest-viewer-wrapper" style={{ maxWidth: isLandscape ? '1100px' : '850px', margin: '0 auto', transition: 'max-width 200ms ease' }}>
-      {/* Dynamic Print Styles for Manifest to ensure single sheet, correct orientation & zero blank pages */}
+      {/* Dynamic Print Styles for Manifest to ensure single sheet A4, correct orientation & zero blank pages */}
       <style>{`
         @media print {
           @page {
-            size: ${isLandscape ? 'letter landscape' : 'letter portrait'} !important;
-            margin: 0.35in !important;
+            size: ${isLandscape ? 'A4 landscape' : 'A4 portrait'} !important;
+            margin: 8mm !important;
           }
           html, body {
             width: 100% !important;
@@ -113,6 +113,8 @@ export const ManifestViewer = ({ manifest }) => {
             margin: 0 !important;
             padding: 0 !important;
             background: #ffffff !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
           .manifest-viewer-wrapper {
             max-width: 100% !important;
@@ -124,12 +126,41 @@ export const ManifestViewer = ({ manifest }) => {
             width: 100% !important;
             max-width: 100% !important;
             margin: 0 auto !important;
+            box-sizing: border-box !important;
             page-break-before: avoid !important;
             break-before: avoid !important;
             page-break-inside: avoid !important;
             break-inside: avoid !important;
+            page-break-after: avoid !important;
+            break-after: avoid !important;
             box-shadow: none !important;
             border: 2px solid #0A192F !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+          }
+          .printable-manifest.orientation-landscape {
+            min-height: 190mm !important;
+            height: 190mm !important;
+            padding: 8mm 12mm !important;
+          }
+          .printable-manifest.orientation-portrait {
+            min-height: 275mm !important;
+            height: 275mm !important;
+            padding: 10mm 10mm !important;
+          }
+          .manifest-table-wrap {
+            flex: 1 1 auto !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            margin-bottom: 6mm !important;
+          }
+          .manifest-table-wrap table {
+            width: 100% !important;
+            height: 100% !important;
+            flex: 1 1 auto !important;
+            border-collapse: collapse !important;
           }
         }
       `}</style>
@@ -239,7 +270,7 @@ export const ManifestViewer = ({ manifest }) => {
         </div>
 
         {/* Manifest Line Items Table */}
-        <div style={{ border: '1px solid #0A192F', marginBottom: '1rem' }}>
+        <div className="manifest-table-wrap" style={{ border: '1px solid #0A192F', marginBottom: '1rem' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
             <thead>
               <tr style={{ background: '#0A192F', color: '#FFFFFF', textAlign: 'left', fontSize: '0.65rem', textTransform: 'uppercase' }}>
@@ -298,6 +329,21 @@ export const ManifestViewer = ({ manifest }) => {
                   </td>
                 </tr>
               ))}
+
+              {/* Clean filler ledger lines to gracefully complete the official A4 manifest grid */}
+              {(!isLandscape || (activeManifest.lineItems?.length || 0) < 4) &&
+                Array.from({ length: Math.max(0, (isLandscape ? 3 : 5) - (activeManifest.lineItems?.length || 0)) }).map((_, emptyIdx) => (
+                  <tr key={`empty-${emptyIdx}`} style={{ borderBottom: '1px solid #F1F5F9', height: isLandscape ? '28px' : '38px' }}>
+                    <td style={{ padding: '0.5rem', color: '#CBD5E1', fontSize: '0.7rem' }}>—</td>
+                    <td style={{ padding: '0.5rem' }}>&nbsp;</td>
+                    <td style={{ padding: '0.5rem' }}>&nbsp;</td>
+                    <td style={{ padding: '0.5rem' }}>&nbsp;</td>
+                    <td style={{ padding: '0.5rem' }}>&nbsp;</td>
+                    <td style={{ padding: '0.5rem' }}>&nbsp;</td>
+                    <td style={{ padding: '0.5rem' }}>&nbsp;</td>
+                    <td style={{ padding: '0.5rem' }}>&nbsp;</td>
+                  </tr>
+                ))}
             </tbody>
             <tfoot>
               <tr style={{ background: '#F1F5F9', fontWeight: 800, fontSize: '0.75rem', borderTop: '2px solid #0A192F' }}>

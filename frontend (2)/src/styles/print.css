@@ -100,10 +100,10 @@
     gap: 0 !important;
   }
 
-  /* Standard Letter / A4 Portrait for Documents */
+  /* Standard A4 Portrait for Documents */
   @page {
-    size: letter portrait;
-    margin: 0.2in;
+    size: A4 portrait;
+    margin: 8mm;
   }
 
   /* --------------------------------------------------------------------------
@@ -154,8 +154,8 @@
   .printable-document-hbl {
     width: 100% !important;
     max-width: 100% !important;
-    min-height: 9.85in !important;
-    height: 9.85in !important;
+    min-height: 275mm !important;
+    height: 275mm !important;
     margin: 0 auto !important;
     border: 2.5px solid #0A192F !important;
     padding: 0.22in !important;
@@ -193,22 +193,22 @@
   }
 
   /* --------------------------------------------------------------------------
-     Master B/L Document Print Specifics (Standard Full-Page Letter / A4 Portrait)
+     Master B/L Document Print Specifics (Standard Full-Page A4 Portrait)
      -------------------------------------------------------------------------- */
   @page bl-document-page {
-    size: letter portrait;
-    margin: 0.2in;
+    size: A4 portrait;
+    margin: 8mm;
   }
 
   .printable-document-bl {
     page: bl-document-page;
     width: 100% !important;
     max-width: 100% !important;
-    min-height: 9.85in !important;
-    height: 9.85in !important;
+    min-height: 275mm !important;
+    height: 275mm !important;
     margin: 0 auto !important;
     border: 2.5px solid #0A192F !important;
-    padding: 0.22in !important;
+    padding: 8mm !important;
     box-sizing: border-box !important;
     box-shadow: none !important;
     page-break-inside: avoid !important;
@@ -243,16 +243,16 @@
   }
 
   /* --------------------------------------------------------------------------
-     Ocean Shipping Manifest Print Specifics (Landscape / Portrait)
+     Ocean Shipping Manifest Print Specifics (A4 Landscape / A4 Portrait)
      -------------------------------------------------------------------------- */
   @page manifest-landscape {
-    size: letter landscape;
-    margin: 0.35in;
+    size: A4 landscape;
+    margin: 8mm;
   }
 
   @page manifest-portrait {
-    size: letter portrait;
-    margin: 0.35in;
+    size: A4 portrait;
+    margin: 8mm;
   }
 
   body:has(.printable-manifest.orientation-landscape) {
@@ -266,17 +266,24 @@
   .printable-manifest.orientation-landscape {
     page: manifest-landscape;
     width: 100% !important;
+    min-height: 190mm !important;
+    height: 190mm !important;
+    padding: 8mm 12mm !important;
   }
 
   .printable-manifest.orientation-portrait {
     page: manifest-portrait;
     width: 100% !important;
+    min-height: 275mm !important;
+    height: 275mm !important;
+    padding: 10mm 10mm !important;
   }
 
   .printable-manifest {
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 auto !important;
+    box-sizing: border-box !important;
     box-shadow: none !important;
     page-break-before: avoid !important;
     break-before: avoid !important;
@@ -284,6 +291,24 @@
     break-after: avoid !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+  }
+
+  .printable-manifest .manifest-table-wrap {
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    margin-bottom: 6mm !important;
+  }
+
+  .printable-manifest .manifest-table-wrap table {
+    width: 100% !important;
+    height: 100% !important;
+    flex: 1 1 auto !important;
+    border-collapse: collapse !important;
   }
 
   table {
