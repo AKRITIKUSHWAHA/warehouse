@@ -7,7 +7,7 @@ export const houseBillService = {
     try {
       const res = await apiClient.get('/house-bills', { params: { ...filters, limit: filters.limit || 100 } });
       const apiData = res?.data ? (Array.isArray(res.data) ? res.data : (res.data.items || [])) : (Array.isArray(res) ? res : []);
-      if (Array.isArray(apiData) && apiData.length > 0) {
+      if (Array.isArray(apiData)) {
         const mapped = apiData.map(item => ({
           ...item,
           customerName: item.customerName || item.customer || '',

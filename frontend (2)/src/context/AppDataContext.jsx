@@ -352,7 +352,13 @@ export const AppDataProvider = ({ children }) => {
       // 2. Fetch data only for the active or requested menu tab
       let tabToFetch = targetTab;
       if (!tabToFetch && typeof window !== 'undefined') {
-        const path = window.location.pathname.replace(/^\//, '').split('/')[0];
+        let rawPath = window.location.pathname || '';
+        if (window.location.hash && window.location.hash.startsWith('#/')) {
+          rawPath = window.location.hash.slice(1);
+        }
+        const segments = rawPath.replace(/^\//, '').split('/').filter(Boolean);
+        const ROLE_PREFIXES = ['superadmin', 'operations', 'documentation', 'warehouse', 'agent'];
+        const path = (segments.length > 0 && ROLE_PREFIXES.includes(segments[0]) ? segments[1] : segments[0]) || '';
         tabToFetch = path || activeMenuTab || 'dashboard';
       }
 

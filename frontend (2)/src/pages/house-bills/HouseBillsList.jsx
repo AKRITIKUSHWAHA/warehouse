@@ -39,14 +39,14 @@ export const HouseBillsList = ({ onNavigate }) => {
   }, []);
 
   useEffect(() => {
-    if ((!houseBills || houseBills.length === 0) && fetchMenuApi) {
+    if (fetchMenuApi) {
       fetchMenuApi('house-bills');
     }
   }, [fetchMenuApi]);
 
   // Filter if Agent
   const visibleHouseBills = isAgent
-    ? houseBills.filter(h => h.agentId === currentUser?.agentId || h.portOfDischarge?.includes('Nassau'))
+    ? houseBills.filter(h => h.agentId === currentUser?.agentId || (currentUser?.destinationPortCode && h.destinationCode === currentUser.destinationPortCode))
     : houseBills;
 
   const columns = [
