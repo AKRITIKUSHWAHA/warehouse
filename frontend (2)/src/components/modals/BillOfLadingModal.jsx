@@ -397,8 +397,9 @@ export const BillOfLadingModal = ({
               e.preventDefault();
             }
           }}
+          style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}
         >
-          <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxHeight: '74vh', overflowY: 'auto' }}>
+          <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', overflowY: 'auto', flex: 1, minHeight: 0 }}>
             
             {/* STEP 1: Consolidation Link & Auto-Population Banner */}
             <div style={{
@@ -855,7 +856,7 @@ export const BillOfLadingModal = ({
             </div>
           </div>
 
-          <div className="modal-footer">
+          <div className="modal-footer" style={{ flexShrink: 0, padding: '1rem 1.5rem', background: '#F8FAFC', borderTop: '1px solid #E2E8F0' }}>
             <button type="button" onClick={onClose} className="btn btn-outline btn-sm">
               Cancel
             </button>
