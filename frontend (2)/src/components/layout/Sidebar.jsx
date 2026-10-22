@@ -7,7 +7,6 @@ import {
   Ship,
   FileText,
   FileSpreadsheet,
-  Anchor,
   Box,
   Search,
   FileStack,
@@ -98,7 +97,6 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
             { id: 'consolidations', label: 'Container Consolidation', icon: Layers, moduleId: 'consolidations' },
             { id: 'bills-of-lading', label: 'Master Bills of Lading', icon: FileText, moduleId: 'bills-of-lading' },
             { id: 'manifests', label: 'Customs Manifests', icon: FileSpreadsheet, moduleId: 'manifests' },
-            { id: 'vessels', label: 'Fleet Directory', icon: Anchor, moduleId: 'vessels' },
             { id: 'tracking', label: 'Cargo Tracking', icon: Search, moduleId: 'tracking' }
           ]
         }
@@ -123,7 +121,6 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
           { id: 'consolidations', label: 'Container Consolidation', icon: Layers, moduleId: 'consolidations' },
           { id: 'bills-of-lading', label: 'Master Bills of Lading', icon: FileText, moduleId: 'bills-of-lading' },
           { id: 'manifests', label: 'Customs Manifests', icon: FileSpreadsheet, moduleId: 'manifests' },
-          { id: 'vessels', label: 'Fleet Directory', icon: Anchor, moduleId: 'vessels' },
           { id: 'tracking', label: 'Cargo Tracking', icon: Search, moduleId: 'tracking' }
         ]
       },
