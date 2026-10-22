@@ -41,11 +41,11 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
         title: isRoleAgent ? 'AGENT OPERATIONS' : 'CARGO & INTAKE',
         items: isRoleAgent ? [
           { id: 'agent-dashboard', label: 'Agent Dashboard', icon: LayoutDashboard, moduleId: 'dashboard' },
-          { id: 'shipments', label: 'My Assigned Shipments', icon: Ship, moduleId: 'shipments' },
-          { id: 'consolidations', label: 'Container Arrivals', icon: Layers, moduleId: 'consolidations' },
           { id: 'manifests', label: 'Port Manifests & Docs', icon: FileSpreadsheet, moduleId: 'manifests' },
+          { id: 'consolidations', label: 'Container Arrivals', icon: Layers, moduleId: 'consolidations' },
           { id: 'bills-of-lading', label: 'Release Documents & B/Ls', icon: FileText, moduleId: 'bills-of-lading' },
           { id: 'cargo', label: 'Cargo Intake at Port', icon: Box, moduleId: 'cargo' },
+          { id: 'shipments', label: 'My Assigned Shipments', icon: Ship, moduleId: 'shipments' },
           { id: 'tracking', label: 'Port Tracking', icon: Search, moduleId: 'tracking' },
           { id: 'documents', label: 'Agent Documents', icon: Tag, moduleId: 'documents' }
         ] : [
@@ -66,19 +66,19 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
         items: [
           { id: 'house-bills', label: 'House Bills of Lading', icon: FileText, moduleId: 'house-bills' },
           { id: 'consolidations', label: roleKey === 'warehouse' ? 'Container Packing' : 'Container Consolidation', icon: Layers, moduleId: 'consolidations' },
-          { id: 'shipments', label: 'Ocean Shipments', icon: Ship, moduleId: 'shipments' },
           { id: 'bills-of-lading', label: roleKey === 'documentation' ? 'Master Bills (MBL)' : 'Master Bills of Lading', icon: FileText, moduleId: 'bills-of-lading' },
           { id: 'manifests', label: 'Customs Manifests', icon: FileSpreadsheet, moduleId: 'manifests' },
-          { id: 'vessels', label: 'Fleet Directory', icon: Anchor, moduleId: 'vessels' },
-          { id: 'tracking', label: roleKey === 'warehouse' ? 'Search & Track Cargo' : 'Cargo Tracking', icon: Search, moduleId: 'tracking' }
+          { id: 'shipments', label: 'Ocean Shipments', icon: Ship, moduleId: 'shipments' },
+          { id: 'tracking', label: roleKey === 'warehouse' ? 'Search & Track Cargo' : 'Cargo Tracking', icon: Search, moduleId: 'tracking' },
+          { id: 'vessels', label: 'Fleet Directory', icon: Anchor, moduleId: 'vessels' }
         ]
       },
       {
         title: 'SYSTEM & GOVERNANCE',
         items: [
-          { id: 'users', label: 'Users & Roles', icon: ShieldCheck, moduleId: 'users' },
-          { id: 'audit', label: 'Activity Logs', icon: Activity, moduleId: 'audit' },
           { id: 'history', label: 'Shipment Archive', icon: History, moduleId: 'history' },
+          { id: 'audit', label: 'Activity Logs', icon: Activity, moduleId: 'audit' },
+          { id: 'users', label: 'Users & Roles', icon: ShieldCheck, moduleId: 'users' },
           { id: 'settings', label: 'System Settings', icon: Settings, moduleId: 'settings' }
         ]
       }
