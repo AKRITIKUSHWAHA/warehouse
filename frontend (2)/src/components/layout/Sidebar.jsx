@@ -34,41 +34,126 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
 
   // Build dynamic role-filtered navigation menu strictly matching active permissions configuration
   const getNavSections = () => {
-    const isRoleAgent = roleKey === 'agent' || isAgent;
+    // 1. DESTINATION PORT AGENT (Exactly 7 isolated port clearance menus)
+    if (roleKey === 'agent' || isAgent) {
+      return [
+        {
+          title: 'AGENT OPERATIONS',
+          items: [
+            { id: 'agent-dashboard', label: 'Agent Dashboard', icon: LayoutDashboard, moduleId: 'dashboard' },
+            { id: 'manifests', label: 'Port Manifests & Docs', icon: FileSpreadsheet, moduleId: 'manifests' },
+            { id: 'consolidations', label: 'Container Arrivals', icon: Layers, moduleId: 'consolidations' },
+            { id: 'bills-of-lading', label: 'Release Documents & B/Ls', icon: FileText, moduleId: 'bills-of-lading' },
+            { id: 'shipments', label: 'My Assigned Shipments', icon: Ship, moduleId: 'shipments' },
+            { id: 'tracking', label: 'Port Tracking', icon: Search, moduleId: 'tracking' },
+            { id: 'documents', label: 'Agent Documents', icon: Tag, moduleId: 'documents' }
+          ]
+        }
+      ];
+    }
 
-    const allMasterSections = [
+    // 2. WAREHOUSE STAFF (Exactly 7 cargo intake & container packing menus)
+    if (roleKey === 'warehouse') {
+      return [
+        {
+          title: 'CARGO & INTAKE',
+          items: [
+            { id: 'dashboard', label: 'Overview Dashboard', icon: LayoutDashboard, moduleId: 'dashboard' },
+            { id: 'customers', label: 'Customers', icon: Users, moduleId: 'customers' },
+            { id: 'warehouse-receipts', label: 'Warehouse Receipts', icon: Package, moduleId: 'warehouse-receipts' },
+            { id: 'cargo', label: 'Cargo Inventory', icon: Box, moduleId: 'cargo' },
+            { id: 'documents', label: 'Labels & Printouts', icon: Tag, moduleId: 'documents' }
+          ]
+        },
+        {
+          title: 'CONTAINER & PACKING',
+          items: [
+            { id: 'consolidations', label: 'Container Packing', icon: Layers, moduleId: 'consolidations' },
+            { id: 'tracking', label: 'Search & Track Cargo', icon: Search, moduleId: 'tracking' }
+          ]
+        }
+      ];
+    }
+
+    // 3. DOCUMENTATION DESK (Exactly 9 B/L, billing & manifest documentation menus)
+    if (roleKey === 'documentation') {
+      return [
+        {
+          title: 'CARGO INTAKE & BILLING',
+          items: [
+            { id: 'dashboard', label: 'Documentation Desk', icon: LayoutDashboard, moduleId: 'dashboard' },
+            { id: 'customers', label: 'Customers', icon: Users, moduleId: 'customers' },
+            { id: 'warehouse-receipts', label: 'Warehouse Receipts', icon: Package, moduleId: 'warehouse-receipts' },
+            { id: 'documents', label: 'PDF Archive & Labels', icon: FileStack, moduleId: 'documents' }
+          ]
+        },
+        {
+          title: 'B/L & CUSTOMS DOCUMENTATION',
+          items: [
+            { id: 'house-bills', label: 'House Bills of Lading', icon: FileText, moduleId: 'house-bills' },
+            { id: 'consolidations', label: 'Container Consolidation', icon: Layers, moduleId: 'consolidations' },
+            { id: 'bills-of-lading', label: 'Master Bills (MBL)', icon: FileText, moduleId: 'bills-of-lading' },
+            { id: 'manifests', label: 'Customs Manifests', icon: FileSpreadsheet, moduleId: 'manifests' },
+            { id: 'tracking', label: 'Cargo Tracking', icon: Search, moduleId: 'tracking' }
+          ]
+        }
+      ];
+    }
+
+    // 4. OPERATIONS COORDINATOR (Exactly 12 logistics & shipping dispatch menus)
+    if (roleKey === 'operations') {
+      return [
+        {
+          title: 'CARGO & INTAKE',
+          items: [
+            { id: 'dashboard', label: 'Operations Overview', icon: LayoutDashboard, moduleId: 'dashboard' },
+            { id: 'customers', label: 'Customers', icon: Users, moduleId: 'customers' },
+            { id: 'warehouse-receipts', label: 'Warehouse Receipts', icon: Package, moduleId: 'warehouse-receipts' },
+            { id: 'cargo', label: 'Cargo Inventory', icon: Box, moduleId: 'cargo' }
+          ]
+        },
+        {
+          title: 'OCEAN LOGISTICS & DISPATCH',
+          items: [
+            { id: 'house-bills', label: 'House Bills of Lading', icon: FileText, moduleId: 'house-bills' },
+            { id: 'consolidations', label: 'Container Consolidation', icon: Layers, moduleId: 'consolidations' },
+            { id: 'bills-of-lading', label: 'Master Bills of Lading', icon: FileText, moduleId: 'bills-of-lading' },
+            { id: 'manifests', label: 'Customs Manifests', icon: FileSpreadsheet, moduleId: 'manifests' },
+            { id: 'shipments', label: 'Ocean Shipments', icon: Ship, moduleId: 'shipments' },
+            { id: 'tracking', label: 'Cargo Tracking', icon: Search, moduleId: 'tracking' },
+            { id: 'vessels', label: 'Fleet Directory', icon: Anchor, moduleId: 'vessels' }
+          ]
+        },
+        {
+          title: 'RECORDS',
+          items: [
+            { id: 'history', label: 'Shipment Archive', icon: History, moduleId: 'history' }
+          ]
+        }
+      ];
+    }
+
+    // 5. SUPER ADMIN (Full 16 enterprise modules in chronological workflow)
+    return [
       {
-        title: isRoleAgent ? 'AGENT OPERATIONS' : 'CARGO & INTAKE',
-        items: isRoleAgent ? [
-          { id: 'agent-dashboard', label: 'Agent Dashboard', icon: LayoutDashboard, moduleId: 'dashboard' },
-          { id: 'manifests', label: 'Port Manifests & Docs', icon: FileSpreadsheet, moduleId: 'manifests' },
-          { id: 'consolidations', label: 'Container Arrivals', icon: Layers, moduleId: 'consolidations' },
-          { id: 'bills-of-lading', label: 'Release Documents & B/Ls', icon: FileText, moduleId: 'bills-of-lading' },
-          { id: 'shipments', label: 'My Assigned Shipments', icon: Ship, moduleId: 'shipments' },
-          { id: 'tracking', label: 'Port Tracking', icon: Search, moduleId: 'tracking' },
-          { id: 'documents', label: 'Agent Documents', icon: Tag, moduleId: 'documents' }
-        ] : [
-          {
-            id: 'dashboard',
-            label: roleKey === 'warehouse' ? 'Overview Dashboard' : roleKey === 'documentation' ? 'Documentation Desk' : roleKey === 'operations' ? 'Operations Overview' : 'System Overview',
-            icon: LayoutDashboard,
-            moduleId: 'dashboard'
-          },
+        title: 'CARGO & INTAKE',
+        items: [
+          { id: 'dashboard', label: 'System Overview', icon: LayoutDashboard, moduleId: 'dashboard' },
           { id: 'customers', label: 'Customers', icon: Users, moduleId: 'customers' },
           { id: 'warehouse-receipts', label: 'Warehouse Receipts', icon: Package, moduleId: 'warehouse-receipts' },
           { id: 'cargo', label: 'Cargo Inventory', icon: Box, moduleId: 'cargo' },
-          { id: 'documents', label: roleKey === 'documentation' ? 'PDF Archive & Labels' : 'Labels & Printouts', icon: roleKey === 'documentation' ? FileStack : Tag, moduleId: 'documents' }
+          { id: 'documents', label: 'Labels & Printouts', icon: Tag, moduleId: 'documents' }
         ]
       },
       {
         title: 'LOGISTICS & DOCUMENTATION',
         items: [
           { id: 'house-bills', label: 'House Bills of Lading', icon: FileText, moduleId: 'house-bills' },
-          { id: 'consolidations', label: roleKey === 'warehouse' ? 'Container Packing' : 'Container Consolidation', icon: Layers, moduleId: 'consolidations' },
-          { id: 'bills-of-lading', label: roleKey === 'documentation' ? 'Master Bills (MBL)' : 'Master Bills of Lading', icon: FileText, moduleId: 'bills-of-lading' },
+          { id: 'consolidations', label: 'Container Consolidation', icon: Layers, moduleId: 'consolidations' },
+          { id: 'bills-of-lading', label: 'Master Bills of Lading', icon: FileText, moduleId: 'bills-of-lading' },
           { id: 'manifests', label: 'Customs Manifests', icon: FileSpreadsheet, moduleId: 'manifests' },
           { id: 'shipments', label: 'Ocean Shipments', icon: Ship, moduleId: 'shipments' },
-          { id: 'tracking', label: roleKey === 'warehouse' ? 'Search & Track Cargo' : 'Cargo Tracking', icon: Search, moduleId: 'tracking' },
+          { id: 'tracking', label: 'Cargo Tracking', icon: Search, moduleId: 'tracking' },
           { id: 'vessels', label: 'Fleet Directory', icon: Anchor, moduleId: 'vessels' }
         ]
       },
@@ -82,17 +167,6 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
         ]
       }
     ];
-
-    // Filter dynamic items based on allowed modules for this role
-    return allMasterSections
-      .map(sec => ({
-        ...sec,
-        items: sec.items.filter(item => {
-          if (!isMenuAllowed) return true;
-          return isMenuAllowed(roleKey, item.moduleId || item.id);
-        })
-      }))
-      .filter(sec => sec.items.length > 0);
   };
 
   const navSections = getNavSections();
