@@ -165,6 +165,36 @@ export async function seedDatabase(): Promise<void> {
       },
       description: 'Maritime freight standard calculation units and trade currency',
     },
+    {
+      key: 'role_permissions',
+      value: {
+        super_admin: [
+          'dashboard', 'customers', 'warehouse-receipts', 'cargo', 'documents',
+          'house-bills', 'consolidations', 'bills-of-lading', 'manifests', 'shipments',
+          'tracking', 'vessels', 'agent-portal', 'hold-authorization',
+          'history', 'audit', 'users', 'settings'
+        ],
+        operations: [
+          'dashboard', 'customers', 'warehouse-receipts', 'cargo',
+          'house-bills', 'consolidations', 'bills-of-lading', 'manifests',
+          'shipments', 'tracking', 'vessels', 'history'
+        ],
+        warehouse: [
+          'dashboard', 'customers', 'warehouse-receipts', 'cargo', 'documents',
+          'consolidations', 'tracking'
+        ],
+        documentation: [
+          'dashboard', 'customers', 'warehouse-receipts', 'documents',
+          'house-bills', 'consolidations', 'bills-of-lading', 'manifests',
+          'tracking', 'hold-authorization'
+        ],
+        agent: [
+          'dashboard', 'agent-portal', 'manifests', 'consolidations',
+          'bills-of-lading', 'shipments', 'tracking', 'documents'
+        ]
+      },
+      description: 'Default role-based menu permissions matching client requirements',
+    },
   ];
 
   for (const setting of systemSettingsToSeed) {
