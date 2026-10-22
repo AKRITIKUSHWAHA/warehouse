@@ -169,28 +169,27 @@ export async function seedDatabase(): Promise<void> {
       key: 'role_permissions',
       value: {
         super_admin: [
-          'dashboard', 'customers', 'warehouse-receipts', 'cargo', 'documents',
-          'house-bills', 'consolidations', 'bills-of-lading', 'manifests', 'shipments',
-          'tracking', 'vessels', 'agent-portal', 'hold-authorization',
+          'dashboard', 'customers', 'warehouse-receipts', 'documents',
+          'house-bills', 'consolidations', 'bills-of-lading', 'manifests',
+          'vessels', 'tracking', 'agent-portal', 'hold-authorization',
           'history', 'audit', 'users', 'settings'
         ],
         operations: [
-          'dashboard', 'customers', 'warehouse-receipts', 'cargo',
-          'house-bills', 'consolidations', 'bills-of-lading', 'manifests',
-          'shipments', 'tracking', 'vessels', 'history'
+          'dashboard', 'customers', 'consolidations', 'bills-of-lading',
+          'manifests', 'vessels', 'tracking'
         ],
         warehouse: [
-          'dashboard', 'customers', 'warehouse-receipts', 'cargo', 'documents',
+          'dashboard', 'customers', 'warehouse-receipts', 'documents',
           'consolidations', 'tracking'
         ],
         documentation: [
-          'dashboard', 'customers', 'warehouse-receipts', 'documents',
-          'house-bills', 'consolidations', 'bills-of-lading', 'manifests',
-          'tracking', 'hold-authorization'
+          'dashboard', 'customers', 'warehouse-receipts', 'house-bills',
+          'consolidations', 'bills-of-lading', 'manifests', 'tracking',
+          'hold-authorization'
         ],
         agent: [
           'dashboard', 'agent-portal', 'manifests', 'consolidations',
-          'bills-of-lading', 'shipments', 'tracking', 'documents'
+          'bills-of-lading', 'tracking', 'documents'
         ]
       },
       description: 'Default role-based menu permissions matching client requirements',
