@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { PageHeader } from '../../components/common/PageHeader';
 import { ResponsiveTable } from '../../components/tables/ResponsiveTable';
 import { StatusBadge } from '../../components/common/StatusBadge';
@@ -40,37 +40,52 @@ export const DocumentCenter = ({ onNavigate }) => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [deletingDoc, setDeletingDoc] = useState(null);
 
-  // Manage uploaded supporting documents with localStorage persistence
+  // Manage uploaded supporting documents with localStorage persistence (Clean slate - zero mock seeds)
   const [localDocs, setLocalDocs] = useState(() => {
     try {
       const stored = localStorage.getItem('vicustoms_uploaded_docs');
-      if (stored) return JSON.parse(stored);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter(d => 
+            d.id !== 'doc-seed-1' && 
+            d.id !== 'doc-seed-2' && 
+            d.docNumber !== 'INV-2026-4401' && 
+            d.docNumber !== 'EXD-2026-1099'
+          );
+          localStorage.setItem('vicustoms_uploaded_docs', JSON.stringify(cleaned));
+          return cleaned;
+        }
+      }
     } catch (e) {
       console.warn('Could not read stored docs', e);
     }
-    return [
-      {
-        id: 'doc-seed-1',
-        docNumber: 'INV-2026-4401',
-        docType: 'Commercial Invoice',
-        title: 'Commercial Invoice for Auto Parts Miami',
-        party: 'Auto Parts Miami Corp',
-        date: '2026-10-02',
-        status: 'Active',
-        fileName: 'commercial_invoice_4401.pdf'
-      },
-      {
-        id: 'doc-seed-2',
-        docNumber: 'EXD-2026-1099',
-        docType: 'Customs Export Declaration',
-        title: 'Export Declaration SED #9910',
-        party: 'Tropical Wholesale Supplies',
-        date: '2026-10-03',
-        status: 'Active',
-        fileName: 'customs_export_dec_1099.pdf'
-      }
-    ];
+    return [];
   });
+
+  // Purge any residual mock seed docs on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('vicustoms_uploaded_docs');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter(d => 
+            d.id !== 'doc-seed-1' && 
+            d.id !== 'doc-seed-2' && 
+            d.docNumber !== 'INV-2026-4401' && 
+            d.docNumber !== 'EXD-2026-1099'
+          );
+          if (cleaned.length !== parsed.length) {
+            localStorage.setItem('vicustoms_uploaded_docs', JSON.stringify(cleaned));
+            setLocalDocs(cleaned);
+          }
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
 
   const mergedUploadedDocs = useMemo(() => {
     const combined = [...localDocs];
