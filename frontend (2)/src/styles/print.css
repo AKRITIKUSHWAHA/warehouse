@@ -84,7 +84,7 @@
     display: none !important;
   }
 
-  #root, .main-wrapper, .main-content, .app-container, .house-bl-viewer-wrapper, .receipt-viewer-wrapper, .wr-detail-container {
+  #root, .main-wrapper, .main-content, .app-container, .house-bl-viewer-wrapper, .receipt-viewer-wrapper, .wr-detail-container, .manifest-viewer-wrapper {
     padding: 0 !important;
     margin: 0 !important;
     max-width: 100% !important;
@@ -255,6 +255,14 @@
     margin: 0.35in;
   }
 
+  body:has(.printable-manifest.orientation-landscape) {
+    page: manifest-landscape !important;
+  }
+
+  body:has(.printable-manifest.orientation-portrait) {
+    page: manifest-portrait !important;
+  }
+
   .printable-manifest.orientation-landscape {
     page: manifest-landscape;
     width: 100% !important;
@@ -263,6 +271,19 @@
   .printable-manifest.orientation-portrait {
     page: manifest-portrait;
     width: 100% !important;
+  }
+
+  .printable-manifest {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    box-shadow: none !important;
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 
   table {

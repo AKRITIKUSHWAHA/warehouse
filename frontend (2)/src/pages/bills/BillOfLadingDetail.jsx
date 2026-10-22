@@ -207,7 +207,7 @@ export const BillOfLadingDetail = ({ blId, onNavigate }) => {
       <WorkflowIndicator currentStage="bills-of-lading" onStageClick={(stageId) => onNavigate(stageId)} />
 
       {/* Status + Next Step Action Guide */}
-      <div style={{
+      <div className="no-print" style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',

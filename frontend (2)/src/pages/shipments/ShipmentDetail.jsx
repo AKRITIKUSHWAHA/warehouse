@@ -354,7 +354,7 @@ export const ShipmentDetail = ({ shipmentId, onNavigate }) => {
       <WorkflowIndicator currentStage="shipments" onStageClick={(stageId) => onNavigate(stageId)} />
 
       {/* Status + Next Step Action Guide */}
-      <div style={{
+      <div className="no-print" style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',

@@ -40,80 +40,82 @@ export const ManifestDetail = ({ manifestId, onNavigate }) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-      <PageHeader
-        title={`Shipping Manifest ${currentManifest.manifestNumber}`}
-        subtitle={`${currentManifest.vesselName || 'Ocean Vessel'} — ${currentManifest.portOfLoading} to ${currentManifest.portOfDischarge}`}
-        icon={FileSpreadsheet}
-        breadcrumbs={[
-          { label: 'Shipping Manifests', href: '#' },
-          { label: currentManifest.manifestNumber }
-        ]}
-        actions={
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+      <div className="no-print" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <PageHeader
+          title={`Shipping Manifest ${currentManifest.manifestNumber}`}
+          subtitle={`${currentManifest.vesselName || 'Ocean Vessel'} — ${currentManifest.portOfLoading} to ${currentManifest.portOfDischarge}`}
+          icon={FileSpreadsheet}
+          breadcrumbs={[
+            { label: 'Shipping Manifests', href: '#' },
+            { label: currentManifest.manifestNumber }
+          ]}
+          actions={
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => onNavigate('manifests')}
+                className="btn btn-outline btn-sm"
+              >
+                <ArrowLeft size={15} />
+                <span>Back</span>
+              </button>
+              <button
+                onClick={() => setShowEditModal(true)}
+                className="btn btn-secondary btn-sm"
+              >
+                <Edit2 size={15} />
+                <span>Edit Manifest</span>
+              </button>
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                className="btn btn-danger btn-sm"
+              >
+                <Trash2 size={15} />
+                <span>Delete Manifest</span>
+              </button>
+            </div>
+          }
+        />
+
+        {/* Primary Workflow Journey Indicator */}
+        <WorkflowIndicator currentStage="manifests" onStageClick={(stageId) => onNavigate(stageId)} />
+
+        {/* Status + Next Step Action Guide */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '1rem',
+          padding: '0.875rem 1.25rem',
+          background: '#F0FDF4',
+          border: '1px solid #BBF7D0',
+          borderRadius: '10px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{
+              background: '#16A34A',
+              color: '#FFFFFF',
+              borderRadius: '6px',
+              padding: '0.35rem 0.65rem',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              letterSpacing: '0.04em'
+            }}>
+              CURRENT STATUS: {currentManifest.status?.toUpperCase() || 'READY'}
+            </div>
+            <span style={{ fontSize: '0.85rem', color: '#166534', fontWeight: 600 }}>
+              Next Step: Handover manifest to Destination Agent & Customs Clearance
+            </span>
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
             <button
-              onClick={() => onNavigate('manifests')}
-              className="btn btn-outline btn-sm"
+              onClick={() => onNavigate('agent-portal')}
+              className="btn btn-primary btn-sm"
+              style={{ fontSize: '0.8rem' }}
             >
-              <ArrowLeft size={15} />
-              <span>Back</span>
-            </button>
-            <button
-              onClick={() => setShowEditModal(true)}
-              className="btn btn-secondary btn-sm"
-            >
-              <Edit2 size={15} />
-              <span>Edit Manifest</span>
-            </button>
-            <button
-              onClick={() => setShowDeleteModal(true)}
-              className="btn btn-danger btn-sm"
-            >
-              <Trash2 size={15} />
-              <span>Delete Manifest</span>
+              View Destination Agent View &rarr;
             </button>
           </div>
-        }
-      />
-
-      {/* Primary Workflow Journey Indicator */}
-      <WorkflowIndicator currentStage="manifests" onStageClick={(stageId) => onNavigate(stageId)} />
-
-      {/* Status + Next Step Action Guide */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '1rem',
-        padding: '0.875rem 1.25rem',
-        background: '#F0FDF4',
-        border: '1px solid #BBF7D0',
-        borderRadius: '10px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div style={{
-            background: '#16A34A',
-            color: '#FFFFFF',
-            borderRadius: '6px',
-            padding: '0.35rem 0.65rem',
-            fontSize: '0.75rem',
-            fontWeight: 700,
-            letterSpacing: '0.04em'
-          }}>
-            CURRENT STATUS: {currentManifest.status?.toUpperCase() || 'READY'}
-          </div>
-          <span style={{ fontSize: '0.85rem', color: '#166534', fontWeight: 600 }}>
-            Next Step: Handover manifest to Destination Agent & Customs Clearance
-          </span>
-        </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button
-            onClick={() => onNavigate('agent-portal')}
-            className="btn btn-primary btn-sm"
-            style={{ fontSize: '0.8rem' }}
-          >
-            View Destination Agent View &rarr;
-          </button>
         </div>
       </div>
 

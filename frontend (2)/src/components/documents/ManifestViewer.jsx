@@ -98,7 +98,42 @@ export const ManifestViewer = ({ manifest }) => {
   const isLandscape = orientation === 'landscape';
 
   return (
-    <div style={{ maxWidth: isLandscape ? '1100px' : '850px', margin: '0 auto', transition: 'max-width 200ms ease' }}>
+    <div className="manifest-viewer-wrapper" style={{ maxWidth: isLandscape ? '1100px' : '850px', margin: '0 auto', transition: 'max-width 200ms ease' }}>
+      {/* Dynamic Print Styles for Manifest to ensure single sheet, correct orientation & zero blank pages */}
+      <style>{`
+        @media print {
+          @page {
+            size: ${isLandscape ? 'letter landscape' : 'letter portrait'} !important;
+            margin: 0.35in !important;
+          }
+          html, body {
+            width: 100% !important;
+            height: auto !important;
+            min-height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+          }
+          .manifest-viewer-wrapper {
+            max-width: 100% !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          .printable-manifest {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 auto !important;
+            page-break-before: avoid !important;
+            break-before: avoid !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            box-shadow: none !important;
+            border: 2px solid #0A192F !important;
+          }
+        }
+      `}</style>
+
       {/* Document Controls Bar */}
       <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', background: '#FFFFFF', padding: '0.85rem 1.25rem', borderRadius: '8px', border: '1px solid #E2E8F0', flexWrap: 'wrap', gap: '0.75rem' }}>
         {/* Orientation Switcher */}
