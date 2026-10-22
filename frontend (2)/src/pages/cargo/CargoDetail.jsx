@@ -217,7 +217,7 @@ export const CargoDetail = ({ cargoId, onNavigate }) => {
               </div>
               <div>
                 <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 600 }}>Destination Port</div>
-                <div style={{ fontWeight: 700, color: '#0284C7', fontSize: '0.9rem' }}>{activeCargo.destinationPort || 'STT - Port of Charlotte Amalie'}</div>
+                <div style={{ fontWeight: 700, color: '#0284C7', fontSize: '0.9rem' }}>{activeCargo.destinationPort || 'NAS - Nassau'}</div>
               </div>
             </div>
 

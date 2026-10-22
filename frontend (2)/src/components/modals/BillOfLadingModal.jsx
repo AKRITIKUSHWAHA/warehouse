@@ -11,7 +11,7 @@ export const BillOfLadingModal = ({
   isEdit = false,
   initialConsolidationNumber = null
 }) => {
-  const { ports, customers = [], consolidations = [], houseBills = [] } = useAppData();
+  const { ports, customers = [], consolidations = [], houseBills = [], vessels = [] } = useAppData();
   const { currentUser, isAgent } = useAuth();
   const hasInitializedRef = useRef(false);
 
@@ -379,8 +379,21 @@ export const BillOfLadingModal = ({
 
   return (
     <div className="modal-backdrop">
-      <div className="modal-dialog modal-xl" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
+      <div
+        className="modal-dialog modal-xl"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: '95vw',
+          maxWidth: '980px',
+          maxHeight: '88vh',
+          display: 'flex',
+          flexDirection: 'column',
+          margin: 'auto',
+          borderRadius: '12px',
+          overflow: 'hidden'
+        }}
+      >
+        <div className="modal-header" style={{ padding: '0.85rem 1.25rem', borderBottom: '1px solid #E2E8F0', flexShrink: 0 }}>
           <div className="modal-title">
             <FileText size={20} style={{ color: '#0A192F' }} />
             <span>{isEdit ? `Edit Master Bill of Lading ${formData.blNumber}` : 'Create Master Bill of Lading (B/L)'}</span>
@@ -399,28 +412,28 @@ export const BillOfLadingModal = ({
           }}
           style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}
         >
-          <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', overflowY: 'auto', flex: 1, minHeight: 0 }}>
+          <div className="modal-body custom-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', overflowY: 'auto', flex: 1, minHeight: 0, padding: '1.25rem' }}>
             
             {/* STEP 1: Consolidation Link & Auto-Population Banner */}
             <div style={{
               background: '#F0F9FF',
               border: '1.5px solid #0284C7',
-              borderRadius: '10px',
-              padding: '1rem 1.25rem',
+              borderRadius: '8px',
+              padding: '0.85rem 1rem',
               display: 'flex',
               flexDirection: 'column',
-              gap: '0.75rem'
+              gap: '0.65rem'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#0284C7', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Layers size={16} />
+                  <div style={{ width: '26px', height: '26px', borderRadius: '6px', background: '#0284C7', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Layers size={15} />
                   </div>
                   <div>
-                    <h4 style={{ margin: 0, fontSize: '0.95rem', color: '#0A192F', fontWeight: 700 }}>
+                    <h4 style={{ margin: 0, fontSize: '0.9rem', color: '#0A192F', fontWeight: 700 }}>
                       Step 1: Select Consolidation Number (Recommended)
                     </h4>
-                    <p style={{ margin: 0, fontSize: '0.78rem', color: '#64748B' }}>
+                    <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748B' }}>
                       Select an existing Consolidation. All linked House B/Ls, vessel, carrier, container, and cargo metrics will load automatically.
                     </p>
                   </div>
@@ -433,7 +446,7 @@ export const BillOfLadingModal = ({
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4" style={{ alignItems: 'center' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '0.75rem', alignItems: 'center' }}>
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label className="form-label" style={{ fontWeight: 700 }}>Consolidation #</label>
                   <select
@@ -575,8 +588,8 @@ export const BillOfLadingModal = ({
             </div>
 
             {/* B/L Number and Issue Date */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="form-group">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.75rem' }}>
+              <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Master B/L Number <span className="required">*</span></label>
                 <input
                   type="text"
@@ -588,7 +601,7 @@ export const BillOfLadingModal = ({
                 />
               </div>
 
-              <div className="form-group">
+              <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Issue Date</label>
                 <input
                   type="date"
@@ -600,14 +613,14 @@ export const BillOfLadingModal = ({
             </div>
 
             {/* Shipper & Consignee */}
-            <div className="grid grid-cols-2 gap-4">
-              <div style={{ background: '#F8FAFC', padding: '0.85rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '0.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '0.75rem' }}>
+              <div style={{ background: '#F8FAFC', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '0.4rem' }}>
                   Shipper / Forwarder Details
                 </span>
-                <div className="form-group">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                    <label className="form-label" style={{ margin: 0 }}>Shipper Name</label>
+                <div className="form-group" style={{ marginBottom: '0.5rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' }}>
+                    <label className="form-label" style={{ margin: 0, fontSize: '0.75rem' }}>Shipper Name</label>
                     <select
                       style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', maxWidth: '170px' }}
                       defaultValue=""
@@ -637,7 +650,7 @@ export const BillOfLadingModal = ({
                   />
                 </div>
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Shipper Address</label>
+                  <label className="form-label" style={{ fontSize: '0.75rem' }}>Shipper Address</label>
                   <input
                     type="text"
                     className="form-control"
@@ -647,13 +660,13 @@ export const BillOfLadingModal = ({
                 </div>
               </div>
 
-              <div style={{ background: '#F8FAFC', padding: '0.85rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '0.5rem' }}>
+              <div style={{ background: '#F8FAFC', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '0.4rem' }}>
                   Consignee Details <span className="required">*</span>
                 </span>
-                <div className="form-group">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                    <label className="form-label" style={{ margin: 0 }}>Consignee Name</label>
+                <div className="form-group" style={{ marginBottom: '0.5rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' }}>
+                    <label className="form-label" style={{ margin: 0, fontSize: '0.75rem' }}>Consignee Name</label>
                     <select
                       style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', maxWidth: '170px' }}
                       defaultValue=""
@@ -685,7 +698,7 @@ export const BillOfLadingModal = ({
                   />
                 </div>
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Consignee Address</label>
+                  <label className="form-label" style={{ fontSize: '0.75rem' }}>Consignee Address</label>
                   <input
                     type="text"
                     className="form-control"
@@ -698,19 +711,42 @@ export const BillOfLadingModal = ({
             </div>
 
             {/* Ocean Vessel & Carrier */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="form-group">
-                <label className="form-label">Ocean Vessel</label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.75rem' }}>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' }}>
+                  <label className="form-label" style={{ margin: 0 }}>Ocean Vessel</label>
+                  {vessels && vessels.length > 0 && (
+                    <select
+                      style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', maxWidth: '170px' }}
+                      defaultValue=""
+                      onChange={(e) => {
+                        const v = vessels.find(ves => ves.id === e.target.value || ves.name === e.target.value);
+                        if (v) {
+                          setFormData(prev => ({
+                            ...prev,
+                            oceanVessel: v.name,
+                            carrier: v.carrier || prev.carrier
+                          }));
+                        }
+                      }}
+                    >
+                      <option value="" disabled>From Fleet...</option>
+                      {vessels.map(v => (
+                        <option key={`mbl-ves-${v.id || v.name}`} value={v.id || v.name}>{v.name}</option>
+                      ))}
+                    </select>
+                  )}
+                </div>
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="e.g. M/V Caribbean Carrier"
+                  placeholder="e.g. M/V Island Trader"
                   value={formData.oceanVessel}
                   onChange={(e) => setFormData({ ...formData, oceanVessel: e.target.value })}
                 />
               </div>
 
-              <div className="form-group">
+              <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Carrier</label>
                 <input
                   type="text"
@@ -723,8 +759,8 @@ export const BillOfLadingModal = ({
             </div>
 
             {/* Routing Ports */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="form-group">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.75rem' }}>
+              <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Port of Loading (POL)</label>
                 <select
                   className="form-select"
@@ -745,7 +781,7 @@ export const BillOfLadingModal = ({
                 </select>
               </div>
 
-              <div className="form-group">
+              <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Port of Discharge (POD) <span className="required">*</span></label>
                 <select
                   className="form-select"
@@ -769,8 +805,8 @@ export const BillOfLadingModal = ({
             </div>
 
             {/* Container & Seal */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="form-group">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.75rem' }}>
+              <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Container Number</label>
                 <input
                   type="text"
@@ -781,7 +817,7 @@ export const BillOfLadingModal = ({
                 />
               </div>
 
-              <div className="form-group">
+              <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Bolt Seal Number</label>
                 <input
                   type="text"
@@ -794,7 +830,7 @@ export const BillOfLadingModal = ({
             </div>
 
             {/* Cargo Description */}
-            <div className="form-group">
+            <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">Cargo Description <span className="required">*</span></label>
               <textarea
                 required
@@ -806,8 +842,8 @@ export const BillOfLadingModal = ({
             </div>
 
             {/* Package, Weight & Volume Totals (Auto-aggregated) */}
-            <div className="grid grid-cols-4 gap-4">
-              <div className="form-group">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
+              <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Total Packages</label>
                 <input
                   type="number"
@@ -818,7 +854,7 @@ export const BillOfLadingModal = ({
                 />
               </div>
 
-              <div className="form-group">
+              <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Gross Weight (LBS)</label>
                 <input
                   type="number"
@@ -829,7 +865,7 @@ export const BillOfLadingModal = ({
                 />
               </div>
 
-              <div className="form-group">
+              <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Volume (CBM)</label>
                 <input
                   type="number"
@@ -840,7 +876,7 @@ export const BillOfLadingModal = ({
                 />
               </div>
 
-              <div className="form-group">
+              <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">B/L Status</label>
                 <select
                   className="form-select"
@@ -856,11 +892,23 @@ export const BillOfLadingModal = ({
             </div>
           </div>
 
-          <div className="modal-footer" style={{ flexShrink: 0, padding: '1rem 1.5rem', background: '#F8FAFC', borderTop: '1px solid #E2E8F0' }}>
+          <div
+            className="modal-footer"
+            style={{
+              flexShrink: 0,
+              padding: '0.85rem 1.5rem',
+              background: '#F8FAFC',
+              borderTop: '1px solid #E2E8F0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              gap: '0.75rem'
+            }}
+          >
             <button type="button" onClick={onClose} className="btn btn-outline btn-sm">
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary btn-sm">
+            <button type="submit" className="btn btn-primary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               {isEdit ? <Save size={14} /> : <Plus size={14} />}
               <span>{isEdit ? 'Save B/L Changes' : 'Issue Master B/L'}</span>
             </button>

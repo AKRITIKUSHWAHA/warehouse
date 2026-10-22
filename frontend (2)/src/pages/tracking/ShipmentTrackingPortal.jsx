@@ -82,7 +82,7 @@ export const ShipmentTrackingPortal = ({ initialQuery = '', onNavigate }) => {
         stage: 'Destination Port Delivery',
         status: 'Pending',
         date: 'Pending',
-        location: wr.destinationPort || 'Destination Cargo Terminal',
+        location: wr.destinationPort || 'Nassau Container Port',
         notes: 'Awaiting arrival at destination hub.'
       }
     ]

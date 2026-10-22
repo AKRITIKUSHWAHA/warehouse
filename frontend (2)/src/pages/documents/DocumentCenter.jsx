@@ -123,7 +123,7 @@ export const DocumentCenter = ({ onNavigate }) => {
     // 2. House Bills of Lading (Prepared by Warehouse/Operations, reviewed by Documentation)
     if (canAccessDocumentType(roleKey, 'HBL')) {
       const filteredHBLs = isAgent
-        ? houseBills.filter((h) => h.agentId === currentUser?.agentId || (currentUser?.destinationPortCode && (h.destinationCode === currentUser.destinationPortCode || h.destinationPort?.includes(currentUser.destinationPortCode))))
+        ? houseBills.filter((h) => h.agentId === currentUser?.agentId || h.portOfDischarge?.includes('Nassau'))
         : houseBills;
 
       filteredHBLs.forEach((h) => {
@@ -154,7 +154,7 @@ export const DocumentCenter = ({ onNavigate }) => {
           entityType: 'BL',
           title: `Master B/L to ${b.consignee?.name || 'Consignee'}`,
           date: b.issueDate || b.createdDate || '2026-10-04',
-          party: b.consignee?.name || 'Consignee',
+          party: b.consignee?.name || 'Nassau Consignee',
           status: b.status || 'Draft',
           isOnHold: b.status === 'On Hold' || b.holdDetails?.isOnHold,
           raw: b
@@ -165,7 +165,7 @@ export const DocumentCenter = ({ onNavigate }) => {
     // 4. Shipping / Ocean Manifests (Exclusive to: Documentation, Super Admin, and assigned Agents)
     if (canAccessDocumentType(roleKey, 'MANIFEST')) {
       const filteredManifests = isAgent
-        ? manifests.filter((m) => m.agentId === currentUser?.agentId || (currentUser?.destinationPortCode && m.portOfDischarge?.includes(currentUser.destinationPortCode)))
+        ? manifests.filter((m) => m.portOfDischarge?.includes('Nassau') || m.agentId === currentUser?.agentId)
         : manifests;
 
       filteredManifests.forEach((m) => {

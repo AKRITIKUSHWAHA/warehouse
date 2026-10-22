@@ -212,7 +212,7 @@ export const AgentLayout = ({
                 Agent Portal — Caribbean Express Freight Ltd.
               </span>
               <span style={{ fontSize: '0.7rem', background: '#D97706', color: '#FFFFFF', padding: '1px 6px', borderRadius: '4px', fontWeight: 700, flexShrink: 0 }}>
-                PORT AGENT HUB
+                NASSAU HUB
               </span>
             </div>
           </div>

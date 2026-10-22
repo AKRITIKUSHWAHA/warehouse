@@ -116,7 +116,7 @@ export const PortModal = ({
                 <input
                   type="text"
                   required
-                  placeholder="e.g. St. Thomas, Tortola, Anguilla"
+                  placeholder="e.g. Abaco, Exuma, Grand Bahama"
                   className="form-control"
                   value={formData.island}
                   onChange={(e) => setFormData({ ...formData, island: e.target.value })}
