@@ -11,7 +11,7 @@ import { useToast } from '../../context/ToastContext';
 import { WorkflowIndicator } from '../../components/common/WorkflowIndicator';
 import { useAuth } from '../../context/AuthContext';
 
-export const ManifestsList = ({ onNavigate }) => {
+export const ManifestsList = ({ onNavigate, hideHeaderWorkflow = false }) => {
   const { manifests, createManifest, updateManifest, deleteManifest, fetchMenuApi } = useAppData();
   const { isAgent, currentUser } = useAuth();
   const { showToast } = useToast();
@@ -331,40 +331,44 @@ export const ManifestsList = ({ onNavigate }) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-      <PageHeader
-        title="Shipping Manifests"
-        subtitle="Generate and export ocean cargo manifests for port and customs clearance."
-        icon={FileSpreadsheet}
-        breadcrumbs={[
-          { label: 'Documentation', href: '#' },
-          { label: 'Customs Manifests' }
-        ]}
-        actions={
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <button
-              onClick={handleManualRefresh}
-              className="btn btn-outline btn-sm"
-              title="Refresh Manifests from Database"
-              disabled={isRefreshing}
-            >
-              <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />
-              <span className="hide-mobile">{isRefreshing ? 'Syncing...' : 'Sync'}</span>
-            </button>
-            {!isAgent && (
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="btn btn-primary btn-sm"
-              >
-                <Plus size={15} />
-                <span>Generate Manifest</span>
-              </button>
-            )}
-          </div>
-        }
-      />
+      {!hideHeaderWorkflow && (
+        <>
+          <PageHeader
+            title="Shipping Manifests"
+            subtitle="Generate and export ocean cargo manifests for port and customs clearance."
+            icon={FileSpreadsheet}
+            breadcrumbs={[
+              { label: 'Documentation', href: '#' },
+              { label: 'Customs Manifests' }
+            ]}
+            actions={
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <button
+                  onClick={handleManualRefresh}
+                  className="btn btn-outline btn-sm"
+                  title="Refresh Manifests from Database"
+                  disabled={isRefreshing}
+                >
+                  <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />
+                  <span className="hide-mobile">{isRefreshing ? 'Syncing...' : 'Sync'}</span>
+                </button>
+                {!isAgent && (
+                  <button
+                    onClick={() => setShowAddModal(true)}
+                    className="btn btn-primary btn-sm"
+                  >
+                    <Plus size={15} />
+                    <span>Generate Manifest</span>
+                  </button>
+                )}
+              </div>
+            }
+          />
 
-      {/* Primary Workflow Journey Indicator */}
-      <WorkflowIndicator currentStage="manifests" onNavigate={onNavigate} />
+          {/* Primary Workflow Journey Indicator */}
+          <WorkflowIndicator currentStage="manifests" onNavigate={onNavigate} />
+        </>
+      )}
 
       <ResponsiveTable
         columns={columns}

@@ -33,16 +33,15 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
 
   // Build dynamic role-filtered navigation menu strictly matching client's NVOCC operational needs
   const getNavSections = () => {
-    // 1. DESTINATION PORT AGENT (Client's St. Thomas port release workflow: exactly 6 menus)
+    // 1. DESTINATION PORT AGENT (Client's St. Thomas port release workflow: exactly 5 menus)
     if (roleKey === 'agent' || isAgent) {
       return [
         {
           title: 'AGENT PORT OPERATIONS',
           items: [
             { id: 'agent-dashboard', label: 'Agent Dashboard', icon: LayoutDashboard, moduleId: 'dashboard' },
-            { id: 'manifests', label: 'Port Manifests & Docs', icon: FileSpreadsheet, moduleId: 'manifests' },
             { id: 'consolidations', label: 'Container Arrivals', icon: Layers, moduleId: 'consolidations' },
-            { id: 'bills-of-lading', label: 'Release Documents & B/Ls', icon: FileText, moduleId: 'bills-of-lading' },
+            { id: 'bills-of-lading', label: 'Port Manifests & Master B/Ls', icon: FileText, moduleId: 'bills-of-lading' },
             { id: 'tracking', label: 'Port Tracking', icon: Search, moduleId: 'tracking' },
             { id: 'documents', label: 'Agent Documents', icon: Tag, moduleId: 'documents' }
           ]
@@ -67,7 +66,7 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
       ];
     }
 
-    // 3. DOCUMENTATION DESK (Client's B/L, billing & 1-click manifest workflow: exactly 8 menus)
+    // 3. DOCUMENTATION DESK (Client's B/L, billing & 1-click manifest workflow: exactly 7 menus)
     if (roleKey === 'documentation') {
       return [
         {
@@ -78,15 +77,14 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
             { id: 'warehouse-receipts', label: 'Warehouse Receipts', icon: Package, moduleId: 'warehouse-receipts' },
             { id: 'house-bills', label: 'House Bills of Lading', icon: FileText, moduleId: 'house-bills' },
             { id: 'consolidations', label: 'Container Consolidation', icon: Layers, moduleId: 'consolidations' },
-            { id: 'bills-of-lading', label: 'Master Bills (MBL)', icon: FileText, moduleId: 'bills-of-lading' },
-            { id: 'manifests', label: 'Customs Manifests', icon: FileSpreadsheet, moduleId: 'manifests' },
+            { id: 'bills-of-lading', label: 'Master Bills & Manifests', icon: FileText, moduleId: 'bills-of-lading' },
             { id: 'tracking', label: 'Cargo Tracking', icon: Search, moduleId: 'tracking' }
           ]
         }
       ];
     }
 
-    // 4. OPERATIONS COORDINATOR (Ocean dispatch, container consolidation & fleet: exactly 7 menus)
+    // 4. OPERATIONS COORDINATOR (Ocean dispatch & container consolidation: exactly 5 menus)
     if (roleKey === 'operations') {
       return [
         {
@@ -95,8 +93,7 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
             { id: 'dashboard', label: 'Operations Overview', icon: LayoutDashboard, moduleId: 'dashboard' },
             { id: 'customers', label: 'Customers', icon: Users, moduleId: 'customers' },
             { id: 'consolidations', label: 'Container Consolidation', icon: Layers, moduleId: 'consolidations' },
-            { id: 'bills-of-lading', label: 'Master Bills of Lading', icon: FileText, moduleId: 'bills-of-lading' },
-            { id: 'manifests', label: 'Customs Manifests', icon: FileSpreadsheet, moduleId: 'manifests' },
+            { id: 'bills-of-lading', label: 'Master Bills & Manifests', icon: FileText, moduleId: 'bills-of-lading' },
             { id: 'tracking', label: 'Cargo Tracking', icon: Search, moduleId: 'tracking' }
           ]
         }
@@ -119,8 +116,7 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
         items: [
           { id: 'house-bills', label: 'House Bills of Lading', icon: FileText, moduleId: 'house-bills' },
           { id: 'consolidations', label: 'Container Consolidation', icon: Layers, moduleId: 'consolidations' },
-          { id: 'bills-of-lading', label: 'Master Bills of Lading', icon: FileText, moduleId: 'bills-of-lading' },
-          { id: 'manifests', label: 'Customs Manifests', icon: FileSpreadsheet, moduleId: 'manifests' },
+          { id: 'bills-of-lading', label: 'Master Bills & Manifests', icon: FileText, moduleId: 'bills-of-lading' },
           { id: 'tracking', label: 'Cargo Tracking', icon: Search, moduleId: 'tracking' }
         ]
       },

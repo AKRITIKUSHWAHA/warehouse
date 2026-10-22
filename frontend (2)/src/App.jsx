@@ -354,12 +354,12 @@ const MainAppRouter = () => {
         }
         return <BillsOfLadingList onNavigate={navigateTo} />;
 
-      // 9. Shipping Manifests
+      // 9. Shipping Manifests (Unified with Master B/L)
       case 'manifests':
         if (selectedRecordId) {
           return <ManifestDetail manifestId={selectedRecordId} onNavigate={navigateTo} />;
         }
-        return <ManifestsList onNavigate={navigateTo} />;
+        return <BillsOfLadingList initialTab="manifests" onNavigate={navigateTo} />;
 
       // 10. Fleet Directory
       case 'vessels':

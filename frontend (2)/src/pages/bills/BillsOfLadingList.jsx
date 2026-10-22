@@ -28,12 +28,14 @@ import {
 import { useAppData } from '../../context/AppDataContext';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { ManifestsList } from '../manifests/ManifestsList';
 
-export const BillsOfLadingList = ({ onNavigate }) => {
-  const { billsOfLading, clearBLHold, placeBLHold, createBillOfLading, updateBillOfLading, deleteBillOfLading, generateManifestFromMasterBL, houseBills, fetchMenuApi } = useAppData();
+export const BillsOfLadingList = ({ onNavigate, initialTab = 'mbl' }) => {
+  const { billsOfLading, clearBLHold, placeBLHold, createBillOfLading, updateBillOfLading, deleteBillOfLading, generateManifestFromMasterBL, houseBills, manifests = [], fetchMenuApi } = useAppData();
   const { isAgent, currentUser } = useAuth();
   const { showToast } = useToast();
 
+  const [activeTab, setActiveTab] = useState(initialTab || 'mbl');
   const [activeBLForClear, setActiveBLForClear] = useState(null);
   const [activeBLForPlace, setActiveBLForPlace] = useState(null);
   const [editingBL, setEditingBL] = useState(null);
@@ -41,6 +43,12 @@ export const BillsOfLadingList = ({ onNavigate }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeMenuId, setActiveMenuId] = useState(null);
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
 
   useEffect(() => {
     const handleOutsideClick = () => setActiveMenuId(null);
@@ -385,12 +393,12 @@ export const BillsOfLadingList = ({ onNavigate }) => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       {/* Page Header */}
       <PageHeader
-        title="Bills of Lading"
-        subtitle="Manage carrier Master B/Ls, hold restrictions, authorized releases, and customer House B/Ls."
+        title="Master Bills & Manifests"
+        subtitle="Manage carrier Master B/Ls and generate customs manifests in 1 click."
         icon={FileText}
         breadcrumbs={[
           { label: 'Maritime', href: '#' },
-          { label: 'Bills of Lading' }
+          { label: 'Master Bills & Manifests' }
         ]}
         actions={
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -430,7 +438,7 @@ export const BillsOfLadingList = ({ onNavigate }) => {
       {/* Subtle Workflow Indicator */}
       <WorkflowIndicator currentStage="bills-of-lading" onNavigate={onNavigate} />
 
-      {/* ⭐ PROMINENT B/L CATEGORY TOGGLE: Solves client's "I don't see the house BL options" */}
+      {/* ⭐ UNIFIED SUB-TAB NAVIGATION: Master B/L (MBL) + Customs Manifests */}
       <div
         style={{
           display: 'flex',
@@ -444,16 +452,48 @@ export const BillsOfLadingList = ({ onNavigate }) => {
           gap: '0.75rem'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
           <button
             type="button"
-            className="btn btn-sm btn-primary"
+            onClick={() => setActiveTab('mbl')}
+            className={`btn btn-sm ${activeTab === 'mbl' ? 'btn-primary' : 'btn-ghost'}`}
             style={{ fontWeight: 700, fontSize: '0.8rem', padding: '0.35rem 0.85rem', gap: '6px' }}
           >
             <Ship size={15} />
             <span>Master Bills of Lading (MBL)</span>
-            <span style={{ background: 'rgba(255,255,255,0.2)', padding: '1px 6px', borderRadius: '10px', fontSize: '0.7rem' }}>
+            <span
+              style={{
+                background: activeTab === 'mbl' ? 'rgba(255,255,255,0.2)' : '#EFF6FF',
+                color: activeTab === 'mbl' ? '#FFFFFF' : '#2563EB',
+                padding: '1px 6px',
+                borderRadius: '10px',
+                fontSize: '0.7rem',
+                fontWeight: 700
+              }}
+            >
               {visibleBLs.length}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('manifests')}
+            className={`btn btn-sm ${activeTab === 'manifests' ? 'btn-primary' : 'btn-ghost'}`}
+            style={{ fontWeight: 700, fontSize: '0.8rem', padding: '0.35rem 0.85rem', gap: '6px' }}
+          >
+            <FileSpreadsheet size={15} style={{ color: activeTab === 'manifests' ? '#FFFFFF' : '#0284C7' }} />
+            <span>Customs Cargo Manifests</span>
+            <span
+              style={{
+                background: activeTab === 'manifests' ? 'rgba(255,255,255,0.2)' : '#F0F9FF',
+                color: activeTab === 'manifests' ? '#FFFFFF' : '#0284C7',
+                padding: '1px 6px',
+                borderRadius: '10px',
+                fontSize: '0.7rem',
+                fontWeight: 700
+              }}
+            >
+              {manifests.length}
             </span>
           </button>
 
@@ -473,24 +513,32 @@ export const BillsOfLadingList = ({ onNavigate }) => {
         </div>
 
         <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
-          Showing <strong>Carrier Master B/Ls</strong>. Click House B/L tab above to view customer consignment bills.
+          {activeTab === 'mbl' ? (
+            <span>Showing <strong>Carrier Master B/Ls</strong>. Generate a 1-click customs manifest from any B/L action menu.</span>
+          ) : (
+            <span>Showing <strong>Customs Cargo Manifests</strong>. Created from Master B/Ls for customs clearance.</span>
+          )}
         </div>
       </div>
 
-      {/* Master B/L Table with Clear Empty State */}
-      <ResponsiveTable
-        columns={columns}
-        data={visibleBLs}
-        searchPlaceholder="Search B/L #, consignee, shipper, container, vessel..."
-        filterOptions={['All', 'Draft', 'On Hold', 'Released', 'Cancelled']}
-        pageSize={8}
-        emptyTitle="No Master Bills of Lading Found"
-        emptyWhy="No Master B/L records match your search or filter criteria."
-        emptyNextStep="Issue a new Master B/L or build a consolidation to generate one automatically."
-        emptyActionLabel="Issue Master B/L"
-        onEmptyAction={() => setShowAddModal(true)}
-        onRowClick={(item) => onNavigate('bills-of-lading', item.id || item.blNumber)}
-      />
+      {/* Conditional Content: ManifestsList or Master B/L Table */}
+      {activeTab === 'manifests' ? (
+        <ManifestsList onNavigate={onNavigate} hideHeaderWorkflow={true} />
+      ) : (
+        <ResponsiveTable
+          columns={columns}
+          data={visibleBLs}
+          searchPlaceholder="Search B/L #, consignee, shipper, container, vessel..."
+          filterOptions={['All', 'Draft', 'On Hold', 'Released', 'Cancelled']}
+          pageSize={8}
+          emptyTitle="No Master Bills of Lading Found"
+          emptyWhy="No Master B/L records match your search or filter criteria."
+          emptyNextStep="Issue a new Master B/L or build a consolidation to generate one automatically."
+          emptyActionLabel="Issue Master B/L"
+          onEmptyAction={() => setShowAddModal(true)}
+          onRowClick={(item) => onNavigate('bills-of-lading', item.id || item.blNumber)}
+        />
+      )}
 
       {/* Add Master B/L Modal */}
       <BillOfLadingModal
