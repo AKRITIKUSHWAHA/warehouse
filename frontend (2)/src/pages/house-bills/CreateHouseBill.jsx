@@ -54,15 +54,18 @@ export const CreateHouseBill = ({ onNavigate }) => {
   // Eligible Warehouse Receipts for the selected customer (strictly in stock / unassigned)
   const eligibleWrs = useMemo(() => {
     return warehouseReceipts.filter(wr => {
-      const matchCustomer = wr.customerId === selectedCustomerId ||
-        wr.customer?.toLowerCase() === selectedCustomer?.name?.toLowerCase() ||
-        wr.customerName?.toLowerCase() === selectedCustomer?.name?.toLowerCase() ||
-        (wr.consignee && selectedCustomer?.name && wr.consignee.toLowerCase().includes(selectedCustomer.name.toLowerCase()));
-      
       const notAssigned = !wr.assignedHouseBillId || wr.assignedHouseBillId === '';
       const notConsolidated = wr.status !== 'Consolidated' && wr.status !== 'Cancelled' && wr.status !== 'Delivered';
+      if (!notAssigned || !notConsolidated) return false;
+
+      const custId = wr.customerId || wr.customer_id;
+      const matchCustomer = custId === selectedCustomerId ||
+        wr.customer?.trim().toLowerCase() === selectedCustomer?.name?.trim().toLowerCase() ||
+        wr.customerName?.trim().toLowerCase() === selectedCustomer?.name?.trim().toLowerCase() ||
+        (wr.consignee && selectedCustomer?.name && wr.consignee.toLowerCase().includes(selectedCustomer.name.trim().toLowerCase())) ||
+        (selectedCustomer?.name && wr.consignee && selectedCustomer.name.toLowerCase().includes(wr.consignee.split('\n')[0].trim().toLowerCase()));
       
-      return matchCustomer && notAssigned && notConsolidated;
+      return matchCustomer;
     });
   }, [warehouseReceipts, selectedCustomerId, selectedCustomer]);
 
@@ -122,7 +125,7 @@ export const CreateHouseBill = ({ onNavigate }) => {
           const cLines = (firstWr?.consignee || '').split('\n');
           return {
             id: selectedCustomer?.id || firstWr?.customerId || '',
-            name: cLines[0] || selectedCustomer?.name || 'Caribbean Fresh Mart Ltd.',
+            name: cLines[0] || selectedCustomer?.name || '',
             address: cLines.slice(1).join(', ') || selectedCustomer?.address || selectedCustomer?.destinationPort || firstWr?.destinationPort || 'Destination Port Area',
             taxId: selectedCustomer?.taxId || ''
           };
@@ -385,11 +388,14 @@ export const CreateHouseBill = ({ onNavigate }) => {
           <div className="grid grid-cols-3 gap-3">
             {filteredCustomers.map(c => {
               const isSelected = selectedCustomerId === c.id;
-              const stagedWrCount = warehouseReceipts.filter(w => 
-                (w.customerId === c.id || w.customer === c.name || (w.consignee && w.consignee.includes(c.name))) &&
-                (!w.assignedHouseBillId) &&
-                (w.status !== 'Consolidated' && w.status !== 'Cancelled')
-              ).length;
+              const stagedWrCount = warehouseReceipts.filter(w => {
+                const cId = w.customerId || w.customer_id;
+                const match = cId === c.id ||
+                  w.customer?.trim().toLowerCase() === c.name?.trim().toLowerCase() ||
+                  w.customerName?.trim().toLowerCase() === c.name?.trim().toLowerCase() ||
+                  (w.consignee && w.consignee.toLowerCase().includes(c.name?.trim().toLowerCase()));
+                return match && !w.assignedHouseBillId && w.status !== 'Consolidated' && w.status !== 'Cancelled';
+              }).length;
 
               return (
                 <div
@@ -462,75 +468,86 @@ export const CreateHouseBill = ({ onNavigate }) => {
             )}
           </div>
 
-          {eligibleWrs.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '3rem 1rem', background: '#F8FAFC', borderRadius: '8px', border: '1px dashed #CBD5E1' }}>
-              <Package size={32} style={{ color: '#94A3B8', margin: '0 auto 0.5rem' }} />
-              <div style={{ fontWeight: 600, color: '#334155' }}>No Unlinked Staged Warehouse Receipts Found</div>
-              <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '4px' }}>
-                There are no unassigned warehouse receipts in inventory for {selectedCustomer?.name}.
+          {(() => {
+            const displayWrs = eligibleWrs.length > 0 ? eligibleWrs : warehouseReceipts.filter(w => !w.assignedHouseBillId && w.status !== 'Consolidated' && w.status !== 'Cancelled');
+            if (displayWrs.length === 0) {
+              return (
+                <div style={{ textAlign: 'center', padding: '3rem 1rem', background: '#F8FAFC', borderRadius: '8px', border: '1px dashed #CBD5E1' }}>
+                  <Package size={32} style={{ color: '#94A3B8', margin: '0 auto 0.5rem' }} />
+                  <div style={{ fontWeight: 600, color: '#334155' }}>No Unlinked Staged Warehouse Receipts Found</div>
+                  <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '4px' }}>
+                    There are no unassigned warehouse receipts in inventory for {selectedCustomer?.name}.
+                  </div>
+                  <button
+                    onClick={() => onNavigate('warehouse-receipts', 'create')}
+                    className="btn btn-primary btn-sm mt-3"
+                  >
+                    + Intake New Warehouse Receipt
+                  </button>
+                </div>
+              );
+            }
+            return (
+              <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '8px' }}>
+                {eligibleWrs.length === 0 && (
+                  <div style={{ padding: '0.6rem 1rem', background: '#EFF6FF', borderBottom: '1px solid #BFDBFE', fontSize: '0.8rem', color: '#1E40AF', fontWeight: 600 }}>
+                    Showing staged receipts available for linking into this House Bill:
+                  </div>
+                )}
+                <table className="data-table" style={{ fontSize: '0.8rem' }}>
+                  <thead>
+                    <tr style={{ background: '#0A192F', color: '#FFFFFF' }}>
+                      <th style={{ width: '40px' }}>Select</th>
+                      <th>WR Number</th>
+                      <th>Intake Date</th>
+                      <th>Cargo Description</th>
+                      <th>Package Lines</th>
+                      <th>Pieces</th>
+                      <th>Gross Weight</th>
+                      <th style={{ color: '#FBBF24' }}>CFT (Primary)</th>
+                      <th style={{ color: '#38BDF8' }}>CBM</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {displayWrs.map(wr => {
+                      const isSelected = selectedWrIds.includes(wr.id) || selectedWrIds.includes(wr.receiptNumber);
+                      return (
+                        <tr
+                          key={wr.id}
+                          onClick={() => toggleWrSelect(wr.id)}
+                          style={{
+                            cursor: 'pointer',
+                            background: isSelected ? '#EFF6FF' : '#FFFFFF'
+                          }}
+                        >
+                          <td>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => {}}
+                              style={{ cursor: 'pointer' }}
+                            />
+                          </td>
+                          <td style={{ fontWeight: 800, color: '#D97706', fontFamily: 'JetBrains Mono, monospace' }}>
+                            {wr.receiptNumber}
+                          </td>
+                          <td>{wr.date}</td>
+                          <td style={{ fontSize: '0.8rem', color: '#334155' }}>{wr.cargoDescription}</td>
+                          <td>{wr.packages?.length || wr.packageCount} lines</td>
+                          <td style={{ fontWeight: 700 }}>{wr.totalPieces || wr.total_pieces || wr.packageCount} pcs</td>
+                          <td>{(Number(wr.weightLbs || wr.weight_lbs || 0)).toLocaleString()} lbs</td>
+                          <td style={{ fontWeight: 800, color: '#D97706' }}>{Number(wr.totalCft || wr.total_cft || wr.cft || 0)} CFT</td>
+                          <td style={{ fontWeight: 700, color: '#0284C7' }}>{Number(wr.totalCbm || wr.total_cbm || wr.cbm || 0)} CBM</td>
+                          <td><StatusBadge status={wr.status} size="sm" /></td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
-              <button
-                onClick={() => onNavigate('warehouse-receipts', 'create')}
-                className="btn btn-primary btn-sm mt-3"
-              >
-                + Intake New Warehouse Receipt
-              </button>
-            </div>
-          ) : (
-            <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '8px' }}>
-              <table className="data-table" style={{ fontSize: '0.8rem' }}>
-                <thead>
-                  <tr style={{ background: '#0A192F', color: '#FFFFFF' }}>
-                    <th style={{ width: '40px' }}>Select</th>
-                    <th>WR Number</th>
-                    <th>Intake Date</th>
-                    <th>Cargo Description</th>
-                    <th>Package Lines</th>
-                    <th>Pieces</th>
-                    <th>Gross Weight</th>
-                    <th style={{ color: '#FBBF24' }}>CFT (Primary)</th>
-                    <th style={{ color: '#38BDF8' }}>CBM</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {eligibleWrs.map(wr => {
-                    const isSelected = selectedWrIds.includes(wr.id) || selectedWrIds.includes(wr.receiptNumber);
-                    return (
-                      <tr
-                        key={wr.id}
-                        onClick={() => toggleWrSelect(wr.id)}
-                        style={{
-                          cursor: 'pointer',
-                          background: isSelected ? '#EFF6FF' : '#FFFFFF'
-                        }}
-                      >
-                        <td>
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => {}}
-                            style={{ cursor: 'pointer' }}
-                          />
-                        </td>
-                        <td style={{ fontWeight: 800, color: '#D97706', fontFamily: 'JetBrains Mono, monospace' }}>
-                          {wr.receiptNumber}
-                        </td>
-                        <td>{wr.date}</td>
-                        <td style={{ fontSize: '0.8rem', color: '#334155' }}>{wr.cargoDescription}</td>
-                        <td>{wr.packages?.length || wr.packageCount} lines</td>
-                        <td style={{ fontWeight: 700 }}>{wr.totalPieces || wr.total_pieces || wr.packageCount} pcs</td>
-                        <td>{(Number(wr.weightLbs || wr.weight_lbs || 0)).toLocaleString()} lbs</td>
-                        <td style={{ fontWeight: 800, color: '#D97706' }}>{Number(wr.totalCft || wr.total_cft || wr.cft || 0)} CFT</td>
-                        <td style={{ fontWeight: 700, color: '#0284C7' }}>{Number(wr.totalCbm || wr.total_cbm || wr.cbm || 0)} CBM</td>
-                        <td><StatusBadge status={wr.status} size="sm" /></td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
+            );
+          })()}
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '1rem', borderTop: '1px solid #E2E8F0' }}>
             <button onClick={() => setCurrentStep(1)} className="btn btn-outline">
