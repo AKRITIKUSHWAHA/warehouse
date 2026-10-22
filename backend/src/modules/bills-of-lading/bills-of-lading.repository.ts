@@ -1,6 +1,6 @@
 import { eq, ilike, or, count, and, desc, inArray } from 'drizzle-orm';
 import { db } from '../../db/index.js';
-import { billsOfLading, NewBillOfLading, HoldDetails, houseBills, shipments } from '../../db/schema/index.js';
+import { billsOfLading, NewBillOfLading, HoldDetails, houseBills, shipments, consolidations } from '../../db/schema/index.js';
 import { BillOfLadingFilterParams } from './bills-of-lading.types.js';
 
 export class BillsOfLadingRepository {
@@ -40,7 +40,23 @@ export class BillsOfLadingRepository {
       .from(billsOfLading)
       .where(whereClause);
 
-    return { data, total: Number(total) };
+    const consolIds = data.map(d => d.consolidationId).filter((id): id is string => Boolean(id));
+    const consolMap = new Map<string, string>();
+    if (consolIds.length > 0) {
+      const matchedConsols = await db
+        .select({ id: consolidations.id, consolidationNumber: consolidations.consolidationNumber })
+        .from(consolidations)
+        .where(inArray(consolidations.id, consolIds))
+        .catch(() => []);
+      matchedConsols.forEach(c => consolMap.set(c.id, c.consolidationNumber));
+    }
+
+    const enrichedData = data.map(d => ({
+      ...d,
+      consolidationNumber: (d.consolidationId && consolMap.get(d.consolidationId)) || (d as any).consolidationNumber || null
+    }));
+
+    return { data: enrichedData, total: Number(total) };
   }
 
   async findByIdOrNumber(idOrNumber: string) {
@@ -101,8 +117,23 @@ export class BillsOfLadingRepository {
       linkedShipment = shipResult[0];
     }
 
+    // Fetch linked consolidation
+    let linkedConsolidationNumber: string | null = null;
+    if (bl.consolidationId) {
+      const consolResult = await db
+        .select({ consolidationNumber: consolidations.consolidationNumber })
+        .from(consolidations)
+        .where(eq(consolidations.id, bl.consolidationId))
+        .limit(1)
+        .catch(() => []);
+      if (consolResult.length > 0) {
+        linkedConsolidationNumber = consolResult[0].consolidationNumber;
+      }
+    }
+
     return {
       ...bl,
+      consolidationNumber: linkedConsolidationNumber || (bl as any).consolidationNumber || null,
       oceanVessel: bl.oceanVessel || linkedShipment?.vesselName || 'Ocean Vessel',
       carrier: bl.carrier || linkedShipment?.carrier || 'Tropical Shipping',
       containerNumber: bl.containerNumber || linkedShipment?.containerNumber || '',
