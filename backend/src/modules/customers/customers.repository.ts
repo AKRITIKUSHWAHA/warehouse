@@ -126,16 +126,14 @@ export class CustomersRepository {
     if (!existing) return false;
 
     // Safely unlink foreign key references so customer deletion succeeds without foreign key constraint violations
-    await db.execute(sql`
-      UPDATE warehouse_receipts SET customer_id = NULL WHERE customer_id = ${existing.id};
-      UPDATE warehouse_receipts SET shipper_id = NULL WHERE shipper_id = ${existing.id};
-      UPDATE warehouse_receipts SET consignee_id = NULL WHERE consignee_id = ${existing.id};
-      UPDATE house_bills SET customer_id = NULL WHERE customer_id = ${existing.id};
-      UPDATE house_bills SET shipper_id = NULL WHERE shipper_id = ${existing.id};
-      UPDATE house_bills SET consignee_id = NULL WHERE consignee_id = ${existing.id};
-      UPDATE bills_of_lading SET shipper_id = NULL WHERE shipper_id = ${existing.id};
-      UPDATE bills_of_lading SET consignee_id = NULL WHERE consignee_id = ${existing.id};
-    `);
+    await db.execute(sql`UPDATE warehouse_receipts SET customer_id = NULL WHERE customer_id = ${existing.id}`);
+    await db.execute(sql`UPDATE warehouse_receipts SET shipper_id = NULL WHERE shipper_id = ${existing.id}`);
+    await db.execute(sql`UPDATE warehouse_receipts SET consignee_id = NULL WHERE consignee_id = ${existing.id}`);
+    await db.execute(sql`UPDATE house_bills SET customer_id = NULL WHERE customer_id = ${existing.id}`);
+    await db.execute(sql`UPDATE house_bills SET shipper_id = NULL WHERE shipper_id = ${existing.id}`);
+    await db.execute(sql`UPDATE house_bills SET consignee_id = NULL WHERE consignee_id = ${existing.id}`);
+    await db.execute(sql`UPDATE bills_of_lading SET shipper_id = NULL WHERE shipper_id = ${existing.id}`);
+    await db.execute(sql`UPDATE bills_of_lading SET consignee_id = NULL WHERE consignee_id = ${existing.id}`);
 
     const [deleted] = await db
       .delete(customers)
