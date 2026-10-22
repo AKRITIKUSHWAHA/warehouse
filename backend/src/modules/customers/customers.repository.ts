@@ -1,4 +1,4 @@
-import { eq, ilike, or, count, and } from 'drizzle-orm';
+import { eq, ilike, or, count, and, sql } from 'drizzle-orm';
 import { db } from '../../db/index.js';
 import { customers } from '../../db/schema/index.js';
 import { CustomerFilterParams, CreateCustomerInput, UpdateCustomerInput } from './customers.types.js';
@@ -121,6 +121,21 @@ export class CustomersRepository {
     const condition = isUuid
       ? or(eq(customers.id, id), eq(customers.customerNumber, id))
       : eq(customers.customerNumber, id);
+
+    const existing = await this.findById(id);
+    if (!existing) return false;
+
+    // Safely unlink foreign key references so customer deletion succeeds without foreign key constraint violations
+    await db.execute(sql`
+      UPDATE warehouse_receipts SET customer_id = NULL WHERE customer_id = ${existing.id};
+      UPDATE warehouse_receipts SET shipper_id = NULL WHERE shipper_id = ${existing.id};
+      UPDATE warehouse_receipts SET consignee_id = NULL WHERE consignee_id = ${existing.id};
+      UPDATE house_bills SET customer_id = NULL WHERE customer_id = ${existing.id};
+      UPDATE house_bills SET shipper_id = NULL WHERE shipper_id = ${existing.id};
+      UPDATE house_bills SET consignee_id = NULL WHERE consignee_id = ${existing.id};
+      UPDATE bills_of_lading SET shipper_id = NULL WHERE shipper_id = ${existing.id};
+      UPDATE bills_of_lading SET consignee_id = NULL WHERE consignee_id = ${existing.id};
+    `);
 
     const [deleted] = await db
       .delete(customers)

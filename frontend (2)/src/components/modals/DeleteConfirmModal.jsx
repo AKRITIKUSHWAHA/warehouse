@@ -20,11 +20,11 @@ export const DeleteConfirmModal = ({
       if (onConfirm) {
         await onConfirm();
       }
-      onClose();
     } catch (err) {
       console.error('Delete error:', err);
     } finally {
       setIsDeleting(false);
+      onClose();
     }
   };
 

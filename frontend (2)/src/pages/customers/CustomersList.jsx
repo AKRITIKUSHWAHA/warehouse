@@ -355,8 +355,11 @@ export const CustomersList = ({ onNavigate }) => {
         itemType="Customer Profile"
         onConfirm={async () => {
           if (deletingCustomer) {
-            await deleteCustomer(deletingCustomer.id);
-            setDeletingCustomer(null);
+            try {
+              await deleteCustomer(deletingCustomer.id);
+            } finally {
+              setDeletingCustomer(null);
+            }
           }
         }}
       />
