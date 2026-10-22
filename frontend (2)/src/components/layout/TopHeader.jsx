@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BrandLogo } from '../common/BrandLogo';
 import {
   Search,
@@ -33,6 +33,30 @@ export const TopHeader = ({
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCreateMenu, setShowCreateMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+
+  const userMenuRef = useRef(null);
+  const createMenuRef = useRef(null);
+  const notificationsRef = useRef(null);
+
+  // Close menus when clicking outside anywhere on the screen
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setShowUserMenu(false);
+      }
+      if (createMenuRef.current && !createMenuRef.current.contains(event.target)) {
+        setShowCreateMenu(false);
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const holdBLCount = (billsOfLading || []).filter(b => b.status === 'On Hold' || b.holdDetails?.isOnHold).length;
 
@@ -104,7 +128,7 @@ export const TopHeader = ({
 
         {/* Quick Action "Create New" Menu */}
         {!isAgent && (
-          <div style={{ position: 'relative' }}>
+          <div ref={createMenuRef} style={{ position: 'relative' }}>
             <button
               onClick={() => {
                 setShowCreateMenu(!showCreateMenu);
@@ -175,7 +199,7 @@ export const TopHeader = ({
         )}
 
         {/* Notifications Popover */}
-        <div style={{ position: 'relative' }}>
+        <div ref={notificationsRef} style={{ position: 'relative' }}>
           <button
             onClick={() => {
               setShowNotifications(!showNotifications);
@@ -254,7 +278,7 @@ export const TopHeader = ({
         </div>
 
         {/* User Profile & Persona Switcher */}
-        <div style={{ position: 'relative' }}>
+        <div ref={userMenuRef} style={{ position: 'relative' }}>
           <div
             onClick={() => {
               setShowUserMenu(!showUserMenu);
