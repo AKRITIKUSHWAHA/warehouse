@@ -284,8 +284,8 @@ export const ShipmentHistoryArchive = ({ onNavigate }) => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       {/* Page Header */}
       <PageHeader
-        title="Shipment History &amp; Flow Archive"
-        subtitle="Live historical consignments, end-to-end lifecycle flow progression, and dynamic freight calculation analytics."
+        title="Shipment History"
+        subtitle="View historical consignments, delivered shipments, and completed cargo voyages."
         icon={History}
         breadcrumbs={[
           { label: 'Reports', href: '#' },
@@ -297,14 +297,14 @@ export const ShipmentHistoryArchive = ({ onNavigate }) => {
               onClick={loadHistory}
               className="btn btn-outline btn-sm"
               disabled={isLoading}
-              title="Refresh history and calculation metrics from live backend"
+              title="Refresh history from database"
             >
               <RefreshCw size={14} className={isLoading ? 'spin' : ''} />
               <span>Refresh</span>
             </button>
             <button onClick={handleExportArchiveCsv} className="btn btn-outline btn-sm">
               <FileSpreadsheet size={15} style={{ color: '#059669' }} />
-              <span>Export Archive (CSV)</span>
+              <span>Export History (CSV)</span>
             </button>
           </div>
         }

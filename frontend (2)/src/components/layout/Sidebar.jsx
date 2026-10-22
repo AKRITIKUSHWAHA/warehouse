@@ -123,7 +123,7 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
       {
         title: 'SYSTEM & GOVERNANCE',
         items: [
-          { id: 'history', label: 'Shipment Archive', icon: History, moduleId: 'history' },
+          { id: 'history', label: 'Shipment History', icon: History, moduleId: 'history' },
           { id: 'audit', label: 'Activity Logs', icon: Activity, moduleId: 'audit' },
           { id: 'users', label: 'Users & Roles', icon: ShieldCheck, moduleId: 'users' },
           { id: 'settings', label: 'System Settings', icon: Settings, moduleId: 'settings' }

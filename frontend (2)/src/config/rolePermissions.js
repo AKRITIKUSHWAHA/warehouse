@@ -136,7 +136,7 @@ export const SYSTEM_MODULES = [
   },
   {
     id: 'history',
-    label: 'Shipment Archive & History',
+    label: 'Shipment History',
     category: 'Governance & Security',
     description: 'Historical shipment logs, delivered cargo lookup, past records',
     icon: 'History',
