@@ -508,7 +508,7 @@ export const OperationsDashboard = ({ onNavigate }) => {
       )}
 
       {/* Subtle Visual 8-Step Workflow Indicator */}
-      <WorkflowIndicator currentStage="warehouse-receipts" onNavigate={onNavigate} />
+      <WorkflowIndicator currentStage={roleKey === 'warehouse' ? 'warehouse-receipts' : roleKey === 'operations' ? 'consolidations' : roleKey === 'documentation' ? 'bills-of-lading' : 'warehouse-receipts'} onNavigate={onNavigate} />
 
       {/* Prioritized Action Tasks: "What do I need to do next?" */}
       <div>

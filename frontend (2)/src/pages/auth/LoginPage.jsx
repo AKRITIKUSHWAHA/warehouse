@@ -80,12 +80,18 @@ export const LoginPage = ({ onLoginSuccess }) => {
     const details = roleDetails[code];
     const matched = usersList.find(u => {
       const uCode = u.userCode || u.id;
-      return uCode === code || u.roleKey === details.roleKey;
+      return uCode === code && u.roleKey === details.roleKey;
+    }) || usersList.find(u => {
+      return u.roleKey === details.roleKey;
+    }) || usersList.find(u => {
+      const uCode = u.userCode || u.id;
+      return uCode === code;
     });
-    const fallback = initialUsers.find(u => u.id === code) || initialUsers[0];
+    const fallback = initialUsers.find(u => u.id === code || u.roleKey === details.roleKey) || initialUsers[0];
     const userObj = matched || fallback;
     return {
       ...userObj,
+      roleKey: details.roleKey,
       personaKey: `persona-${code}-${userObj.id || idx}`,
       details,
       shortLabel: details.shortLabel,

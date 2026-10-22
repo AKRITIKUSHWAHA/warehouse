@@ -203,7 +203,8 @@ const MainAppRouter = () => {
 
   // Unified navigateTo function that updates state, browser URL, and history
   const navigateTo = useCallback((tab, recordIdOrAction = null, options = {}) => {
-    const { replace = false, skipHistory = false } = options;
+    const { replace = false, skipHistory = false, roleKey: overrideRoleKey } = options;
+    const effectiveRoleKey = overrideRoleKey || userRoleKey;
     let newAction = null;
     let newId = null;
 
@@ -218,11 +219,11 @@ const MainAppRouter = () => {
       tab,
       selectedRecordId: newId,
       subAction: newAction,
-      detectedPrefix: getPrefixForRole(userRoleKey)
+      detectedPrefix: getPrefixForRole(effectiveRoleKey)
     });
 
     if (!skipHistory && typeof window !== 'undefined') {
-      const newUrl = getUrlForRoute(tab, recordIdOrAction, userRoleKey);
+      const newUrl = getUrlForRoute(tab, recordIdOrAction, effectiveRoleKey);
       if (window.location.pathname !== newUrl) {
         if (replace) {
           window.history.replaceState({ tab, recordIdOrAction }, '', newUrl);
@@ -281,14 +282,8 @@ const MainAppRouter = () => {
         onLoginSuccess={(loggedUser) => {
           const roleKey = loggedUser?.roleKey || 'super_admin';
           const isUserAgent = roleKey === 'agent';
-          const parsed = parseUrlToRoute(isUserAgent, roleKey);
-
-          if (parsed.tab && hasModulePermission(roleKey, parsed.tab)) {
-            navigateTo(parsed.tab, parsed.selectedRecordId || parsed.subAction, { replace: true });
-          } else {
-            const defaultTab = isUserAgent ? 'agent-dashboard' : 'dashboard';
-            navigateTo(defaultTab, null, { replace: true });
-          }
+          const defaultTab = isUserAgent ? 'agent-dashboard' : 'dashboard';
+          navigateTo(defaultTab, null, { replace: true, roleKey });
         }}
       />
     );

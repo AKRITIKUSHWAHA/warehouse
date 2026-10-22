@@ -85,7 +85,7 @@ export async function seedDatabase(): Promise<void> {
     {
       userCode: 'USR-004',
       name: 'Destination Agent Staff',
-      email: 'agent@vicustoms.com',
+      email: 'operations@caribbeanexpressbahamas.com',
       roleKey: ROLES.PORT_AGENT,
       department: 'Destination Agency Hub',
       passwordHash: defaultPasswordHash,
@@ -101,9 +101,10 @@ export async function seedDatabase(): Promise<void> {
       .insert(users)
       .values(user)
       .onConflictDoUpdate({
-        target: users.email,
+        target: users.userCode,
         set: {
           roleKey: user.roleKey,
+          email: user.email,
           agentId: user.agentId,
           name: user.name,
           department: user.department,

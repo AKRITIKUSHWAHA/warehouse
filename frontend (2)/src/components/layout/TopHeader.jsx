@@ -338,14 +338,15 @@ export const TopHeader = ({
                         setShowUserMenu(false);
                         try {
                           const switched = await switchUser(u.id);
-                          if (u.roleKey === 'agent' || switched?.roleKey === 'agent') {
-                            onNavigate('agent-dashboard');
+                          const targetRoleKey = switched?.roleKey || u.roleKey;
+                          if (targetRoleKey === 'agent') {
+                            onNavigate('agent-dashboard', null, { roleKey: 'agent' });
                           } else {
-                            onNavigate('dashboard');
+                            onNavigate('dashboard', null, { roleKey: targetRoleKey });
                           }
                           showToast(`Switched user to ${u.name} (${u.role || u.roleKey}).`, 'info', 'Persona Switched');
                         } catch (err) {
-                          onNavigate(u.roleKey === 'agent' ? 'agent-dashboard' : 'dashboard');
+                          onNavigate(u.roleKey === 'agent' ? 'agent-dashboard' : 'dashboard', null, { roleKey: u.roleKey });
                         }
                       }}
                       style={{
