@@ -232,7 +232,7 @@ export const TopHeader = ({
                     <AlertTriangle size={14} /> B/L BL-VI-2026-0092 On Hold
                   </div>
                   <div style={{ fontSize: '0.75rem', color: '#78350F', marginTop: '2px' }}>
-                    Awaiting Wire Transfer payment for Nassau Consolidated Cargo.
+                    Awaiting Wire Transfer payment for Consolidated Cargo.
                   </div>
                 </div>
 

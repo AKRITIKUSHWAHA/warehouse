@@ -10,7 +10,7 @@ export const customers = pgTable('customers', {
   telephone: text('telephone'),
   phone: text('phone'),
   address: text('address'),
-  destinationPort: text('destination_port'), // 'NAS - Nassau, Bahamas'
+  destinationPort: text('destination_port'), // 'STT - Port of Charlotte Amalie, St. Thomas'
   destinationCode: text('destination_code'), // 'NAS'
   taxId: text('tax_id'),
   accountType: text('account_type').default('Commercial Customer'), // 'Commercial Customer' | 'Wholesaler' | 'Retail' | 'Corporate'

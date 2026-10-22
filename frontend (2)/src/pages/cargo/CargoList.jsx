@@ -45,7 +45,8 @@ export const CargoList = ({ onNavigate }) => {
           (c.agentName && (c.agentName.toLowerCase().includes('caribbean express') || c.agentName.toLowerCase().includes('cartwright')))
         );
         const dest = ((c.destinationPort || '') + ' ' + (c.destinationCode || '') + ' ' + (c.destination || '')).toLowerCase();
-        const portMatch = dest.includes('nas') || dest.includes('nassau');
+        const targetPort = (currentUser?.destinationPortCode || 'stt').toLowerCase();
+        const portMatch = dest.includes(targetPort);
         return agentMatch || portMatch;
       })
     : cargoItems;

@@ -81,7 +81,7 @@ export const AgentModal = ({
                   type="text"
                   required
                   className="form-control"
-                  placeholder="e.g. Nassau Port Logistics Ltd"
+                  placeholder="e.g. Caribbean Port Logistics Ltd"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />

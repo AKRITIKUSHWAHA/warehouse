@@ -33,7 +33,7 @@ export const ShipmentModal = ({
     eta: '2026-09-06',
     status: 'Cargo Received',
     blStatus: 'Draft',
-    agentName: 'Nassau Freight Logistics Ltd'
+    agentName: 'Caribbean Freight Logistics Ltd'
   });
 
   useEffect(() => {

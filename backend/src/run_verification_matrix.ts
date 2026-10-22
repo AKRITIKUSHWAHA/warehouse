@@ -43,7 +43,7 @@ async function runTests() {
   const docsToken = await getJwtToken('sarah.j@vicustoms.com');
   const warehouseToken = await getJwtToken('carlos.m@vicustoms.com');
   const opsToken = await getJwtToken('elena.r@vicustoms.com');
-  const agentToken = await getJwtToken('operations@caribbeanexpressbahamas.com');
+  const agentToken = await getJwtToken('agent.stt@vicustoms.com');
 
   // --- T-01: Auth Bypass ---
   {
@@ -249,7 +249,7 @@ async function runTests() {
       headers: { authorization: `Bearer ${agentToken}` },
       payload: {
         customerName: 'Test Importer',
-        destinationPort: 'Port of Freeport (BSFPO)',
+        destinationPort: 'Port of Tortola (BSFPO)',
         destinationCode: 'FPO', // Agent is NAS, mismatch with FPO
       },
     });
@@ -257,7 +257,7 @@ async function runTests() {
     results.push({
       id: 'T-10',
       focusArea: 'Agent Port Mismatch',
-      action: 'Nassau agent creates record destined for Freeport (FPO)',
+      action: 'St. Thomas agent creates record destined for Tortola (TOR)',
       role: 'Port Agent (NAS)',
       expected: '403 Forbidden (Port isolation enforced)',
       actual: `${res.statusCode} ${res.statusMessage}`,
@@ -280,9 +280,9 @@ async function runTests() {
     results.push({
       id: 'T-11',
       focusArea: 'Agent Query Scope',
-      action: `Nassau agent queries GET ${API}/shipments`,
+      action: `St. Thomas agent queries GET ${API}/shipments`,
       role: 'Port Agent (NAS)',
-      expected: '200 OK with strict scoping to Nassau (NAS) only',
+      expected: '200 OK with strict scoping to St. Thomas (NAS) only',
       actual: `${res.statusCode} OK (Total shipments returned: ${shipmentsList.length})`,
       evidence: `Zero non-NAS shipments leaked to Agent`,
       status: passed ? 'PASS' : 'FAIL',
@@ -304,7 +304,7 @@ async function runTests() {
     results.push({
       id: 'T-12',
       focusArea: 'Agent Write IDOR',
-      action: 'Nassau agent attempts PATCH on Freeport shipment',
+      action: 'St. Thomas agent attempts PATCH on Tortola shipment',
       role: 'Port Agent (NAS)',
       expected: '403 Forbidden (Ownership check failed)',
       actual: `${res.statusCode} ${res.statusMessage}`,
@@ -369,9 +369,9 @@ async function runTests() {
       payload: {
         blNumber: `BL-TEST-${Date.now()}`,
         portOfLoading: 'Port of Miami (USMIA)',
-        portOfDischarge: 'Port of Nassau (BSNAS)',
+        portOfDischarge: 'STT - Port of Charlotte Amalie',
         shipper: { name: 'Test Shipper', address: 'Miami, FL' },
-        consignee: { name: 'Test Consignee', address: 'Nassau' },
+        consignee: { name: 'Test Consignee', address: 'St. Thomas' },
       },
     });
     const passed = res.statusCode === 201 || res.statusCode === 200;
@@ -396,7 +396,7 @@ async function runTests() {
         method: 'POST',
         url: `${API}/warehouse-receipts`,
         headers: { authorization: `Bearer ${superAdminToken}`, 'content-type': 'application/json' },
-        payload: { customerName: 'Tamper Test Customer', destinationPort: 'Port of Nassau (BSNAS)', destinationCode: 'NAS' },
+        payload: { customerName: 'Tamper Test Customer', destinationPort: 'STT - Port of Charlotte Amalie', destinationCode: 'NAS' },
       });
       const cb = JSON.parse(cr.body);
       wrToTamper = cb?.data?.receiptNumber || cb?.receiptNumber;
@@ -457,9 +457,9 @@ async function runTests() {
         'content-type': 'application/json',
       },
       payload: {
-        customerName: 'Bahamas Marine Supplies Ltd.',
-        destinationPort: 'Port of Nassau (BSNAS)',
-        destinationCode: 'NAS',
+        customerName: 'Caribbean Marine Supplies Ltd.',
+        destinationPort: 'STT - Port of Charlotte Amalie',
+        destinationCode: 'STT',
         cargoDescription: 'Marine Hardware Parts',
         weightLbs: 250,
         packages: [
@@ -514,7 +514,7 @@ async function runTests() {
     const dummySeq = Math.floor(80000 + Math.random() * 10000);
     await db.execute(sql`
       INSERT INTO warehouse_receipts (receipt_number, sequence_number, date, customer_name, destination_port, destination_code, status)
-      VALUES (${dummyWr}, ${dummySeq}, '2026-10-04', 'Test Consignee', 'Port of Nassau (BSNAS)', 'NAS', 'Consolidated')
+      VALUES (${dummyWr}, ${dummySeq}, '2026-10-04', 'Test Consignee', 'STT - Port of Charlotte Amalie', 'NAS', 'Consolidated')
     `);
 
     const res = await app.inject({
@@ -526,7 +526,7 @@ async function runTests() {
       },
       payload: {
         customerName: 'Test Consignee',
-        destinationPort: 'Port of Nassau (BSNAS)',
+        destinationPort: 'STT - Port of Charlotte Amalie',
         destinationCode: 'NAS',
         warehouseReceiptIds: [dummyWr],
       },
@@ -566,11 +566,11 @@ async function runTests() {
       },
       payload: {
         hblNumber: hblNum,
-        customerName: 'Bahamas Marine Supplies Ltd.',
+        customerName: 'Caribbean Marine Supplies Ltd.',
         shipper: 'Miami Marine Supply Co.',
-        consignee: 'Bahamas Marine Supplies Ltd.',
-        destinationPort: 'Port of Nassau (BSNAS)',
-        destinationCode: 'NAS',
+        consignee: 'Caribbean Marine Supplies Ltd.',
+        destinationPort: 'STT - Port of Charlotte Amalie',
+        destinationCode: 'STT',
         freightCharges,
         totalCft: 40,
       },
@@ -610,7 +610,7 @@ async function runTests() {
       payload: {
         consolidationNumber: cnsNum,
         title: `Test Atomic Consolidation ${cnsNum}`,
-        destinationPort: 'Port of Nassau (BSNAS)',
+        destinationPort: 'STT - Port of Charlotte Amalie',
         destinationCode: 'NAS',
         containerNumber: 'MSKU-829104-5',
         sealNumber: 'SEAL-VI-8821',
@@ -656,7 +656,7 @@ async function runTests() {
     const dummySeq = Math.floor(90000 + Math.random() * 10000);
     await db.execute(sql`
       INSERT INTO warehouse_receipts (receipt_number, sequence_number, date, customer_name, destination_port, destination_code, status, assigned_consolidation_id)
-      VALUES (${dummyWr}, ${dummySeq}, '2026-10-04', 'Locked Customer', 'Port of Nassau (BSNAS)', 'NAS', 'Consolidated', 'CNS-ALREADY-ASSIGNED')
+      VALUES (${dummyWr}, ${dummySeq}, '2026-10-04', 'Locked Customer', 'STT - Port of Charlotte Amalie', 'NAS', 'Consolidated', 'CNS-ALREADY-ASSIGNED')
     `);
 
     const cnsAttempt = `CNS-FAIL-${Date.now()}`;
@@ -670,7 +670,7 @@ async function runTests() {
       payload: {
         consolidationNumber: cnsAttempt,
         title: 'Failing Consolidation',
-        destinationPort: 'Port of Nassau (BSNAS)',
+        destinationPort: 'STT - Port of Charlotte Amalie',
         destinationCode: 'NAS',
         receiptIds: [dummyWr],
       },
@@ -698,7 +698,7 @@ async function runTests() {
     const cnsTest = `CNS-STATE-${Date.now()}`;
     await db.execute(sql`
       INSERT INTO consolidations (consolidation_number, title, destination_port, destination_code, status, created_date, discharge_port, loading_port)
-      VALUES (${cnsTest}, 'State Machine Test', 'Port of Nassau (BSNAS)', 'NAS', 'Planning', '2026-10-04', 'Port of Nassau (BSNAS)', 'Port of Miami (USMIA)')
+      VALUES (${cnsTest}, 'State Machine Test', 'STT - Port of Charlotte Amalie', 'NAS', 'Planning', '2026-10-04', 'STT - Port of Charlotte Amalie', 'Port of Miami (USMIA)')
     `);
 
     const jumpRes = await app.inject({
