@@ -1,0 +1,12 @@
+{
+  "name": "wareHouseProject",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix \"frontend (2)\" run dev",
+    "dev:frontend": "npm --prefix \"frontend (2)\" run dev",
+    "dev:backend": "npm --prefix backend run dev",
+    "build:frontend": "npm --prefix \"frontend (2)\" run build",
+    "build:backend": "npm --prefix backend run build"
+  }
+}
