@@ -127,7 +127,7 @@ export class WarehouseService {
       totalCft: String(totalCft.toFixed(2)),
       totalCbm: String(totalCbm.toFixed(2)),
       warehouseLocation: input.warehouseLocation || 'Bay A-1 (CFS Staging)',
-      status: input.status || 'Ready for Consolidation',
+      status: input.status || 'Received',
       hazardous: input.hazardous ?? false,
       fragile: input.fragile ?? false,
       notes: input.notes || '',

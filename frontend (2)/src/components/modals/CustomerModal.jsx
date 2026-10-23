@@ -1,7 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { X, Building2, User, Phone, Mail, MapPin, Check } from 'lucide-react';
+import { useAppData } from '../../context/AppDataContext';
 
 export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSave }) => {
+  const { ports } = useAppData();
+
+  const getPortCode = (p) => p?.portCode || p?.port_code || p?.code || '';
+  const fallbackEasternCaribbeanPorts = [
+    { code: 'STT', portCode: 'STT', name: 'Port of Charlotte Amalie', island: 'St. Thomas', country: 'U.S. Virgin Islands' },
+    { code: 'STX', portCode: 'STX', name: 'Port of Christiansted', island: 'St. Croix', country: 'U.S. Virgin Islands' },
+    { code: 'STJ', portCode: 'STJ', name: 'Cruz Bay Port', island: 'St. John', country: 'U.S. Virgin Islands' },
+    { code: 'TOR', portCode: 'TOR', name: 'Port Purcell, Road Town', island: 'Tortola', country: 'British Virgin Islands' },
+    { code: 'VG', portCode: 'VG', name: 'Spanish Town Port', island: 'Virgin Gorda', country: 'British Virgin Islands' },
+    { code: 'SXM', portCode: 'SXM', name: 'Port of Philipsburg', island: 'St. Maarten', country: 'Sint Maarten' },
+    { code: 'AXA', portCode: 'AXA', name: 'Road Bay Port', island: 'Anguilla', country: 'Anguilla' }
+  ];
+  const effectivePorts = (ports && ports.length > 0) ? ports : fallbackEasternCaribbeanPorts;
+
   const [formData, setFormData] = useState({
     name: '',
     companyName: '',
@@ -20,20 +35,35 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
 
   useEffect(() => {
     if (customer && isEdit) {
+      let destPort = customer.destinationPort || customer.destination_port || '';
+      let destCode = customer.destinationCode || customer.destination_code || '';
+      if (destPort) {
+        const found = effectivePorts.find(p => 
+          `${getPortCode(p)} - ${p.name}` === destPort ||
+          getPortCode(p) === destPort ||
+          p.name === destPort ||
+          (destCode && getPortCode(p) === destCode)
+        );
+        if (found) {
+          destPort = `${getPortCode(found)} - ${found.name}`;
+          destCode = getPortCode(found);
+        }
+      }
+
       setFormData({
         name: customer.name || customer.companyName || '',
         companyName: customer.companyName || customer.name || '',
-        contactPerson: customer.contactPerson || '',
+        contactPerson: customer.contactPerson || customer.contact_person || '',
         email: customer.email || '',
         telephone: customer.telephone || customer.phone || '',
         address: customer.address || '',
-        taxId: customer.taxId || '',
-        accountType: 'Customer',
-        creditTerms: customer.creditTerms || 'Net 30',
+        taxId: customer.taxId || customer.tax_id || '',
+        accountType: customer.accountType || customer.account_type || 'Customer',
+        creditTerms: customer.creditTerms || customer.credit_terms || 'Net 30',
         notes: customer.notes || '',
         status: customer.status || 'Active',
-        destinationPort: customer.destinationPort || '',
-        destinationCode: customer.destinationCode || '',
+        destinationPort: destPort,
+        destinationCode: destCode,
       });
     } else {
       setFormData({
@@ -119,6 +149,40 @@ export const CustomerModal = ({ isOpen, onClose, customer, isEdit = false, onSav
                 onChange={(e) => setFormData({ ...formData, name: e.target.value, companyName: e.target.value })}
                 required
               />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" style={{ fontWeight: 600 }}>
+                Destination Port / Island <span className="required">*</span>
+              </label>
+              <select
+                className="form-select"
+                value={formData.destinationPort}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const code = val.includes(' - ') ? val.split(' - ')[0].trim() : (val.slice(0, 3).toUpperCase());
+                  setFormData({
+                    ...formData,
+                    destinationPort: val,
+                    destinationCode: code
+                  });
+                }}
+                required
+              >
+                <option value="">Select Destination Port...</option>
+                {effectivePorts.map((p) => {
+                  const pCode = getPortCode(p);
+                  const optionValue = `${pCode} - ${p.name}`;
+                  return (
+                    <option key={p.id || pCode} value={optionValue}>
+                      {pCode} — {p.name} ({p.island || p.country})
+                    </option>
+                  );
+                })}
+              </select>
+              <div style={{ fontSize: '0.7rem', color: '#0284C7', marginTop: '3px', fontWeight: 500 }}>
+                Primary island port where cargo for this customer will be shipped &amp; cleared
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">

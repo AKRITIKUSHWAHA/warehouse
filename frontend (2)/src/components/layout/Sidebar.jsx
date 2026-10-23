@@ -20,7 +20,6 @@ import {
   LogOut,
   Shield,
   Building2,
-  Tag,
   Printer,
   Anchor,
   X
@@ -47,13 +46,7 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
           },
           { id: 'customers', label: 'Customers', icon: Users, moduleId: 'customers' },
           { id: 'warehouse-receipts', label: 'Warehouse Receipts', icon: Package, moduleId: 'warehouse-receipts' },
-          { id: 'cargo', label: 'Cargo Inventory', icon: Box, moduleId: 'cargo' },
-          {
-            id: (isAgent || roleKey === 'agent') ? 'agent-documents' : 'documents',
-            label: (isAgent || roleKey === 'agent') ? 'Agent Documents' : roleKey === 'warehouse' ? 'Labels & Printouts' : 'Labels & Documents',
-            icon: Tag,
-            moduleId: 'documents'
-          }
+          { id: 'cargo', label: 'Cargo Inventory', icon: Box, moduleId: 'cargo' }
         ]
       },
       {

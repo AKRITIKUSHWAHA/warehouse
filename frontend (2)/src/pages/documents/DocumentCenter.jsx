@@ -97,30 +97,11 @@ export const DocumentCenter = ({ onNavigate }) => {
     return combined;
   }, [localDocs, ctxDocuments]);
 
-  // Build document list strictly filtered by Role Access according to client requirements
+  // Build document list strictly filtered by Role Access according to client requirements (Warehouse Receipts excluded)
   const allDocs = useMemo(() => {
     const docs = [];
 
-    // 1. Warehouse Receipts (Available to: Warehouse, Operations, Documentation, Admin, Agent)
-    if (canAccessDocumentType(roleKey, 'WR')) {
-      warehouseReceipts.forEach((w) => {
-        docs.push({
-          id: w.id,
-          docNumber: w.receiptNumber,
-          docType: 'Warehouse Receipt',
-          type: 'Warehouse Receipt',
-          entityType: 'WR',
-          title: `CFS Intake (${w.packageCount || 1} ${w.packageType || 'Pkg'})`,
-          date: w.date || w.createdAt?.split('T')[0] || '2026-10-04',
-          party: w.customer || 'Direct Shipper',
-          status: w.status || 'Active',
-          isOnHold: false,
-          raw: w
-        });
-      });
-    }
-
-    // 2. House Bills of Lading (Prepared by Warehouse/Operations, reviewed by Documentation)
+    // 1. House Bills of Lading (Prepared by Warehouse/Operations, reviewed by Documentation)
     if (canAccessDocumentType(roleKey, 'HBL')) {
       const filteredHBLs = isAgent
         ? houseBills.filter((h) => h.agentId === currentUser?.agentId || h.portOfDischarge?.includes('Nassau'))
@@ -143,7 +124,7 @@ export const DocumentCenter = ({ onNavigate }) => {
       });
     }
 
-    // 3. Master Bills of Lading (Exclusive to: Documentation, Super Admin, and assigned Port Agents)
+    // 2. Master Bills of Lading (Exclusive to: Documentation, Super Admin, and assigned Port Agents)
     if (canAccessDocumentType(roleKey, 'BL')) {
       billsOfLading.forEach((b) => {
         docs.push({
@@ -162,7 +143,7 @@ export const DocumentCenter = ({ onNavigate }) => {
       });
     }
 
-    // 4. Shipping / Ocean Manifests (Exclusive to: Documentation, Super Admin, and assigned Agents)
+    // 3. Shipping / Ocean Manifests (Exclusive to: Documentation, Super Admin, and assigned Agents)
     if (canAccessDocumentType(roleKey, 'MANIFEST')) {
       const filteredManifests = isAgent
         ? manifests.filter((m) => m.portOfDischarge?.includes('Nassau') || m.agentId === currentUser?.agentId)
@@ -185,7 +166,7 @@ export const DocumentCenter = ({ onNavigate }) => {
       });
     }
 
-    // 5. Uploaded Supporting Documents (Invoices, Export Declarations, Cargo Photos)
+    // 4. Uploaded Supporting Documents (Invoices, Export Declarations, Cargo Photos)
     mergedUploadedDocs.forEach((d) => {
       docs.push({
         id: d.id,
@@ -207,7 +188,6 @@ export const DocumentCenter = ({ onNavigate }) => {
     roleKey,
     isAgent,
     currentUser,
-    warehouseReceipts,
     houseBills,
     billsOfLading,
     manifests,
@@ -388,8 +368,8 @@ export const DocumentCenter = ({ onNavigate }) => {
 
   const pageSubtitle =
     roleKey === 'documentation' || roleKey === 'super_admin'
-      ? 'Search and retrieve all Warehouse Receipts, Master Bills of Lading, Manifests, House Bills, and Cargo Labels.'
-      : 'Search and retrieve Warehouse Receipts, House Bills of Lading, and Cargo Intake Labels.';
+      ? 'Search and retrieve all Master Bills of Lading, Manifests, House Bills, Cargo Labels, and Uploaded Documents.'
+      : 'Search and retrieve House Bills of Lading, Cargo Labels, and Supporting Documents.';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -415,7 +395,7 @@ export const DocumentCenter = ({ onNavigate }) => {
       <ResponsiveTable
         columns={columns}
         data={allDocs}
-        searchPlaceholder="Search document #, consignee, customer, receipt..."
+        searchPlaceholder="Search document #, consignee, customer, B/L..."
         filterOptions={dynamicFilterOptions}
         pageSize={8}
         onRowClick={(item) => handleViewDocument(item)}

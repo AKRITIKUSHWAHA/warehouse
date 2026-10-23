@@ -118,7 +118,7 @@
     max-width: 100% !important;
     margin: 0 auto !important;
     border: 2px solid #0A192F !important;
-    padding: 0.18in !important;
+    padding: 6mm 8mm !important;
     box-sizing: border-box !important;
     box-shadow: none !important;
     page-break-inside: avoid !important;
@@ -127,9 +127,39 @@
     break-before: avoid !important;
     page-break-after: avoid !important;
     break-after: avoid !important;
-    display: block !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    min-height: 268mm !important;
+    max-height: 275mm !important;
+    height: auto !important;
     background: #ffffff !important;
-    zoom: 0.95;
+    zoom: 1 !important;
+  }
+
+  .printable-document-receipt .receipt-content-upper {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .printable-document-receipt .receipt-table-box {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    min-height: 110mm !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .printable-document-receipt .receipt-table-box table {
+    width: 100% !important;
+    height: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  .printable-document-receipt .receipt-content-lower {
+    margin-top: auto !important;
   }
 
   /* Eliminate any blank second page */

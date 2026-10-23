@@ -153,10 +153,24 @@ export const AppDataProvider = ({ children }) => {
         }
 
         case 'house-bills': {
-          const hbData = await houseBillService.getHouseBills();
+          const [hbData, custRes, wrRes] = await Promise.all([
+            houseBillService.getHouseBills(),
+            (!customersRef.current || customersRef.current.length === 0) ? apiClient.get('/customers').catch(() => null) : Promise.resolve(null),
+            (!warehouseReceiptsRef.current || warehouseReceiptsRef.current.length === 0) ? apiClient.get('/warehouse-receipts').catch(() => null) : Promise.resolve(null)
+          ]);
           if (Array.isArray(hbData)) {
             setHouseBills(hbData);
             setStored(KEYS.HOUSE_BILLS, hbData);
+          }
+          const cList = extractListFromRes(custRes);
+          if (cList) {
+            setCustomers(cList);
+            setStored(KEYS.CUSTOMERS, cList);
+          }
+          const wList = extractListFromRes(wrRes);
+          if (wList) {
+            setWarehouseReceipts(wList);
+            setStored(KEYS.WAREHOUSE_RECEIPTS, wList);
           }
           break;
         }

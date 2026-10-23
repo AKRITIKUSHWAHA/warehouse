@@ -130,7 +130,7 @@ export const warehouseService = {
       customerName: receiptData.customerName || receiptData.customer || "General Cargo",
       destinationPort: destPort,
       destinationCode: destCode,
-      status: receiptData.status || "Ready for Consolidation",
+      status: receiptData.status || "Received",
       packages,
       packageCount: packages.length,
       totalPieces: totalPieces || 1,
@@ -187,7 +187,7 @@ export const warehouseService = {
       warehouseLocation: createdReceipt.warehouseLocation || "Bay A-1 (CFS Staging)",
       destinationPort: createdReceipt.destinationPort,
       destinationCode: createdReceipt.destinationCode,
-      status: "Ready for Consolidation",
+      status: "Received",
       barcode: `CRG${Math.floor(10000000 + Math.random() * 90000000)}`,
       qrCode: `VI-CRG-${createdReceipt.receiptNumber || createdReceipt.id}`
     };

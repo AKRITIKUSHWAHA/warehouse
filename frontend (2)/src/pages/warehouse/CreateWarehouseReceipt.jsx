@@ -133,9 +133,12 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
     }
   };
 
-  // Quick fill Consignee from unified Customers list (Independent: does NOT overwrite customer profile or shipper)
+  // Quick fill Consignee / Receiver from unified Customers list
   const handleConsigneeSelect = (custId) => {
-    if (!custId) return;
+    if (!custId) {
+      setFormData(prev => ({ ...prev, consigneeId: '', consignee: '' }));
+      return;
+    }
     if (custId === 'CREATE_NEW') {
       setCustomerCreationTarget('consignee');
       setShowAddCustomerModal(true);
@@ -143,17 +146,39 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
     }
     const selected = customers.find(c => c.id === custId);
     if (selected) {
+      let destPort = selected.destinationPort || '';
+      let destCode = selected.destinationCode || '';
+      if (destPort) {
+        const found = effectivePorts.find(p => 
+          `${getPortCode(p)} - ${p.name}` === destPort ||
+          getPortCode(p) === destPort ||
+          p.name === destPort ||
+          (destCode && getPortCode(p) === destCode)
+        );
+        if (found) {
+          destPort = `${getPortCode(found)} - ${found.name}`;
+          destCode = getPortCode(found);
+        }
+      }
       setFormData(prev => ({
         ...prev,
         consigneeId: selected.id,
+        customerId: prev.customerId || selected.id,
+        customer: prev.customer || selected.name,
+        customerName: prev.customerName || selected.name,
+        destinationPort: destPort || prev.destinationPort,
+        destinationCode: destCode || prev.destinationCode,
         consignee: `${selected.name}\n${selected.address || ''}\nAttn: ${selected.contactPerson || ''} (${selected.telephone || selected.phone || ''})`.trim()
       }));
     }
   };
 
-  // Quick fill Shipper from unified Customers list (Independent: does NOT overwrite consignee or customer profile)
+  // Quick fill Customer / Shipper from unified Customers list
   const handleShipperSelect = (custId) => {
-    if (!custId) return;
+    if (!custId) {
+      setFormData(prev => ({ ...prev, shipperId: '', shipper: '' }));
+      return;
+    }
     if (custId === 'CREATE_NEW') {
       setCustomerCreationTarget('shipper');
       setShowAddCustomerModal(true);
@@ -164,6 +189,9 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
       setFormData(prev => ({
         ...prev,
         shipperId: selected.id,
+        customerId: selected.id,
+        customer: selected.name,
+        customerName: selected.name,
         shipper: `${selected.name}\n${selected.address || ''}\nPhone: ${selected.telephone || selected.phone || ''}`.trim()
       }));
     }
@@ -298,11 +326,11 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
       volumetricWeightKg,
       warehouseLocation: formData.warehouseLocation || 'General Staging',
       cargoDescription: descSummary || formData.cargoDescription || 'General Cargo Merchandise',
-      status: "Ready for Consolidation"
+      status: "Received"
     };
 
     const created = await createWarehouseReceipt(payload);
-    onNavigate('warehouse-receipts', created?.id || created?.receiptNumber);
+    onNavigate('warehouse-receipts');
   };
 
   return (
@@ -412,35 +440,55 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
                 </div>
               </div>
 
-              {/* Shipper & Consignee 2-Card Clean Layout */}
+              {/* Customer & Receiver 2-Card Clean Layout */}
               <div className="grid grid-cols-2 gap-4">
-                {/* Shipper Card */}
+                {/* Customer / Origin Supplier Card */}
                 <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <Building2 size={16} style={{ color: '#64748B' }} />
-                      <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#0A192F' }}>Shipper (Origin Supplier)</span>
+                      <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#0A192F' }}>Customer (Origin Supplier)</span>
                     </div>
                     <span style={{ fontSize: '0.68rem', color: '#64748B', background: '#F1F5F9', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>Origin</span>
                   </div>
 
+                  <div>
+                    <label style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 600, display: 'block', marginBottom: '3px' }}>
+                      Select Customer:
+                    </label>
+                    <select
+                      className="form-select form-select-sm"
+                      value={formData.shipperId || ''}
+                      onChange={(e) => handleShipperSelect(e.target.value)}
+                      style={{ fontSize: '0.825rem', background: '#F8FAFC' }}
+                    >
+                      <option value="">-- Select Existing Customer (or type below) --</option>
+                      <option value="CREATE_NEW">+ Add New Customer</option>
+                      {customers.map(c => (
+                        <option key={c.id} value={c.id}>
+                          {c.name || c.companyName} {c.destinationPort ? `(${c.destinationPort.split(' - ')[0]})` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   <textarea
                     className="form-textarea"
-                    rows={4}
-                    placeholder="Enter Shipper / Vendor name, origin warehouse, address, phone..."
+                    rows={3}
+                    placeholder="Enter Customer / Origin Supplier name, origin warehouse, address, phone..."
                     value={formData.shipper}
                     onChange={(e) => handleInputChange('shipper', e.target.value)}
                     style={{ fontSize: '0.825rem', resize: 'vertical' }}
                   />
                 </div>
 
-                {/* Consignee Card */}
+                {/* Receiver / Consignee Card */}
                 <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '8px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <Building2 size={16} style={{ color: '#0284C7' }} />
                       <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#0A192F' }}>
-                        Consignee (Destination Receiver) <span className="required">*</span>
+                        Receiver Name (Consignee) <span className="required">*</span>
                       </span>
                     </div>
                     <span style={{ fontSize: '0.68rem', color: '#0284C7', background: '#E0F2FE', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>Destination</span>
@@ -450,7 +498,7 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
                     className="form-textarea"
                     rows={4}
                     required
-                    placeholder="Enter Consignee name, island address, contact person, phone..."
+                    placeholder="Enter Receiver Name (Consignee), island address, contact person, phone..."
                     value={formData.consignee}
                     onChange={(e) => handleInputChange('consignee', e.target.value)}
                     style={{ fontSize: '0.825rem', resize: 'vertical', background: '#FFFFFF' }}
