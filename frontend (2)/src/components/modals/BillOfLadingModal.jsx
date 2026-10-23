@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { FileText, X, Save, Plus, Layers, CheckSquare, Square, Box, Anchor, Check } from 'lucide-react';
+import { FileText, X, Save, Plus, Layers, Box } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
 import { useAuth } from '../../context/AuthContext';
 
@@ -11,7 +11,7 @@ export const BillOfLadingModal = ({
   isEdit = false,
   initialConsolidationNumber = null
 }) => {
-  const { ports, customers = [], consolidations = [], houseBills = [], vessels = [] } = useAppData();
+  const { ports = [], consolidations = [], houseBills = [], vessels = [] } = useAppData();
   const { currentUser, isAgent } = useAuth();
   const hasInitializedRef = useRef(false);
 
@@ -57,10 +57,10 @@ export const BillOfLadingModal = ({
     status: 'Draft'
   });
 
-  // Calculate candidate house bills based on selected consolidation or destination
+  // Calculate candidate house bills based on entered consolidation or destination
   const candidateHouseBills = useMemo(() => {
     if (!selectedConsolidationNumber) {
-      // If no consolidation is selected, show unassigned house bills matching destination
+      // If no consolidation is entered, show unassigned house bills matching destination
       const pod = formData.portOfDischarge?.toLowerCase() || '';
       return houseBills.filter(hb => {
         if (bl && (bl.houseBillIds?.includes(hb.hblNumber) || bl.houseBillIds?.includes(hb.id))) return true;
@@ -71,8 +71,18 @@ export const BillOfLadingModal = ({
       });
     }
 
-    const consol = consolidations.find(c => c.consolidationNumber === selectedConsolidationNumber || c.id === selectedConsolidationNumber);
-    if (!consol) return [];
+    const trimmed = selectedConsolidationNumber.trim().toLowerCase();
+    const consol = consolidations.find(c =>
+      (c.consolidationNumber && c.consolidationNumber.toLowerCase() === trimmed) ||
+      (c.id && String(c.id).toLowerCase() === trimmed)
+    );
+    if (!consol) {
+      // If client typed custom consolidation # that doesn't match an existing consol record, show available HBLs
+      return houseBills.filter(hb => {
+        if (bl && (bl.houseBillIds?.includes(hb.hblNumber) || bl.houseBillIds?.includes(hb.id))) return true;
+        return !hb.assignedMasterBLId || hb.assignedMasterBLId === bl?.blNumber;
+      });
+    }
 
     return houseBills.filter(hb => {
       // 1. Explicitly assigned to this consolidation
@@ -111,8 +121,8 @@ export const BillOfLadingModal = ({
         blNumber: bl.blNumber || '',
         issueDate: bl.issueDate || bl.createdDate || new Date().toISOString().split('T')[0],
         shipperId: bl.shipperId || (typeof bl.shipper === 'object' ? bl.shipper?.id : '') || '',
-        shipperName: bl.shipper?.name || 'KERS Global Freight Forwarding Inc.',
-        shipperAddress: bl.shipper?.address || '8200 NW 33rd Street, Miami, FL 33122 USA',
+        shipperName: bl.shipper?.name || 'VI Customs Brokers & Logistics',
+        shipperAddress: bl.shipper?.address || '1200 NW 78th Ave, Miami, FL 33126',
         consigneeId: bl.consigneeId || (typeof bl.consignee === 'object' ? bl.consignee?.id : '') || '',
         consigneeName: bl.consignee?.name || '',
         consigneeAddress: bl.consignee?.address || '',
@@ -124,7 +134,7 @@ export const BillOfLadingModal = ({
         portOfDischarge: bl.portOfDischarge || pod,
         containerNumber: bl.containerNumber || '',
         sealNumber: bl.sealNumber || 'BOLT-99281',
-        cargoDescription: bl.cargoDescription || 'General Consignment',
+        cargoDescription: bl.cargoDescription || 'General Consignment: Consolidated ocean freight merchandise.',
         packageCount: bl.packageCount || 0,
         packageType: bl.packageType || 'Packages',
         grossWeightLbs: bl.grossWeightLbs || 0,
@@ -194,15 +204,19 @@ export const BillOfLadingModal = ({
     }
   }, [isOpen, bl, isEdit, initialConsolidationNumber, consolidations, houseBills]);
 
-  // Handle Consolidation dropdown selection
-  const handleConsolidationSelect = (consolNum) => {
+  // Handle Consolidation text input change
+  const handleConsolidationChange = (consolNum) => {
     setSelectedConsolidationNumber(consolNum);
 
     if (!consolNum) {
       return;
     }
 
-    const selectedConsol = consolidations.find(c => c.consolidationNumber === consolNum || c.id === consolNum);
+    const trimmed = consolNum.trim().toLowerCase();
+    const selectedConsol = consolidations.find(c =>
+      (c.consolidationNumber && c.consolidationNumber.toLowerCase() === trimmed) ||
+      (c.id && String(c.id).toLowerCase() === trimmed)
+    );
     if (!selectedConsol) return;
 
     // Load House B/Ls linked to this consolidation
@@ -328,7 +342,11 @@ export const BillOfLadingModal = ({
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const selectedConsol = consolidations.find(c => c.consolidationNumber === selectedConsolidationNumber || c.id === selectedConsolidationNumber);
+    const trimmed = selectedConsolidationNumber ? selectedConsolidationNumber.trim().toLowerCase() : '';
+    const selectedConsol = consolidations.find(c =>
+      (c.consolidationNumber && c.consolidationNumber.toLowerCase() === trimmed) ||
+      (c.id && String(c.id).toLowerCase() === trimmed)
+    );
 
     onSave({
       blNumber: formData.blNumber,
@@ -375,7 +393,10 @@ export const BillOfLadingModal = ({
     onClose();
   };
 
-  const selectedConsolObj = consolidations.find(c => c.consolidationNumber === selectedConsolidationNumber || c.id === selectedConsolidationNumber);
+  const selectedConsolObj = consolidations.find(c =>
+    (c.consolidationNumber && c.consolidationNumber.toLowerCase() === selectedConsolidationNumber?.trim().toLowerCase()) ||
+    (c.id && String(c.id).toLowerCase() === selectedConsolidationNumber?.trim().toLowerCase())
+  );
 
   return (
     <div className="modal-backdrop">
@@ -414,7 +435,7 @@ export const BillOfLadingModal = ({
         >
           <div className="modal-body custom-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', overflowY: 'auto', flex: 1, minHeight: 0, padding: '1.25rem' }}>
             
-            {/* STEP 1: Consolidation Link & Auto-Population Banner */}
+            {/* STEP 1: Consolidation Link & Input */}
             <div style={{
               background: '#F0F9FF',
               border: '1.5px solid #0284C7',
@@ -431,17 +452,17 @@ export const BillOfLadingModal = ({
                   </div>
                   <div>
                     <h4 style={{ margin: 0, fontSize: '0.9rem', color: '#0A192F', fontWeight: 700 }}>
-                      Step 1: Select Consolidation Number (Recommended)
+                      Consolidation Number
                     </h4>
                     <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748B' }}>
-                      Select an existing Consolidation. All linked House B/Ls, vessel, carrier, container, and cargo metrics will load automatically.
+                      Type or paste any Consolidation #. If it matches an existing consolidation, container and vessel details will auto-fill.
                     </p>
                   </div>
                 </div>
 
                 {selectedConsolObj && (
                   <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0369A1', background: '#E0F2FE', padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
-                    Linked: {selectedConsolObj.consolidationNumber} ({selectedConsolObj.destinationPort || 'Consolidation'})
+                    Matched: {selectedConsolObj.consolidationNumber} ({selectedConsolObj.destinationPort || 'Consolidation'})
                   </span>
                 )}
               </div>
@@ -449,18 +470,21 @@ export const BillOfLadingModal = ({
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '0.75rem', alignItems: 'center' }}>
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label className="form-label" style={{ fontWeight: 700 }}>Consolidation #</label>
-                  <select
-                    className="form-select"
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Enter Consolidation # (e.g. CNS-2026-001) or leave empty"
                     value={selectedConsolidationNumber}
-                    onChange={(e) => handleConsolidationSelect(e.target.value)}
-                  >
-                    <option value="">-- None (Direct / Standalone Master B/L) --</option>
+                    onChange={(e) => handleConsolidationChange(e.target.value)}
+                    list="consolidation-numbers-list"
+                  />
+                  <datalist id="consolidation-numbers-list">
                     {consolidations.map(c => (
                       <option key={c.id || c.consolidationNumber} value={c.consolidationNumber}>
-                        {c.consolidationNumber} — {c.title || c.destinationPort} ({c.vesselName || 'Vessel'} • {c.containerNumber || 'Box'} • {c.totalHouseBills || c.houseBillIds?.length || 0} HBLs)
+                        {c.consolidationNumber} ({c.destinationPort || 'Consolidation'})
                       </option>
                     ))}
-                  </select>
+                  </datalist>
                 </div>
 
                 <div style={{ fontSize: '0.8rem', color: '#475569', background: '#FFFFFF', padding: '0.65rem 0.85rem', borderRadius: '6px', border: '1px solid #BAE6FD' }}>
@@ -473,7 +497,7 @@ export const BillOfLadingModal = ({
                     </div>
                   ) : (
                     <span style={{ color: '#64748B' }}>
-                      Tip: Select a consolidation to automatically load its House Bills and fill in container and vessel details.
+                      Client can type any Consolidation Number directly, or fill in vessel and container details manually below.
                     </span>
                   )}
                 </div>
@@ -556,7 +580,7 @@ export const BillOfLadingModal = ({
                               <input
                                 type="checkbox"
                                 checked={isChecked}
-                                onChange={() => {}} // handled by row onClick
+                                onChange={() => {}}
                                 style={{ cursor: 'pointer' }}
                               />
                             </td>
@@ -619,32 +643,11 @@ export const BillOfLadingModal = ({
                   Shipper / Forwarder Details
                 </span>
                 <div className="form-group" style={{ marginBottom: '0.5rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' }}>
-                    <label className="form-label" style={{ margin: 0, fontSize: '0.75rem' }}>Shipper Name</label>
-                    <select
-                      style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', maxWidth: '170px' }}
-                      defaultValue=""
-                      onChange={(e) => {
-                        const c = customers.find(cust => cust.id === e.target.value);
-                        if (c) {
-                          setFormData(prev => ({
-                            ...prev,
-                            shipperId: c.id,
-                            shipperName: c.name,
-                            shipperAddress: c.address || prev.shipperAddress
-                          }));
-                        }
-                      }}
-                    >
-                      <option value="" disabled>From Customers...</option>
-                      {customers.map(c => (
-                        <option key={`bl-m-shipper-${c.id}`} value={c.id}>{c.name}</option>
-                      ))}
-                    </select>
-                  </div>
+                  <label className="form-label" style={{ fontSize: '0.75rem' }}>Shipper Name</label>
                   <input
                     type="text"
                     className="form-control"
+                    placeholder="e.g. VI Customs Brokers & Logistics"
                     value={formData.shipperName}
                     onChange={(e) => setFormData({ ...formData, shipperName: e.target.value })}
                   />
@@ -654,6 +657,7 @@ export const BillOfLadingModal = ({
                   <input
                     type="text"
                     className="form-control"
+                    placeholder="e.g. 1200 NW 78th Ave, Miami, FL 33126"
                     value={formData.shipperAddress}
                     onChange={(e) => setFormData({ ...formData, shipperAddress: e.target.value })}
                   />
@@ -665,29 +669,7 @@ export const BillOfLadingModal = ({
                   Consignee Details <span className="required">*</span>
                 </span>
                 <div className="form-group" style={{ marginBottom: '0.5rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' }}>
-                    <label className="form-label" style={{ margin: 0, fontSize: '0.75rem' }}>Consignee Name</label>
-                    <select
-                      style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', maxWidth: '170px' }}
-                      defaultValue=""
-                      onChange={(e) => {
-                        const c = customers.find(cust => cust.id === e.target.value);
-                        if (c) {
-                          setFormData(prev => ({
-                            ...prev,
-                            consigneeId: c.id,
-                            consigneeName: c.name,
-                            consigneeAddress: c.address || prev.consigneeAddress
-                          }));
-                        }
-                      }}
-                    >
-                      <option value="" disabled>From Customers...</option>
-                      {customers.map(c => (
-                        <option key={`bl-m-consignee-${c.id}`} value={c.id}>{c.name}</option>
-                      ))}
-                    </select>
-                  </div>
+                  <label className="form-label" style={{ fontSize: '0.75rem' }}>Consignee Name <span className="required">*</span></label>
                   <input
                     type="text"
                     required
@@ -713,37 +695,20 @@ export const BillOfLadingModal = ({
             {/* Ocean Vessel & Carrier */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.75rem' }}>
               <div className="form-group" style={{ marginBottom: 0 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' }}>
-                  <label className="form-label" style={{ margin: 0 }}>Ocean Vessel</label>
-                  {vessels && vessels.length > 0 && (
-                    <select
-                      style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', maxWidth: '170px' }}
-                      defaultValue=""
-                      onChange={(e) => {
-                        const v = vessels.find(ves => ves.id === e.target.value || ves.name === e.target.value);
-                        if (v) {
-                          setFormData(prev => ({
-                            ...prev,
-                            oceanVessel: v.name,
-                            carrier: v.carrier || prev.carrier
-                          }));
-                        }
-                      }}
-                    >
-                      <option value="" disabled>From Fleet...</option>
-                      {vessels.map(v => (
-                        <option key={`mbl-ves-${v.id || v.name}`} value={v.id || v.name}>{v.name}</option>
-                      ))}
-                    </select>
-                  )}
-                </div>
+                <label className="form-label">Ocean Vessel</label>
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="e.g. M/V Island Trader"
+                  placeholder="e.g. M/V Caribbean Carrier"
                   value={formData.oceanVessel}
                   onChange={(e) => setFormData({ ...formData, oceanVessel: e.target.value })}
+                  list="vessels-suggestions-list"
                 />
+                <datalist id="vessels-suggestions-list">
+                  {vessels.map(v => (
+                    <option key={`mbl-ves-${v.id || v.name}`} value={v.name} />
+                  ))}
+                </datalist>
               </div>
 
               <div className="form-group" style={{ marginBottom: 0 }}>
@@ -758,49 +723,47 @@ export const BillOfLadingModal = ({
               </div>
             </div>
 
-            {/* Routing Ports */}
+            {/* Routing Ports (Input fields) */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.75rem' }}>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Port of Loading (POL)</label>
-                <select
-                  className="form-select"
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="e.g. MIA - Port of Miami"
                   value={formData.portOfLoading}
                   onChange={(e) => setFormData({ ...formData, portOfLoading: e.target.value })}
-                >
-                  {formData.portOfLoading && !ports.some(p => `${getPortCode(p)} - ${p.name}` === formData.portOfLoading) && (
-                    <option value={formData.portOfLoading}>{formData.portOfLoading}</option>
-                  )}
+                  list="pol-suggestions-list"
+                />
+                <datalist id="pol-suggestions-list">
                   {ports.map(p => {
                     const pCode = getPortCode(p);
                     return (
-                      <option key={`pol-${p.id || pCode}`} value={`${pCode} - ${p.name}`}>
-                        {pCode} — {p.name} ({p.island || p.country || 'Port'})
-                      </option>
+                      <option key={`pol-${p.id || pCode}`} value={`${pCode} - ${p.name}`} />
                     );
                   })}
-                </select>
+                </datalist>
               </div>
 
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Port of Discharge (POD) <span className="required">*</span></label>
-                <select
-                  className="form-select"
+                <input
+                  type="text"
+                  required
+                  className="form-control"
+                  placeholder="e.g. STT - Port of Charlotte Amalie"
                   value={formData.portOfDischarge}
                   onChange={(e) => setFormData({ ...formData, portOfDischarge: e.target.value })}
-                  required
-                >
-                  {formData.portOfDischarge && !ports.some(p => `${getPortCode(p)} - ${p.name}` === formData.portOfDischarge) && (
-                    <option value={formData.portOfDischarge}>{formData.portOfDischarge}</option>
-                  )}
+                  list="pod-suggestions-list"
+                />
+                <datalist id="pod-suggestions-list">
                   {ports.map(p => {
                     const pCode = getPortCode(p);
                     return (
-                      <option key={`pod-${p.id || pCode}`} value={`${pCode} - ${p.name}`}>
-                        {pCode} — {p.name} ({p.island || p.country || 'Port'})
-                      </option>
+                      <option key={`pod-${p.id || pCode}`} value={`${pCode} - ${p.name}`} />
                     );
                   })}
-                </select>
+                </datalist>
               </div>
             </div>
 
@@ -841,7 +804,7 @@ export const BillOfLadingModal = ({
               />
             </div>
 
-            {/* Package, Weight & Volume Totals (Auto-aggregated) */}
+            {/* Package, Weight & Volume Totals */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Total Packages</label>
@@ -878,16 +841,20 @@ export const BillOfLadingModal = ({
 
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">B/L Status</label>
-                <select
-                  className="form-select"
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Draft"
                   value={formData.status}
                   onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                >
-                  <option value="Draft">Draft</option>
-                  <option value="Released">Released</option>
-                  <option value="On Hold">On Hold</option>
-                  <option value="Cancelled">Cancelled</option>
-                </select>
+                  list="bl-status-suggestions-list"
+                />
+                <datalist id="bl-status-suggestions-list">
+                  <option value="Draft" />
+                  <option value="Released" />
+                  <option value="On Hold" />
+                  <option value="Cancelled" />
+                </datalist>
               </div>
             </div>
           </div>

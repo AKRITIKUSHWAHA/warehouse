@@ -195,24 +195,7 @@ export const WarehouseReceiptModal = ({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="form-group">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <label className="form-label" style={{ margin: 0 }}>Shipper / Supplier Name</label>
-                  <select
-                    style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', maxWidth: '170px' }}
-                    defaultValue=""
-                    onChange={(e) => {
-                      const c = customers.find(cust => cust.id === e.target.value);
-                      if (c) {
-                        setFormData(prev => ({ ...prev, shipperId: c.id, shipper: c.name }));
-                      }
-                    }}
-                  >
-                    <option value="" disabled>From Customers...</option>
-                    {customers.map(c => (
-                      <option key={`shipper-${c.id}`} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
-                </div>
+                <label className="form-label">Shipper / Supplier Name</label>
                 <input
                   type="text"
                   placeholder="e.g. Amazon Fulfillment, Supplier LLC"
@@ -223,24 +206,7 @@ export const WarehouseReceiptModal = ({
               </div>
 
               <div className="form-group">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <label className="form-label" style={{ margin: 0 }}>Consignee <span className="required">*</span></label>
-                  <select
-                    style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', maxWidth: '170px' }}
-                    defaultValue=""
-                    onChange={(e) => {
-                      const c = customers.find(cust => cust.id === e.target.value);
-                      if (c) {
-                        setFormData(prev => ({ ...prev, consigneeId: c.id, consignee: c.name }));
-                      }
-                    }}
-                  >
-                    <option value="" disabled>From Customers...</option>
-                    {customers.map(c => (
-                      <option key={`consignee-${c.id}`} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
-                </div>
+                <label className="form-label">Consignee <span className="required">*</span></label>
                 <input
                   type="text"
                   required

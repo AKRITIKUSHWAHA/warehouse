@@ -297,9 +297,65 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  const enableAllForRole = useCallback(async (roleKey) => {
+    if (!roleKey) return;
+    const allIds = SYSTEM_MODULES.map(m => m.id);
+    setRolePermissionsMap(prev => {
+      const nextMap = {
+        ...prev,
+        [roleKey]: allIds
+      };
+      saveStoredPermissionsMap(nextMap);
+      apiClient.put('settings/role_permissions', {
+        value: nextMap,
+        description: `Enabled all modules for ${roleKey}`
+      }).catch(e => console.warn('[AuthContext] Persist error:', e));
+      return nextMap;
+    });
+  }, []);
+
+  const disableAllForRole = useCallback(async (roleKey) => {
+    if (!roleKey) return;
+    // Keep dashboard (and users & settings for super_admin) to prevent broken state
+    const minIds = roleKey === 'super_admin' ? ['dashboard', 'users', 'settings'] : ['dashboard'];
+    setRolePermissionsMap(prev => {
+      const nextMap = {
+        ...prev,
+        [roleKey]: minIds
+      };
+      saveStoredPermissionsMap(nextMap);
+      apiClient.put('settings/role_permissions', {
+        value: nextMap,
+        description: `Disabled non-core modules for ${roleKey}`
+      }).catch(e => console.warn('[AuthContext] Persist error:', e));
+      return nextMap;
+    });
+  }, []);
+
+  const resetRoleToDefault = useCallback(async (roleKey) => {
+    if (!roleKey) return;
+    const defaults = DEFAULT_ROLE_PERMISSIONS_MAP[roleKey] || [];
+    setRolePermissionsMap(prev => {
+      const nextMap = {
+        ...prev,
+        [roleKey]: defaults
+      };
+      saveStoredPermissionsMap(nextMap);
+      apiClient.put('settings/role_permissions', {
+        value: nextMap,
+        description: `Reset permissions to default for ${roleKey}`
+      }).catch(e => console.warn('[AuthContext] Persist error:', e));
+      return nextMap;
+    });
+  }, []);
+
   const isMenuAllowed = useCallback((roleKey, moduleIdOrTab) => {
     if (!roleKey) return false;
-    if (roleKey === 'super_admin') return true;
+
+    // Core security lock: Users & Settings must always remain accessible to Super Admin
+    if (roleKey === 'super_admin' && (moduleIdOrTab === 'users' || moduleIdOrTab === 'settings')) {
+      return true;
+    }
 
     const allowedList = rolePermissionsMap[roleKey] || DEFAULT_ROLE_PERMISSIONS_MAP[roleKey] || [];
     if (allowedList.includes('*') || allowedList.includes(moduleIdOrTab)) return true;
@@ -346,6 +402,9 @@ export const AuthProvider = ({ children }) => {
       systemModules: SYSTEM_MODULES,
       updateRolePermissionsMap,
       toggleRoleModule,
+      enableAllForRole,
+      disableAllForRole,
+      resetRoleToDefault,
       resetRolePermissions,
       isMenuAllowed,
       syncUsers,

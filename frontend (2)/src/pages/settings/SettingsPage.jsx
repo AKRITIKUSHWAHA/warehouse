@@ -137,26 +137,7 @@ export const SettingsPage = () => {
           <span>Company Branding &amp; Sequences</span>
         </button>
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('data_management')}
-          style={{
-            padding: '0.65rem 1.1rem',
-            border: 'none',
-            background: 'none',
-            cursor: 'pointer',
-            fontWeight: 700,
-            fontSize: '0.85rem',
-            color: activeTab === 'data_management' ? '#D97706' : '#64748B',
-            borderBottom: activeTab === 'data_management' ? '3px solid #D97706' : '3px solid transparent',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px'
-          }}
-        >
-          <ShieldAlert size={16} />
-          <span>Testing &amp; Data Clean Slate</span>
-        </button>
+
       </div>
 
       {/* TAB 1: Ports & Island Destinations */}
@@ -381,69 +362,7 @@ export const SettingsPage = () => {
         </form>
       )}
 
-      {/* TAB 3: Data Management & Clean Slate Testing */}
-      {activeTab === 'data_management' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <div className="card" style={{ padding: '1.5rem', borderLeft: '4px solid #D97706' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
-              <div style={{ background: '#FEF3C7', color: '#D97706', padding: '0.75rem', borderRadius: '8px' }}>
-                <Sparkles size={24} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <h3 style={{ fontSize: '1.1rem', color: '#0A192F', margin: 0 }}>
-                  Option A: Clear All Data (Start Fresh Blank Slate)
-                </h3>
-                <p style={{ fontSize: '0.85rem', color: '#475569', margin: '6px 0 1rem 0' }}>
-                  Wipes out all temporary mock transactions and master data (Customers, Ports, Vessels, Agents, etc.) so you can test entering your own real data from a completely empty, clean slate.
-                  <br />
-                  <em>Only Staff Logins and System Settings will remain saved!</em>
-                </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (window.confirm("Are you sure you want to clear all data records and start fresh with a blank slate?")) {
-                      clearAllData();
-                    }
-                  }}
-                  className="btn btn-primary"
-                  style={{ background: '#D97706', borderColor: '#D97706' }}
-                >
-                  <Trash2 size={15} />
-                  <span>Clear All Transactional Data (Blank Slate)</span>
-                </button>
-              </div>
-            </div>
-          </div>
 
-          <div className="card" style={{ padding: '1.5rem', borderLeft: '4px solid #64748B' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
-              <div style={{ background: '#F1F5F9', color: '#475569', padding: '0.75rem', borderRadius: '8px' }}>
-                <RotateCcw size={24} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <h3 style={{ fontSize: '1.1rem', color: '#0A192F', margin: 0 }}>
-                  Option B: Reset Demo Datasets to Factory Defaults
-                </h3>
-                <p style={{ fontSize: '0.85rem', color: '#475569', margin: '6px 0 1rem 0' }}>
-                  Restores the full pre-populated mock dataset (sample cargo, Caribbean shipments, demo House B/Ls, and manifests) if you want to inspect example records.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (window.confirm("Are you sure you want to reset all demo data back to factory defaults?")) {
-                      resetDemoData();
-                    }
-                  }}
-                  className="btn btn-outline"
-                >
-                  <RotateCcw size={15} />
-                  <span>Reset All Data to Sample Defaults</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Add / Edit Port Modal */}
       <PortModal

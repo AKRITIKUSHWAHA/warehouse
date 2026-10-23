@@ -412,24 +412,14 @@ export const BillsOfLadingList = ({ onNavigate, initialTab = 'mbl' }) => {
               <span className="hide-mobile">{isRefreshing ? 'Syncing...' : 'Sync'}</span>
             </button>
             {!isAgent && (
-              <>
-                <button
-                  onClick={() => onNavigate('house-bills', 'create')}
-                  className="btn btn-outline btn-sm"
-                  title="Issue customer House Bill of Lading"
-                >
-                  <Plus size={15} />
-                  <span>Issue House B/L</span>
-                </button>
-                <button
-                  onClick={() => setShowAddModal(true)}
-                  className="btn btn-primary btn-sm"
-                  title="Issue ocean carrier Master Bill of Lading"
-                >
-                  <Plus size={15} />
-                  <span>Issue Master B/L</span>
-                </button>
-              </>
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="btn btn-primary btn-sm"
+                title="Issue ocean carrier Master Bill of Lading"
+              >
+                <Plus size={15} />
+                <span>Issue Master B/L</span>
+              </button>
             )}
           </div>
         }
@@ -494,20 +484,6 @@ export const BillsOfLadingList = ({ onNavigate, initialTab = 'mbl' }) => {
               }}
             >
               {manifests.length}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onNavigate('house-bills')}
-            className="btn btn-sm btn-ghost"
-            style={{ fontWeight: 600, fontSize: '0.8rem', padding: '0.35rem 0.85rem', color: '#475569', gap: '6px' }}
-            title="Switch to customer House Bills of Lading"
-          >
-            <FileText size={15} style={{ color: '#2563EB' }} />
-            <span>House Bills of Lading (HBL)</span>
-            <span style={{ background: '#EFF6FF', color: '#2563EB', padding: '1px 6px', borderRadius: '10px', fontSize: '0.7rem', fontWeight: 700 }}>
-              {houseBills.length}
             </span>
           </button>
         </div>
