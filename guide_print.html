@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Caribbean Ocean Freight & Warehouse Management System - SOP & User Guide</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+    @page {
+      size: A4;
+      margin: 18mm 16mm 18mm 16mm;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #1E293B;
+      background: #FFFFFF;
+      line-height: 1.55;
+      font-size: 13.5px;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Header Banner */
+    .header-banner {
+      background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 55%, #0284C7 100%);
+      color: #FFFFFF;
+      padding: 26px 28px;
+      border-radius: 10px;
+      margin-bottom: 22px;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12);
+    }
+
+    .badge-top {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      color: #F8FAFC;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+    }
+
+    .header-title {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin: 0 0 6px 0;
+      line-height: 1.25;
+    }
+
+    .header-subtitle {
+      font-size: 14px;
+      font-weight: 400;
+      color: #E2E8F0;
+      margin: 0 0 14px 0;
+    }
+
+    .header-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      font-size: 12px;
+      color: #CBD5E1;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      padding-top: 12px;
+    }
+
+    .header-meta span strong {
+      color: #FFFFFF;
+    }
+
+    /* Section Headings */
+    h2 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0F172A;
+      border-bottom: 2px solid #E2E8F0;
+      padding-bottom: 6px;
+      margin-top: 24px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .step-number-tag {
+      background: #0284C7;
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    /* Visual 5-Step Process */
+    .flow-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin: 16px 0 24px 0;
+    }
+
+    .flow-box {
+      background: #F8FAFC;
+      border: 1px solid #CBD5E1;
+      border-top: 4px solid #0284C7;
+      border-radius: 6px;
+      padding: 10px 8px;
+      text-align: center;
+    }
+
+    .flow-step-num {
+      font-size: 10px;
+      font-weight: 800;
+      color: #0284C7;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 3px;
+    }
+
+    .flow-step-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0F172A;
+      margin-bottom: 4px;
+      line-height: 1.3;
+    }
+
+    .flow-step-desc {
+      font-size: 10.5px;
+      color: #64748B;
+      line-height: 1.3;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 20px 0;
+      font-size: 12.5px;
+    }
+
+    th {
+      background: #0F172A;
+      color: #FFFFFF;
+      font-weight: 600;
+      text-align: left;
+      padding: 9px 12px;
+      font-size: 12px;
+      letter-spacing: 0.2px;
+    }
+
+    th:first-child { border-top-left-radius: 6px; }
+    th:last-child { border-top-right-radius: 6px; }
+
+    td {
+      padding: 9px 12px;
+      border-bottom: 1px solid #E2E8F0;
+      vertical-align: top;
+      color: #334155;
+    }
+
+    tr:nth-child(even) td {
+      background: #F8FAFC;
+    }
+
+    .badge-portal {
+      display: inline-block;
+      background: #EFF6FF;
+      color: #1D4ED8;
+      border: 1px solid #BFDBFE;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 11px;
+    }
+
+    /* Cards for Steps */
+    .step-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-left: 4px solid #1E3A8A;
+      border-radius: 6px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      page-break-inside: avoid;
+    }
+
+    .step-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+
+    .step-card-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #0F172A;
+    }
+
+    .step-card-portal {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #0284C7;
+      background: #F0F9FF;
+      padding: 2px 7px;
+      border-radius: 4px;
+      border: 1px solid #BAE6FD;
+    }
+
+    .step-when {
+      font-size: 11.5px;
+      color: #475569;
+      margin-bottom: 6px;
+      font-style: italic;
+    }
+
+    .step-list {
+      margin: 4px 0 6px 18px;
+      padding: 0;
+      font-size: 12px;
+      color: #334155;
+    }
+
+    .step-list li {
+      margin-bottom: 3px;
+    }
+
+    .step-result {
+      background: #F0FDF4;
+      border: 1px solid #BBF7D0;
+      color: #166534;
+      font-size: 11.5px;
+      padding: 5px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+      margin-top: 6px;
+    }
+
+    /* Key Benefits List */
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 12px 0;
+      page-break-inside: avoid;
+    }
+
+    .benefit-item {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      padding: 10px 12px;
+      border-radius: 6px;
+    }
+
+    .benefit-title {
+      font-weight: 700;
+      font-size: 12.5px;
+      color: #0F172A;
+      margin-bottom: 3px;
+    }
+
+    .benefit-desc {
+      font-size: 11.5px;
+      color: #64748B;
+      line-height: 1.35;
+    }
+
+    .footer {
+      margin-top: 24px;
+      padding-top: 10px;
+      border-top: 1px solid #E2E8F0;
+      display: flex;
+      justify-content: space-between;
+      font-size: 10.5px;
+      color: #94A3B8;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Banner -->
+  <div class="header-banner">
+    <div class="badge-top">Official Standard Operating Procedure (SOP)</div>
+    <h1 class="header-title">Caribbean Ocean Freight & Warehouse System</h1>
+    <div class="header-subtitle">Comprehensive End-to-End Operational Workflow & User Guide</div>
+    <div class="header-meta">
+      <span><strong>Operating CFS:</strong> Miami, Florida (USA)</span>
+      <span><strong>Active Trade Lanes:</strong> Tortola (BVI), St. Kitts, St. Maarten</span>
+      <span><strong>Carrier Model:</strong> NVOCC Ocean Consolidation</span>
+      <span><strong>Document Version:</strong> 1.0 (Production)</span>
+    </div>
+  </div>
+
+  <!-- Intro -->
+  <p style="margin: 0 0 16px 0; font-size: 13px; color: #334155;">
+    This system is custom-built to streamline your Miami CFS warehouse operations and ocean container consolidation. It connects inbound US supplier cargo, container stuffing, ocean carrier booking (Master B/L), one-click customs manifests, and final delivery at destination island ports.
+  </p>
+
+  <!-- Section 1 -->
+  <h2><span class="step-number-tag">1</span> High-Level Operational Lifecycle (The 5 Steps)</h2>
+  
+  <div class="flow-grid">
+    <div class="flow-box">
+      <div class="flow-step-num">Step 1</div>
+      <div class="flow-step-title">Miami Dock Receiving</div>
+      <div class="flow-step-desc">Scan, weigh, measure packages & issue WR barcode.</div>
+    </div>
+    <div class="flow-box">
+      <div class="flow-step-num">Step 2</div>
+      <div class="flow-step-title">Container Consolidation</div>
+      <div class="flow-step-desc">Pack LCL cargo into ocean container with bolt seal.</div>
+    </div>
+    <div class="flow-box">
+      <div class="flow-step-num">Step 3</div>
+      <div class="flow-step-title">Master Bill of Lading</div>
+      <div class="flow-step-desc">Link consolidation to feeder vessel & ocean carrier.</div>
+    </div>
+    <div class="flow-box">
+      <div class="flow-step-num">Step 4</div>
+      <div class="flow-step-title">1-Click Customs Manifest</div>
+      <div class="flow-step-desc">Instant export manifest sent to Island Customs.</div>
+    </div>
+    <div class="flow-box" style="border-top-color: #10B981;">
+      <div class="flow-step-num" style="color: #10B981;">Step 5 (Final)</div>
+      <div class="flow-step-title">Island Delivery</div>
+      <div class="flow-step-desc">Deconsolidate, clear customs & release to customer.</div>
+    </div>
+  </div>
+
+  <!-- Section 2 -->
+  <h2><span class="step-number-tag">2</span> User Roles & Portal Access</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 25%;">User / Role</th>
+        <th style="width: 30%;">System Menu / Portal</th>
+        <th>Primary Responsibility</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Miami Dock Staff</strong></td>
+        <td><span class="badge-portal">Warehouse Receipts</span></td>
+        <td>Receive inbound boxes from Amazon/Walmart/Suppliers, record gross weight & dimensions, print barcode labels, assign warehouse rack location.</td>
+      </tr>
+      <tr>
+        <td><strong>Operations Director</strong></td>
+        <td><span class="badge-portal">Container Consolidation</span> & <span class="badge-portal">Master B/L</span></td>
+        <td>Group cargo by destination island, assign leased carrier containers & tamper-proof bolt seals, and bind cargo under the Master transport contract.</td>
+      </tr>
+      <tr>
+        <td><strong>Customs Clerk</strong></td>
+        <td><span class="badge-portal">Customs Manifests</span></td>
+        <td>Generate the official cargo manifest in 1 click and transmit electronic documentation to Caribbean island customs authorities.</td>
+      </tr>
+      <tr>
+        <td><strong>Destination Island Agent</strong></td>
+        <td><span class="badge-portal">Agent Portal (/agent)</span></td>
+        <td>Unload vessel containers at Road Town (Tortola) or Basseterre (St. Kitts), confirm customs duty clearance, and record customer delivery signature.</td>
+      </tr>
+      <tr>
+        <td><strong>End Customers</strong></td>
+        <td><span class="badge-portal">Public Cargo Tracking</span></td>
+        <td>Live self-service milestone tracking from Miami intake all the way to island pickup.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Page Break for Clean Section 3 on Next Page -->
+  <div class="page-break"></div>
+
+  <!-- Section 3 -->
+  <h2><span class="step-number-tag">3</span> Step-by-Step Practical Walkthrough</h2>
+
+  <div class="step-card">
+    <div class="step-card-header">
+      <span class="step-card-title">Step 1: Inbound Receiving at Miami CFS Dock</span>
+      <span class="step-card-portal">Menu: Warehouse Receipts</span>
+    </div>
+    <div class="step-when"><strong>When to use:</strong> Whenever a delivery driver drops off packages at your Miami warehouse facility.</div>
+    <ol class="step-list">
+      <li>Click <strong>+ New Receipt</strong> on the Warehouse Receipts screen.</li>
+      <li>Select the US Shipper and the Caribbean Consignee from your central customer directory.</li>
+      <li>Enter pieces, gross weight (lbs), dimensions (L × W × H inches), and assign warehouse rack storage.</li>
+      <li>Click Save to generate a unique Receipt Number (e.g., <code>WR-2026-0045</code>).</li>
+    </ol>
+    <div class="step-result">
+      ✓ <strong>Result:</strong> Printable barcode label generated. Customer receives intake confirmation and their House Bill of Lading (HBL) is automatically staged.
+    </div>
+  </div>
+
+  <div class="step-card">
+    <div class="step-card-header">
+      <span class="step-card-title">Step 2: Ocean Container Consolidation & Stuffing</span>
+      <span class="step-card-portal">Menu: Container Consolidation</span>
+    </div>
+    <div class="step-when"><strong>When to use:</strong> When packing a 20ft or 40ft ocean container for a specific Caribbean destination port.</div>
+    <ol class="step-list">
+      <li>Click <strong>+ New Consolidation</strong> and choose the destination port (e.g., Road Town Port, Tortola).</li>
+      <li>Enter the carrier container number (e.g., <code>TGHU1234567</code>) and the heavy-duty bolt seal number.</li>
+      <li>Select the pending warehouse receipts to pack into this container. Total pieces, weight, and volume (CBM) calculate instantly.</li>
+      <li>Click <strong>Confirm Consolidation</strong> to generate your unique Consolidation Number (e.g., <code>CNS-2026-0082</code>).</li>
+    </ol>
+    <div class="step-result">
+      ✓ <strong>Result:</strong> All individual customer packages are locked into this specific ocean container with official seal tracking.
+    </div>
+  </div>
+
+  <div class="step-card">
+    <div class="step-card-header">
+      <span class="step-card-title">Step 3: Issuing the Master Bill of Lading (MBL)</span>
+      <span class="step-card-portal">Menu: Master Bills of Lading</span>
+    </div>
+    <div class="step-when"><strong>When to use:</strong> When container packing is finished and cargo is booked on the ocean feeder ship.</div>
+    <ol class="step-list">
+      <li>Click <strong>+ Issue Master B/L</strong>.</li>
+      <li><strong>Step 1 Dropdown:</strong> Select your Consolidation Number. The system instantly auto-populates the container number, bolt seal, destination port, and all linked House B/Ls!</li>
+      <li>Select the Feeder Vessel from your Fleet Directory (e.g. <em>M/V Island Trader</em>).</li>
+      <li>Review total gross weight and CBM, then click <strong>Issue Master B/L</strong>.</li>
+    </ol>
+    <div class="step-result">
+      ✓ <strong>Result:</strong> Your legal ocean carriage contract is issued. Container status automatically updates to "In Transit".
+    </div>
+  </div>
+
+  <div class="step-card">
+    <div class="step-card-header">
+      <span class="step-card-title">Step 4: 1-Click Customs Cargo Manifest</span>
+      <span class="step-card-portal">Menu: Customs Manifests</span>
+    </div>
+    <div class="step-when"><strong>When to use:</strong> Immediately after Master B/L issuance, prior to feeder vessel departure.</div>
+    <ol class="step-list">
+      <li>Go to the Manifests dashboard and click <strong>Generate Manifest</strong>.</li>
+      <li>Select the active Master B/L.</li>
+      <li>The system automatically aggregates every package, description, piece count, and consignee into the official customs export layout.</li>
+      <li>Download the formatted PDF or transmit electronically to island customs authorities.</li>
+    </ol>
+    <div class="step-result">
+      ✓ <strong>Result:</strong> 100% automated documentation. Zero manual re-entry errors. Destination customs begins pre-clearance while the ship is sailing.
+    </div>
+  </div>
+
+  <div class="step-card" style="border-left-color: #10B981;">
+    <div class="step-card-header">
+      <span class="step-card-title" style="color: #065F46;">Step 5: Island Arrival, Deconsolidation & Final Delivery</span>
+      <span class="step-card-portal" style="color: #065F46; background: #ECFDF5; border-color: #A7F3D0;">Menu: Agent Portal (/agent/shipments)</span>
+    </div>
+    <div class="step-when"><strong>When to use:</strong> When the feeder ship arrives at the destination port (Tortola, St. Kitts) and the container is discharged.</div>
+    <ol class="step-list">
+      <li>The destination island agent receives the container at their local CFS and opens it for deconsolidation.</li>
+      <li>Packages are checked against the manifest and local customs tariffs/landing fees are verified.</li>
+      <li>When the customer arrives for collection (or upon scheduled door delivery), the agent clicks <strong>Mark Delivered / Release Cargo</strong>.</li>
+      <li>Customer signature and delivery timestamp are captured in the system.</li>
+    </ol>
+    <div class="step-result" style="background: #ECFDF5; border-color: #A7F3D0; color: #065F46;">
+      ✓ <strong>Result:</strong> Shipment lifecycle is marked <strong>DELIVERED & COMPLETED</strong>. Proof of Delivery (POD) permanently archived.
+    </div>
+  </div>
+
+  <!-- Section 4 -->
+  <h2><span class="step-number-tag">4</span> Key Advantages Built for Your Business</h2>
+  <div class="benefits-grid">
+    <div class="benefit-item">
+      <div class="benefit-title">✓ Consolidation-First Architecture</div>
+      <div class="benefit-desc">Create your consolidation number first. In Master B/L, selecting it loads all House B/Ls, container data, and metrics in one click.</div>
+    </div>
+    <div class="benefit-item">
+      <div class="benefit-title">✓ Dedicated Eastern Caribbean Ports</div>
+      <div class="benefit-desc">Strictly configured for your active ports (Tortola BVI, St. Kitts, St. Maarten) with clean, non-confusing routing.</div>
+    </div>
+    <div class="benefit-item">
+      <div class="benefit-title">✓ Carrier Leased Container Model</div>
+      <div class="benefit-desc">Direct container number and tamper-proof bolt seal tracking matching your NVOCC operating agreement with ocean carriers.</div>
+    </div>
+    <div class="benefit-item">
+      <div class="benefit-title">✓ Responsive & Non-Clipping UI</div>
+      <div class="benefit-desc">All forms feature pinned headers/footers with smooth scrolling, ensuring buttons and inputs never get cut off on any screen.</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <span>Caribbean Ocean Freight & Warehouse Management System — Confidential Operational Guide</span>
+    <span>Miami CFS & Eastern Caribbean Logistics Network</span>
+  </div>
+
+</body>
+</html>
