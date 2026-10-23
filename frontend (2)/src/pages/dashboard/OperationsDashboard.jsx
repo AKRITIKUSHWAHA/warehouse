@@ -615,65 +615,193 @@ export const OperationsDashboard = ({ onNavigate }) => {
                 </div>
               </div>
               <div style={{ padding: '0.85rem', display: 'flex', flexDirection: 'column', gap: '0.65rem', flex: 1 }}>
-                <button
-                  onClick={() => onNavigate('warehouse-receipts', 'create')}
-                  className="btn btn-outline btn-sm"
-                  style={{ justifyContent: 'space-between', padding: '0.6rem 0.75rem' }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Package size={16} style={{ color: '#D97706' }} />
-                    <span style={{ fontWeight: 600 }}>1. Create Warehouse Receipt</span>
-                  </div>
-                  <ChevronRight size={14} style={{ color: '#94A3B8' }} />
-                </button>
+                {roleKey === 'operations' ? (
+                  <>
+                    <button
+                      onClick={() => onNavigate('cargo')}
+                      className="btn btn-outline btn-sm"
+                      style={{ justifyContent: 'space-between', padding: '0.6rem 0.75rem' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Box size={16} style={{ color: '#0284C7' }} />
+                        <span style={{ fontWeight: 600 }}>1. View Staged Cargo</span>
+                      </div>
+                      <ChevronRight size={14} style={{ color: '#94A3B8' }} />
+                    </button>
 
-                <button
-                  onClick={() => onNavigate('cargo')}
-                  className="btn btn-outline btn-sm"
-                  style={{ justifyContent: 'space-between', padding: '0.6rem 0.75rem' }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Box size={16} style={{ color: '#0284C7' }} />
-                    <span style={{ fontWeight: 600 }}>2. View Staged Cargo</span>
-                  </div>
-                  <ChevronRight size={14} style={{ color: '#94A3B8' }} />
-                </button>
+                    <button
+                      onClick={() => onNavigate('consolidations', 'create')}
+                      className="btn btn-outline btn-sm"
+                      style={{ justifyContent: 'space-between', padding: '0.6rem 0.75rem' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Layers size={16} style={{ color: '#10B981' }} />
+                        <span style={{ fontWeight: 600 }}>2. Build Consolidation</span>
+                      </div>
+                      <ChevronRight size={14} style={{ color: '#94A3B8' }} />
+                    </button>
 
-                <button
-                  onClick={() => onNavigate('consolidations', 'create')}
-                  className="btn btn-outline btn-sm"
-                  style={{ justifyContent: 'space-between', padding: '0.6rem 0.75rem' }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Layers size={16} style={{ color: '#10B981' }} />
-                    <span style={{ fontWeight: 600 }}>3. Build Consolidation</span>
-                  </div>
-                  <ChevronRight size={14} style={{ color: '#94A3B8' }} />
-                </button>
+                    <button
+                      onClick={() => onNavigate('consolidations')}
+                      className="btn btn-outline btn-sm"
+                      style={{ justifyContent: 'space-between', padding: '0.6rem 0.75rem' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Package size={16} style={{ color: '#D97706' }} />
+                        <span style={{ fontWeight: 600 }}>3. Active Consolidations</span>
+                      </div>
+                      <ChevronRight size={14} style={{ color: '#94A3B8' }} />
+                    </button>
 
-                <button
-                  onClick={() => onNavigate('bills-of-lading')}
-                  className="btn btn-outline btn-sm"
-                  style={{ justifyContent: 'space-between', padding: '0.6rem 0.75rem' }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <FileText size={16} style={{ color: '#2563EB' }} />
-                    <span style={{ fontWeight: 600 }}>4. Bills of Lading (Master &amp; House)</span>
-                  </div>
-                  <ChevronRight size={14} style={{ color: '#94A3B8' }} />
-                </button>
+                    <button
+                      onClick={() => onNavigate('bills-of-lading')}
+                      className="btn btn-outline btn-sm"
+                      style={{ justifyContent: 'space-between', padding: '0.6rem 0.75rem' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <FileText size={16} style={{ color: '#2563EB' }} />
+                        <span style={{ fontWeight: 600 }}>4. Master Bills &amp; Manifests</span>
+                      </div>
+                      <ChevronRight size={14} style={{ color: '#94A3B8' }} />
+                    </button>
 
-                <button
-                  onClick={() => onNavigate('manifests')}
-                  className="btn btn-outline btn-sm"
-                  style={{ justifyContent: 'space-between', padding: '0.6rem 0.75rem' }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <FileSpreadsheet size={16} style={{ color: '#8B5CF6' }} />
-                    <span style={{ fontWeight: 600 }}>5. Customs Manifests</span>
-                  </div>
-                  <ChevronRight size={14} style={{ color: '#94A3B8' }} />
-                </button>
+                    <button
+                      onClick={() => onNavigate('shipments')}
+                      className="btn btn-outline btn-sm"
+                      style={{ justifyContent: 'space-between', padding: '0.6rem 0.75rem' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Ship size={16} style={{ color: '#059669' }} />
+                        <span style={{ fontWeight: 600 }}>5. Ocean Shipments Transit</span>
+                      </div>
+                      <ChevronRight size={14} style={{ color: '#94A3B8' }} />
+                    </button>
+                  </>
+                ) : roleKey === 'documentation' ? (
+                  <>
+                    <button
+                      onClick={() => onNavigate('house-bills')}
+                      className="btn btn-outline btn-sm"
+                      style={{ justifyContent: 'space-between', padding: '0.6rem 0.75rem' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <FileText size={16} style={{ color: '#2563EB' }} />
+                        <span style={{ fontWeight: 600 }}>1. Review House Bills</span>
+                      </div>
+                      <ChevronRight size={14} style={{ color: '#94A3B8' }} />
+                    </button>
+
+                    <button
+                      onClick={() => onNavigate('bills-of-lading')}
+                      className="btn btn-outline btn-sm"
+                      style={{ justifyContent: 'space-between', padding: '0.6rem 0.75rem' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <FileSpreadsheet size={16} style={{ color: '#0284C7' }} />
+                        <span style={{ fontWeight: 600 }}>2. Master Bills of Lading</span>
+                      </div>
+                      <ChevronRight size={14} style={{ color: '#94A3B8' }} />
+                    </button>
+
+                    <button
+                      onClick={() => onNavigate('manifests')}
+                      className="btn btn-outline btn-sm"
+                      style={{ justifyContent: 'space-between', padding: '0.6rem 0.75rem' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <FileSpreadsheet size={16} style={{ color: '#8B5CF6' }} />
+                        <span style={{ fontWeight: 600 }}>3. Generate Customs Manifest</span>
+                      </div>
+                      <ChevronRight size={14} style={{ color: '#94A3B8' }} />
+                    </button>
+
+                    <button
+                      onClick={() => onNavigate('bills-of-lading')}
+                      className="btn btn-outline btn-sm"
+                      style={{ justifyContent: 'space-between', padding: '0.6rem 0.75rem' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <AlertTriangle size={16} style={{ color: '#EF4444' }} />
+                        <span style={{ fontWeight: 600 }}>4. Review B/L Holds</span>
+                      </div>
+                      <ChevronRight size={14} style={{ color: '#94A3B8' }} />
+                    </button>
+
+                    <button
+                      onClick={() => onNavigate('customers')}
+                      className="btn btn-outline btn-sm"
+                      style={{ justifyContent: 'space-between', padding: '0.6rem 0.75rem' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Users size={16} style={{ color: '#64748B' }} />
+                        <span style={{ fontWeight: 600 }}>5. Customer Directory</span>
+                      </div>
+                      <ChevronRight size={14} style={{ color: '#94A3B8' }} />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => onNavigate('warehouse-receipts', 'create')}
+                      className="btn btn-outline btn-sm"
+                      style={{ justifyContent: 'space-between', padding: '0.6rem 0.75rem' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Package size={16} style={{ color: '#D97706' }} />
+                        <span style={{ fontWeight: 600 }}>1. Create Warehouse Receipt</span>
+                      </div>
+                      <ChevronRight size={14} style={{ color: '#94A3B8' }} />
+                    </button>
+
+                    <button
+                      onClick={() => onNavigate('cargo')}
+                      className="btn btn-outline btn-sm"
+                      style={{ justifyContent: 'space-between', padding: '0.6rem 0.75rem' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Box size={16} style={{ color: '#0284C7' }} />
+                        <span style={{ fontWeight: 600 }}>2. View Staged Cargo</span>
+                      </div>
+                      <ChevronRight size={14} style={{ color: '#94A3B8' }} />
+                    </button>
+
+                    <button
+                      onClick={() => onNavigate('consolidations', 'create')}
+                      className="btn btn-outline btn-sm"
+                      style={{ justifyContent: 'space-between', padding: '0.6rem 0.75rem' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Layers size={16} style={{ color: '#10B981' }} />
+                        <span style={{ fontWeight: 600 }}>3. Build Consolidation</span>
+                      </div>
+                      <ChevronRight size={14} style={{ color: '#94A3B8' }} />
+                    </button>
+
+                    <button
+                      onClick={() => onNavigate('bills-of-lading')}
+                      className="btn btn-outline btn-sm"
+                      style={{ justifyContent: 'space-between', padding: '0.6rem 0.75rem' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <FileText size={16} style={{ color: '#2563EB' }} />
+                        <span style={{ fontWeight: 600 }}>4. Bills of Lading (Master &amp; House)</span>
+                      </div>
+                      <ChevronRight size={14} style={{ color: '#94A3B8' }} />
+                    </button>
+
+                    <button
+                      onClick={() => onNavigate('manifests')}
+                      className="btn btn-outline btn-sm"
+                      style={{ justifyContent: 'space-between', padding: '0.6rem 0.75rem' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <FileSpreadsheet size={16} style={{ color: '#8B5CF6' }} />
+                        <span style={{ fontWeight: 600 }}>5. Customs Manifests</span>
+                      </div>
+                      <ChevronRight size={14} style={{ color: '#94A3B8' }} />
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>

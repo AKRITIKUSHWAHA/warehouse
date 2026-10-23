@@ -3,7 +3,7 @@
  * Allows Super Admin to dynamically configure menu visibility and module access per role.
  */
 
-export const STORAGE_KEY_ROLE_PERMISSIONS = 'kers_role_permissions_map_v3';
+export const STORAGE_KEY_ROLE_PERMISSIONS = 'kers_role_permissions_map_v4';
 
 export const SYSTEM_MODULES = [
   // 1. CARGO & INTAKE
@@ -82,14 +82,6 @@ export const SYSTEM_MODULES = [
     tabs: ['bills-of-lading', 'manifests', 'agent-bl-detail']
   },
   {
-    id: 'vessels',
-    label: 'Fleet Directory',
-    category: 'Logistics & Ocean',
-    description: 'Serviced vessel fleet directory, vessel specs and carrier details',
-    icon: 'Anchor',
-    tabs: ['vessels']
-  },
-  {
     id: 'tracking',
     label: 'Cargo Tracking Portal',
     category: 'Logistics & Ocean',
@@ -147,12 +139,12 @@ export const DEFAULT_ROLE_PERMISSIONS_MAP = {
   super_admin: [
     'dashboard', 'customers', 'warehouse-receipts', 'cargo', 'documents',
     'house-bills', 'consolidations', 'shipments', 'bills-of-lading',
-    'vessels', 'tracking', 'history', 'audit', 'users', 'settings',
+    'tracking', 'history', 'audit', 'users', 'settings',
     'hold-authorization'
   ],
   operations: [
-    'dashboard', 'customers', 'consolidations', 'shipments',
-    'bills-of-lading', 'vessels', 'tracking'
+    'dashboard', 'customers', 'cargo', 'consolidations', 'bills-of-lading',
+    'shipments', 'tracking'
   ],
   warehouse: [
     'dashboard', 'customers', 'warehouse-receipts', 'cargo',
