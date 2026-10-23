@@ -6,46 +6,49 @@
 export const STORAGE_KEY_ROLE_PERMISSIONS = 'kers_role_permissions_map_v3';
 
 export const SYSTEM_MODULES = [
+  // 1. CARGO & INTAKE
   {
     id: 'dashboard',
     label: 'Overview Dashboard',
-    category: 'Intake & Core',
+    category: 'Cargo & Intake',
     description: 'Operational summary metrics, quick actions, and throughput charts',
     icon: 'LayoutDashboard',
     tabs: ['dashboard', 'agent-dashboard']
   },
   {
     id: 'customers',
-    label: 'Customers',
-    category: 'Intake & Core',
+    label: 'Customers Directory',
+    category: 'Cargo & Intake',
     description: 'Master customer directory (shippers & consignees), contact details and destination ports',
     icon: 'Users',
     tabs: ['customers']
   },
   {
     id: 'warehouse-receipts',
-    label: 'Warehouse Receipts: View & Intake',
-    category: 'Intake & Core',
-    description: 'Cargo intake, dimension calculations, barcode generation, receipts',
+    label: 'Warehouse Receipts (WR)',
+    category: 'Cargo & Intake',
+    description: 'Cargo intake, dimension calculations, barcode generation, intake receipts',
     icon: 'Package',
     tabs: ['warehouse-receipts']
   },
   {
     id: 'cargo',
-    label: 'Cargo Inventory & Items',
-    category: 'Intake & Core',
+    label: 'Cargo Inventory & Staging',
+    category: 'Cargo & Intake',
     description: 'Real-time package storage, location racking, holding bay tracking',
     icon: 'Box',
     tabs: ['cargo']
   },
   {
     id: 'documents',
-    label: 'Labels & Document Center',
-    category: 'Intake & Core',
+    label: 'Labels & Documents Center',
+    category: 'Cargo & Intake',
     description: '4x6 thermal barcode labels, print layouts, uploaded paperwork',
-    icon: 'FileStack',
+    icon: 'Tag',
     tabs: ['documents', 'agent-documents']
   },
+
+  // 2. LOGISTICS & OCEAN FREIGHT
   {
     id: 'house-bills',
     label: 'House Bills of Lading (HBL)',
@@ -56,9 +59,9 @@ export const SYSTEM_MODULES = [
   },
   {
     id: 'consolidations',
-    label: 'Cargo Consolidation Engine',
+    label: 'Container Consolidation',
     category: 'Logistics & Ocean',
-    description: 'Multi-order container stuffing, CBM load balancing, sealing',
+    description: 'Multi-order container stuffing, CBM load balancing, sealing & arrivals',
     icon: 'Layers',
     tabs: ['consolidations']
   },
@@ -72,25 +75,17 @@ export const SYSTEM_MODULES = [
   },
   {
     id: 'bills-of-lading',
-    label: 'Master Bills of Lading (MBL)',
+    label: 'Master Bills & Manifests',
     category: 'Logistics & Ocean',
-    description: 'Carrier master B/Ls, consignee endorsement, release documents',
-    icon: 'FileText',
-    tabs: ['bills-of-lading', 'agent-bl-detail']
-  },
-  {
-    id: 'manifests',
-    label: 'Customs & Port Manifests',
-    category: 'Logistics & Ocean',
-    description: 'Official customs manifest generation, export to CSV/PDF',
+    description: 'Carrier master B/Ls, 1-click manifest generation, discharge clearance',
     icon: 'FileSpreadsheet',
-    tabs: ['manifests']
+    tabs: ['bills-of-lading', 'manifests', 'agent-bl-detail']
   },
   {
     id: 'vessels',
     label: 'Fleet Directory',
     category: 'Logistics & Ocean',
-    description: 'Vessel fleet directory and carrier details',
+    description: 'Serviced vessel fleet directory, vessel specs and carrier details',
     icon: 'Anchor',
     tabs: ['vessels']
   },
@@ -102,79 +97,73 @@ export const SYSTEM_MODULES = [
     icon: 'Search',
     tabs: ['tracking', 'agent-tracking']
   },
+
+  // 3. SYSTEM & GOVERNANCE
   {
-    id: 'agent-portal',
-    label: 'Dedicated Agent Portal Access',
-    category: 'Agent & External',
-    description: 'Isolated portal access for destination port agents & forwarders',
-    icon: 'ExternalLink',
-    tabs: ['agent-dashboard', 'agent-shipments', 'agent-bl-detail', 'agent-documents', 'agent-tracking']
-  },
-  {
-    id: 'hold-authorization',
-    label: 'Place / Clear B/L Hold (Authorization)',
-    category: 'Governance & Security',
-    description: 'Administrative hold override, financial lock releases, compliance',
-    icon: 'Shield',
-    tabs: []
-  },
-  {
-    id: 'users',
-    label: 'Users & Roles Matrix',
-    category: 'Governance & Security',
-    description: 'Manage staff accounts, credentials, role permissions matrix',
-    icon: 'ShieldCheck',
-    tabs: ['users']
+    id: 'history',
+    label: 'Shipment History',
+    category: 'System & Governance',
+    description: 'Historical shipment logs, delivered cargo lookup, archive records',
+    icon: 'History',
+    tabs: ['history']
   },
   {
     id: 'audit',
     label: 'Activity Logs / Audit Trail',
-    category: 'Governance & Security',
+    category: 'System & Governance',
     description: 'Immutable transaction logs, IP recording, change history inspection',
     icon: 'Activity',
     tabs: ['audit']
   },
   {
-    id: 'history',
-    label: 'Shipment History',
-    category: 'Governance & Security',
-    description: 'Historical shipment logs, delivered cargo lookup, past records',
-    icon: 'History',
-    tabs: ['history']
+    id: 'users',
+    label: 'Users & Roles Matrix',
+    category: 'System & Governance',
+    description: 'Manage staff accounts, credentials, role permissions & menu visibility matrix',
+    icon: 'ShieldCheck',
+    tabs: ['users']
   },
   {
     id: 'settings',
     label: 'System Settings & Config',
-    category: 'Governance & Security',
+    category: 'System & Governance',
     description: 'Global numbering rules, company profiles, currency & fee defaults',
     icon: 'Settings',
     tabs: ['settings']
+  },
+
+  // 4. SPECIAL OPERATIONAL PERMISSION
+  {
+    id: 'hold-authorization',
+    label: 'Place / Clear B/L Hold',
+    category: 'Operational Authorization',
+    description: 'Administrative hold override, financial lock releases, compliance authority',
+    icon: 'Shield',
+    tabs: []
   }
 ];
 
 export const DEFAULT_ROLE_PERMISSIONS_MAP = {
   super_admin: [
-    'dashboard', 'customers', 'warehouse-receipts', 'documents',
-    'house-bills', 'consolidations', 'bills-of-lading', 'manifests',
-    'vessels', 'tracking', 'agent-portal', 'hold-authorization',
-    'history', 'audit', 'users', 'settings'
+    'dashboard', 'customers', 'warehouse-receipts', 'cargo', 'documents',
+    'house-bills', 'consolidations', 'shipments', 'bills-of-lading',
+    'vessels', 'tracking', 'history', 'audit', 'users', 'settings',
+    'hold-authorization'
   ],
   operations: [
-    'dashboard', 'customers', 'consolidations', 'bills-of-lading',
-    'manifests', 'vessels', 'tracking'
+    'dashboard', 'customers', 'consolidations', 'shipments',
+    'bills-of-lading', 'vessels', 'tracking'
   ],
   warehouse: [
-    'dashboard', 'customers', 'warehouse-receipts', 'documents',
-    'consolidations', 'tracking'
+    'dashboard', 'customers', 'warehouse-receipts', 'cargo',
+    'documents', 'consolidations', 'tracking'
   ],
   documentation: [
     'dashboard', 'customers', 'warehouse-receipts', 'house-bills',
-    'consolidations', 'bills-of-lading', 'manifests', 'tracking',
-    'hold-authorization'
+    'consolidations', 'bills-of-lading', 'tracking', 'hold-authorization'
   ],
   agent: [
-    'dashboard', 'agent-portal', 'manifests', 'consolidations',
-    'bills-of-lading', 'tracking', 'documents'
+    'dashboard', 'consolidations', 'bills-of-lading', 'tracking', 'documents'
   ]
 };
 
@@ -226,7 +215,13 @@ export const hasModulePermission = (roleKey, tab) => {
 
   // Fallback for agent specific subroutes
   if (roleKey === 'agent' && tab && tab.startsWith('agent-')) {
-    return allowedModuleIds.includes('agent-portal') || allowedModuleIds.includes(tab.replace('agent-', ''));
+    const raw = tab.replace('agent-', '');
+    if (raw === 'dashboard') return allowedModuleIds.includes('dashboard');
+    if (raw === 'documents') return allowedModuleIds.includes('documents');
+    if (raw === 'shipments') return allowedModuleIds.includes('shipments');
+    if (raw === 'tracking') return allowedModuleIds.includes('tracking');
+    if (raw === 'bl-detail') return allowedModuleIds.includes('bills-of-lading');
+    return allowedModuleIds.includes(raw);
   }
 
   return false;
