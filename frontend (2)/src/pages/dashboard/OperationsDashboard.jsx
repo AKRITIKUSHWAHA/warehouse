@@ -224,7 +224,7 @@ export const OperationsDashboard = ({ onNavigate }) => {
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#D97706', textTransform: 'uppercase' }}>
-                Active Boxes
+                Active Containers
               </span>
               <Box size={18} style={{ color: '#D97706' }} />
             </div>

@@ -95,7 +95,6 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
             { id: 'customers', label: 'Customers', icon: Users, moduleId: 'customers' },
             { id: 'consolidations', label: 'Container Consolidation', icon: Layers, moduleId: 'consolidations' },
             { id: 'bills-of-lading', label: 'Master Bills & Manifests', icon: FileText, moduleId: 'bills-of-lading' },
-            { id: 'vessels', label: 'Fleet Directory', icon: Anchor, moduleId: 'vessels' },
             { id: 'tracking', label: 'Cargo Tracking', icon: Search, moduleId: 'tracking' }
           ]
         }
@@ -119,7 +118,6 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
           { id: 'house-bills', label: 'House Bills of Lading', icon: FileText, moduleId: 'house-bills' },
           { id: 'consolidations', label: 'Container Consolidation', icon: Layers, moduleId: 'consolidations' },
           { id: 'bills-of-lading', label: 'Master Bills & Manifests', icon: FileText, moduleId: 'bills-of-lading' },
-          { id: 'vessels', label: 'Fleet Directory', icon: Anchor, moduleId: 'vessels' },
           { id: 'tracking', label: 'Cargo Tracking', icon: Search, moduleId: 'tracking' }
         ]
       },
