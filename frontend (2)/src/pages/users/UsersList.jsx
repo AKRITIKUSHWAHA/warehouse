@@ -455,72 +455,42 @@ export const UsersList = ({ onNavigate }) => {
             </div>
           )}
 
-          {/* Admin Access Status Banner */}
+          {/* Admin Access Status Bar */}
           <div style={{
-            background: isSuperAdmin ? 'linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)' : '#FFFBEB',
+            background: isSuperAdmin ? '#F0FDF4' : '#FFFBEB',
             border: isSuperAdmin ? '1px solid #BBF7D0' : '1px solid #FDE68A',
-            borderRadius: '10px',
-            padding: '0.85rem 1.15rem',
+            borderRadius: '8px',
+            padding: '0.65rem 1rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             flexWrap: 'wrap',
-            gap: '0.75rem'
+            gap: '0.65rem'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <div style={{
-                background: isSuperAdmin ? '#16A34A' : '#D97706',
-                color: '#FFFFFF',
-                width: '34px',
-                height: '34px',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0
-              }}>
-                {isSuperAdmin ? <Unlock size={18} /> : <Lock size={18} />}
-              </div>
-              <div>
-                <div style={{ fontWeight: 800, fontSize: '0.88rem', color: isSuperAdmin ? '#166534' : '#92400E' }}>
-                  {isSuperAdmin ? 'Live Role Permissions & Menu Visibility Control' : 'Read-Only Mode: Role Permissions Matrix'}
-                </div>
-                <div style={{ fontSize: '0.76rem', color: isSuperAdmin ? '#15803D' : '#B45309', marginTop: '2px' }}>
-                  {isSuperAdmin
-                    ? 'Super Admin can toggle any menu on or off for any role. Toggling immediately updates sidebar navigation in real time for that role.'
-                    : 'Only Super Admin can edit role menu visibility and operational permissions.'}
-                </div>
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              {isSuperAdmin ? (
+                <Unlock size={15} style={{ color: '#16A34A' }} />
+              ) : (
+                <Lock size={15} style={{ color: '#D97706' }} />
+              )}
+              <span style={{ fontSize: '0.78rem', color: isSuperAdmin ? '#166534' : '#92400E', fontWeight: 600 }}>
+                {isSuperAdmin
+                  ? 'Role Permissions Matrix: Toggle any menu button to show or hide it for that role. Changes sync live to the sidebar.'
+                  : 'Role Permissions Matrix (Read-Only Mode): Only Super Admin can change role permissions.'}
+              </span>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-              <span style={{
-                fontSize: '0.72rem',
-                fontWeight: 700,
-                color: '#166534',
-                background: '#DCFCE7',
-                border: '1px solid #86EFAC',
-                padding: '0.25rem 0.65rem',
-                borderRadius: '999px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px'
-              }}>
-                <CheckCircle2 size={13} />
-                Live Auto-Synced
-              </span>
-              {isSuperAdmin && (
-                <button
-                  onClick={() => setShowResetConfirm(true)}
-                  className="btn btn-secondary btn-sm"
-                  style={{ fontSize: '0.74rem', padding: '0.3rem 0.65rem' }}
-                  title="Reset all role menu permissions to standard defaults"
-                >
-                  <RotateCcw size={13} />
-                  <span>Reset All Defaults</span>
-                </button>
-              )}
-            </div>
+            {isSuperAdmin && (
+              <button
+                onClick={() => setShowResetConfirm(true)}
+                className="btn btn-secondary btn-sm"
+                style={{ fontSize: '0.72rem', padding: '0.2rem 0.6rem' }}
+                title="Reset all role menu permissions to standard defaults"
+              >
+                <RotateCcw size={12} />
+                <span>Reset Defaults</span>
+              </button>
+            )}
           </div>
 
           {/* Matrix Filter & Search Bar */}
@@ -595,10 +565,10 @@ export const UsersList = ({ onNavigate }) => {
           <div className="card" style={{ padding: 0, overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '10px' }}>
             <table className="data-table" style={{ fontSize: '0.8rem', margin: 0, width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr style={{ background: '#F8FAFC', borderBottom: '2px solid #CBD5E1' }}>
+                <tr style={{ background: '#F8FAFC', borderBottom: '2px solid #E2E8F0' }}>
                   <th style={{
                     width: '32%',
-                    padding: '0.9rem 1.15rem',
+                    padding: '0.75rem 1rem',
                     textAlign: 'left',
                     position: 'sticky',
                     left: 0,
@@ -606,12 +576,9 @@ export const UsersList = ({ onNavigate }) => {
                     zIndex: 2,
                     boxShadow: '2px 0 4px rgba(0,0,0,0.03)'
                   }}>
-                    <div style={{ fontWeight: 800, color: '#0A192F', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }}>
-                      Functional Module / Menu
-                    </div>
-                    <div style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 500, marginTop: '2px' }}>
-                      Showing {filteredModules.length} configurable items
-                    </div>
+                    <span style={{ fontWeight: 800, color: '#0A192F', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      Menu / Module
+                    </span>
                   </th>
 
                   {ROLE_DEFINITIONS.map(r => {
@@ -621,9 +588,9 @@ export const UsersList = ({ onNavigate }) => {
                         key={r.roleKey}
                         style={{
                           textAlign: 'center',
-                          padding: '0.85rem 0.75rem',
-                          minWidth: '155px',
-                          verticalAlign: 'top',
+                          padding: '0.65rem 0.5rem',
+                          minWidth: '140px',
+                          verticalAlign: 'middle',
                           borderLeft: '1px solid #F1F5F9'
                         }}
                       >
@@ -631,77 +598,25 @@ export const UsersList = ({ onNavigate }) => {
                           <div style={{
                             display: 'inline-flex',
                             alignItems: 'center',
-                            gap: '6px',
-                            fontWeight: 800,
+                            gap: '5px',
+                            fontWeight: 700,
                             color: '#0A192F',
-                            fontSize: '0.82rem'
+                            fontSize: '0.8rem'
                           }}>
-                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: r.color }} />
+                            <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: r.color }} />
                             {r.roleName}
                           </div>
 
-                          <div style={{
-                            fontSize: '0.67rem',
-                            fontWeight: 700,
+                          <span style={{
+                            fontSize: '0.66rem',
+                            fontWeight: 600,
                             color: r.badgeColor,
                             background: r.badgeBg,
-                            padding: '0.12rem 0.5rem',
-                            borderRadius: '999px',
-                            marginTop: '2px'
+                            padding: '0.1rem 0.45rem',
+                            borderRadius: '999px'
                           }}>
                             {activeCount} of {(systemModules || []).length} Visible
-                          </div>
-
-                          {isSuperAdmin && (
-                            <div style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '4px',
-                              marginTop: '6px',
-                              paddingTop: '6px',
-                              borderTop: '1px dashed #E2E8F0',
-                              width: '100%'
-                            }}>
-                              <button
-                                onClick={() => handleEnableAll(r.roleKey, r.roleName)}
-                                className="btn btn-ghost btn-sm"
-                                style={{ fontSize: '0.65rem', padding: '0.15rem 0.35rem', color: '#0284C7', height: 'auto', lineHeight: 1 }}
-                                title={`Enable all menus for ${r.roleName}`}
-                              >
-                                All On
-                              </button>
-                              <span style={{ color: '#CBD5E1', fontSize: '0.65rem' }}>•</span>
-                              <button
-                                onClick={() => handleResetRole(r.roleKey, r.roleName)}
-                                className="btn btn-ghost btn-sm"
-                                style={{ fontSize: '0.65rem', padding: '0.15rem 0.35rem', color: '#64748B', height: 'auto', lineHeight: 1 }}
-                                title={`Reset ${r.roleName} to default permissions`}
-                              >
-                                Reset
-                              </button>
-                              {r.testUserId && (
-                                <>
-                                  <span style={{ color: '#CBD5E1', fontSize: '0.65rem' }}>•</span>
-                                  <button
-                                    onClick={() => handleTestPersona(r.roleKey, r.testUserId, r.roleName)}
-                                    className="btn btn-ghost btn-sm"
-                                    style={{
-                                      fontSize: '0.65rem',
-                                      padding: '0.15rem 0.35rem',
-                                      color: currentUser?.roleKey === r.roleKey ? '#059669' : '#0284C7',
-                                      fontWeight: currentUser?.roleKey === r.roleKey ? 800 : 600,
-                                      height: 'auto',
-                                      lineHeight: 1
-                                    }}
-                                    title={`Preview sidebar navigation as ${r.roleName}`}
-                                  >
-                                    {currentUser?.roleKey === r.roleKey ? 'Active' : 'Test'}
-                                  </button>
-                                </>
-                              )}
-                            </div>
-                          )}
+                          </span>
                         </div>
                       </th>
                     );
