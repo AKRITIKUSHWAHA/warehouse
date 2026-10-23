@@ -72,6 +72,7 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
             icon: FileText,
             moduleId: 'bills-of-lading'
           },
+          { id: 'vessels', label: 'Fleet Directory', icon: Anchor, moduleId: 'vessels' },
           {
             id: (isAgent || roleKey === 'agent') ? 'agent-tracking' : 'tracking',
             label: (isAgent || roleKey === 'agent') ? 'Port Tracking' : 'Cargo Tracking',
