@@ -393,7 +393,7 @@ export const ShipmentHistoryArchive = ({ onNavigate }) => {
 
       {/* Filter Tabs */}
       <div className="tabs-container" style={{ margin: 0 }}>
-        {['All', 'Delivered', 'In Transit', 'Loaded & Sealed', 'Cargo Received'].map(tab => (
+        {['All', 'Delivered', 'Loaded & Sealed', 'Cargo Received'].map(tab => (
           <button
             key={tab}
             onClick={() => setStatusFilter(tab)}
