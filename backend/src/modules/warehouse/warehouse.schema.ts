@@ -43,7 +43,7 @@ export const createWarehouseReceiptSchema = z.object({
   totalCft: z.coerce.number().nullish(),
   totalCbm: z.coerce.number().nullish(),
   warehouseLocation: z.string().optional().default('Bay A-1 (CFS Staging)'),
-  status: z.string().optional().default('Ready for Consolidation'),
+  status: z.string().optional().default('Received'),
   hazardous: z.boolean().optional().default(false),
   fragile: z.boolean().optional().default(false),
   notes: z.string().nullish().default(''),

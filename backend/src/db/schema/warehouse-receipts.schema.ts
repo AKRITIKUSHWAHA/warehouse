@@ -57,7 +57,7 @@ export const warehouseReceipts = pgTable('warehouse_receipts', {
   totalCbm: numeric('total_cbm', { precision: 10, scale: 2 }),
   
   warehouseLocation: text('warehouse_location').default('CFS Miami'),
-  status: text('status').default('Ready for Consolidation').notNull(),
+  status: text('status').default('Received').notNull(),
   hazardous: boolean('hazardous').default(false).notNull(),
   fragile: boolean('fragile').default(false).notNull(),
   notes: text('notes'),

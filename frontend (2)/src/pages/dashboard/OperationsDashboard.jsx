@@ -49,8 +49,8 @@ export const OperationsDashboard = ({ onNavigate }) => {
 
 
   // Metrics for Action Tasks
-  const readyReceipts = (warehouseReceipts || []).filter(w => w.status === 'Ready for Consolidation');
-  const stagedCargo = (cargoItems || []).filter(c => c.status === 'Ready for Consolidation' || !c.assignedConsolidationId);
+  const readyReceipts = (warehouseReceipts || []).filter(w => w.status === 'Ready for Consolidation' || w.status === 'Received');
+  const stagedCargo = (cargoItems || []).filter(c => c.status === 'Ready for Consolidation' || c.status === 'Received' || !c.assignedConsolidationId);
   const activeConsolidations = (consolidations || []).filter(c => c.status !== 'Departed' && c.status !== 'Delivered');
   const activeShipments = (shipments || []).filter(s => s.status !== 'Delivered');
   const holdBLs = (billsOfLading || []).filter(b => b.status === 'On Hold' || b.holdDetails?.isOnHold);
@@ -145,7 +145,7 @@ export const OperationsDashboard = ({ onNavigate }) => {
               {readyReceipts.length} Warehouse Receipts Ready
             </div>
             <div style={{ fontSize: '0.78rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>Intake complete • Ready for consolidation</span>
+              <span>Intake complete • Received in warehouse</span>
               <ArrowRight size={13} style={{ color: '#D97706' }} />
             </div>
           </div>

@@ -22,8 +22,20 @@ import { useAppData } from '../../context/AppDataContext';
 export const CreateHouseBill = ({ onNavigate }) => {
   const { customers, warehouseReceipts, houseBills, createHouseBill, settings } = useAppData();
 
-  const [currentStep, setCurrentStep] = useState(1);
-  const [selectedCustomerId, setSelectedCustomerId] = useState(customers[0]?.id || 'CUS-2026-0001');
+  const [selectedCustomerId, setSelectedCustomerId] = useState(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('vicustoms_selected_hbl_customer') : null;
+    if (saved && customers.some(c => c.id === saved)) {
+      return saved;
+    }
+    return customers[0]?.id || 'CUS-2026-0001';
+  });
+  const [currentStep, setCurrentStep] = useState(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('vicustoms_selected_hbl_customer') : null;
+    if (saved && customers.some(c => c.id === saved)) {
+      return 2;
+    }
+    return 1;
+  });
   const [selectedWrIds, setSelectedWrIds] = useState([]);
   const [customerSearch, setCustomerSearch] = useState('');
 
@@ -282,7 +294,8 @@ export const CreateHouseBill = ({ onNavigate }) => {
     };
 
     const created = await createHouseBill(payload);
-    onNavigate('house-bills', created.id);
+    try { localStorage.removeItem('vicustoms_selected_hbl_customer'); } catch (e) {}
+    onNavigate('house-bills');
   };
 
   return (
@@ -297,7 +310,10 @@ export const CreateHouseBill = ({ onNavigate }) => {
         ]}
         actions={
           <button
-            onClick={() => onNavigate('house-bills')}
+            onClick={() => {
+              try { localStorage.removeItem('vicustoms_selected_hbl_customer'); } catch (e) {}
+              onNavigate('house-bills');
+            }}
             className="btn btn-outline btn-sm"
           >
             <ArrowLeft size={15} />
@@ -385,49 +401,126 @@ export const CreateHouseBill = ({ onNavigate }) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            {filteredCustomers.map(c => {
-              const isSelected = selectedCustomerId === c.id;
-              const stagedWrCount = warehouseReceipts.filter(w => {
-                const cId = w.customerId || w.customer_id;
-                const match = cId === c.id ||
-                  w.customer?.trim().toLowerCase() === c.name?.trim().toLowerCase() ||
-                  w.customerName?.trim().toLowerCase() === c.name?.trim().toLowerCase() ||
-                  (w.consignee && w.consignee.toLowerCase().includes(c.name?.trim().toLowerCase()));
-                return match && !w.assignedHouseBillId && w.status !== 'Consolidated' && w.status !== 'Cancelled';
-              }).length;
+          <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '8px' }}>
+            <table className="table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <thead>
+                <tr style={{ background: '#F8FAFC', borderBottom: '1.5px solid #E2E8F0', fontSize: '0.75rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <th style={{ padding: '0.75rem 1rem', width: '50px', textAlign: 'center' }}>Select</th>
+                  <th style={{ padding: '0.75rem 1rem' }}>Customer / Consignee</th>
+                  <th style={{ padding: '0.75rem 1rem' }}>Destination Port</th>
+                  <th style={{ padding: '0.75rem 1rem' }}>Contact &amp; Telephone</th>
+                  <th style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>Staged WRs</th>
+                  <th style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredCustomers.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: '#64748B', fontSize: '0.85rem' }}>
+                      No customer account profiles match your search "{customerSearch}".
+                    </td>
+                  </tr>
+                ) : (
+                  filteredCustomers.map(c => {
+                    const isSelected = selectedCustomerId === c.id;
+                    const stagedWrCount = warehouseReceipts.filter(w => {
+                      const cId = w.customerId || w.customer_id;
+                      const match = cId === c.id ||
+                        w.customer?.trim().toLowerCase() === c.name?.trim().toLowerCase() ||
+                        w.customerName?.trim().toLowerCase() === c.name?.trim().toLowerCase() ||
+                        (w.consignee && w.consignee.toLowerCase().includes(c.name?.trim().toLowerCase()));
+                      return match && !w.assignedHouseBillId && w.status !== 'Consolidated' && w.status !== 'Cancelled';
+                    }).length;
 
-              return (
-                <div
-                  key={c.id}
-                  onClick={() => setSelectedCustomerId(c.id)}
-                  style={{
-                    padding: '1rem',
-                    borderRadius: '8px',
-                    border: isSelected ? '2px solid #0284C7' : '1px solid #E2E8F0',
-                    background: isSelected ? '#EFF6FF' : '#FFFFFF',
-                    cursor: 'pointer',
-                    transition: 'all 150ms ease'
-                  }}
-                  className="card-hover"
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ fontWeight: 700, color: '#0A192F', fontSize: '0.95rem' }}>{c.name}</div>
-                    {isSelected && <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0284C7' }} />}
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: '#0284C7', fontWeight: 600, marginTop: '2px' }}>
-                    {c.destinationPort}
-                  </div>
-                  <div style={{ fontSize: '0.72rem', color: '#64748B', marginTop: '6px' }}>
-                    Contact: {c.contactPerson} • {c.telephone || c.phone}
-                  </div>
-                  <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #E2E8F0', fontSize: '0.75rem', display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: '#64748B' }}>Staged for HBL:</span>
-                    <strong style={{ color: stagedWrCount > 0 ? '#059669' : '#64748B' }}>{stagedWrCount} Available WR(s)</strong>
-                  </div>
-                </div>
-              );
-            })}
+                    return (
+                      <tr
+                        key={c.id}
+                        onClick={() => setSelectedCustomerId(c.id)}
+                        style={{
+                          background: isSelected ? '#F0F9FF' : '#FFFFFF',
+                          borderBottom: '1px solid #E2E8F0',
+                          cursor: 'pointer',
+                          transition: 'background-color 150ms ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected) e.currentTarget.style.background = '#F8FAFC';
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected) e.currentTarget.style.background = '#FFFFFF';
+                        }}
+                      >
+                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
+                          <input
+                            type="radio"
+                            name="selectedCustomer"
+                            checked={isSelected}
+                            onChange={() => setSelectedCustomerId(c.id)}
+                            style={{ cursor: 'pointer', accentColor: '#0284C7', width: '16px', height: '16px' }}
+                          />
+                        </td>
+                        <td style={{ padding: '0.75rem 1rem' }}>
+                          <div style={{ fontWeight: 700, color: '#0A192F', fontSize: '0.9rem' }}>
+                            {c.name}
+                          </div>
+                          {c.customerNumber && (
+                            <div style={{ fontSize: '0.7rem', color: '#64748B', fontFamily: 'JetBrains Mono, monospace' }}>
+                              {c.customerNumber}
+                            </div>
+                          )}
+                        </td>
+                        <td style={{ padding: '0.75rem 1rem' }}>
+                          <span style={{ fontWeight: 600, color: '#0284C7', fontSize: '0.85rem' }}>
+                            {c.destinationPort || 'CFS Cargo Hub'}
+                          </span>
+                        </td>
+                        <td style={{ padding: '0.75rem 1rem', fontSize: '0.8rem', color: '#334155' }}>
+                          <div>{c.contactPerson || '—'}</div>
+                          <div style={{ fontSize: '0.72rem', color: '#64748B' }}>
+                            {c.telephone || c.phone || '—'}
+                          </div>
+                        </td>
+                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
+                          <span
+                            style={{
+                              display: 'inline-block',
+                              padding: '2px 8px',
+                              borderRadius: '12px',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              background: stagedWrCount > 0 ? '#DCFCE7' : '#F1F5F9',
+                              color: stagedWrCount > 0 ? '#15803D' : '#64748B'
+                            }}
+                          >
+                            {stagedWrCount} Available WR(s)
+                          </span>
+                        </td>
+                        <td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedCustomerId(c.id);
+                              setCurrentStep(2);
+                            }}
+                            className={`btn btn-sm ${isSelected ? 'btn-primary' : 'btn-outline'}`}
+                            style={{
+                              padding: '0.3rem 0.65rem',
+                              fontSize: '0.75rem',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            <span>Create HBL</span>
+                            <ChevronRight size={13} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: '1px solid #E2E8F0' }}>

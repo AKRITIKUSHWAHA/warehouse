@@ -74,6 +74,83 @@ export const WarehouseReceiptViewer = ({ receipt, onNavigate }) => {
 
   return (
     <div className="receipt-viewer-wrapper" style={{ maxWidth: '900px', margin: '0 auto' }}>
+      {/* Dynamic Print Styles for Warehouse Receipt to ensure 100% full single sheet A4 layout */}
+      <style>{`
+        @media print {
+          @page {
+            size: A4 portrait !important;
+            margin: 8mm !important;
+          }
+          html, body {
+            width: 100% !important;
+            height: auto !important;
+            min-height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          .receipt-viewer-wrapper,
+          .wr-detail-container {
+            max-width: 100% !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          .printable-document-receipt {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 auto !important;
+            box-sizing: border-box !important;
+            page-break-before: avoid !important;
+            break-before: avoid !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            page-break-after: avoid !important;
+            break-after: avoid !important;
+            box-shadow: none !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            min-height: 268mm !important;
+            max-height: 275mm !important;
+            height: auto !important;
+            padding: 6mm 8mm !important;
+            border: 2px solid #0A192F !important;
+            zoom: 1 !important;
+          }
+          .printable-document-receipt .receipt-content-upper {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+          }
+          .printable-document-receipt .receipt-table-box {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            min-height: 110mm !important;
+            margin-bottom: 0.75rem !important;
+          }
+          .printable-document-receipt .receipt-table-box table {
+            width: 100% !important;
+            height: 100% !important;
+            border-collapse: collapse !important;
+          }
+          .printable-document-receipt th {
+            font-size: 8pt !important;
+            padding: 0.45rem 0.5rem !important;
+          }
+          .printable-document-receipt td {
+            font-size: 8pt !important;
+            padding: 0.5rem 0.5rem !important;
+          }
+          .printable-document-receipt .receipt-content-lower {
+            margin-top: auto !important;
+          }
+        }
+      `}</style>
       {/* Top Action Bar */}
       <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', background: '#FFFFFF', padding: '0.75rem 1.25rem', borderRadius: '8px', border: '1px solid #E2E8F0', flexWrap: 'wrap', gap: '0.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -169,137 +246,149 @@ export const WarehouseReceiptViewer = ({ receipt, onNavigate }) => {
           color: '#0A192F',
           fontFamily: 'Arial, Helvetica, sans-serif',
           width: '100%',
-          maxWidth: '820px',
-          margin: '0 auto',
           boxSizing: 'border-box'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', borderBottom: '2px solid #0A192F', paddingBottom: '0.85rem', marginBottom: '0.85rem' }}>
-          <div>
-            <BrandLogo variant="dark" size="default" />
-            <div style={{ fontSize: '0.75rem', color: '#475569', marginTop: '4px' }}>
-              {settings?.companyProfile?.companyName || 'CFS Miami Receiving Facility & Cargo Hub'}<br />
-              {settings?.companyProfile?.addressLine1 || '8400 NW 36th Street, Miami, FL 33166'}
-              {settings?.companyProfile?.phone ? ` | Tel: ${settings.companyProfile.phone}` : ' | Tel: +1 (305) 555-5377'}
+        <div className="receipt-content-upper" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', borderBottom: '2px solid #0A192F', paddingBottom: '0.85rem', marginBottom: '0.85rem' }}>
+            <div>
+              <BrandLogo variant="dark" size="default" />
+              <div style={{ fontSize: '0.75rem', color: '#475569', marginTop: '4px' }}>
+                {settings?.companyProfile?.companyName || 'CFS Miami Receiving Facility & Cargo Hub'}<br />
+                {settings?.companyProfile?.addressLine1 || '8400 NW 36th Street, Miami, FL 33166'}
+                {settings?.companyProfile?.phone ? ` | Tel: ${settings.companyProfile.phone}` : ' | Tel: +1 (305) 555-5377'}
+              </div>
+            </div>
+
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#0A192F' }}>
+                WAREHOUSE RECEIPT
+              </div>
+              <div style={{ fontSize: '1.15rem', fontWeight: 800, fontFamily: 'JetBrains Mono, monospace', color: '#D97706' }}>
+                {receipt.receiptNumber}
+              </div>
+              <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '2px' }}>
+                Destination Port: <strong style={{ color: '#0284C7' }}>{receipt.destinationPort || 'General Destination'}</strong>
+              </div>
             </div>
           </div>
 
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#0A192F' }}>
-              WAREHOUSE RECEIPT
+          {/* Customer & Shipper Box */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', border: '1px solid #0A192F', marginBottom: '0.85rem', width: '100%', boxSizing: 'border-box' }}>
+            <div style={{ padding: '0.65rem', borderRight: '1px solid #0A192F' }}>
+              <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748B' }}>SHIPPER / SUPPLIER ORIGIN</div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, marginTop: '2px' }}>{shipperDisplayName}</div>
+              <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px' }}>Customer Account: <strong>{customerDisplayName}</strong></div>
             </div>
-            <div style={{ fontSize: '1.15rem', fontWeight: 800, fontFamily: 'JetBrains Mono, monospace', color: '#D97706' }}>
-              {receipt.receiptNumber}
-            </div>
-            <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '2px' }}>
-              Destination Port: <strong style={{ color: '#0284C7' }}>{receipt.destinationPort || 'General Destination'}</strong>
+            <div style={{ padding: '0.65rem' }}>
+              <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748B' }}>CONSIGNEE &amp; DESTINATION AGENT</div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, marginTop: '2px' }}>{consigneeDisplayName}</div>
+              <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px' }}>Assigned Port Agent: <strong>{
+                receipt.agentName || 'Unassigned (Direct Delivery)'
+              }</strong></div>
             </div>
           </div>
-        </div>
 
-        {/* Customer & Shipper Box */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', border: '1px solid #0A192F', marginBottom: '0.85rem', width: '100%', boxSizing: 'border-box' }}>
-          <div style={{ padding: '0.65rem', borderRight: '1px solid #0A192F' }}>
-            <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748B' }}>SHIPPER / SUPPLIER ORIGIN</div>
-            <div style={{ fontSize: '0.85rem', fontWeight: 700, marginTop: '2px' }}>{shipperDisplayName}</div>
-            <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px' }}>Customer Account: <strong>{customerDisplayName}</strong></div>
-          </div>
-          <div style={{ padding: '0.65rem' }}>
-            <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748B' }}>CONSIGNEE &amp; DESTINATION AGENT</div>
-            <div style={{ fontSize: '0.85rem', fontWeight: 700, marginTop: '2px' }}>{consigneeDisplayName}</div>
-            <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px' }}>Assigned Port Agent: <strong>{
-              receipt.agentName || 'Unassigned (Direct Delivery)'
-            }</strong></div>
-          </div>
-        </div>
-
-        {/* Individual Package-Level Items Table */}
-        <div style={{ border: '1px solid #0A192F', marginBottom: '0.85rem', width: '100%', boxSizing: 'border-box' }}>
-          <div style={{ background: '#0A192F', color: '#FFFFFF', padding: '0.4rem 0.6rem', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-            Package-Level Inventory Breakdown ({pkgs.length} Line Items • {totalPieces} Pieces Total)
-          </div>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem', tableLayout: 'fixed' }}>
-            <thead>
-              <tr style={{ background: '#F1F5F9', color: '#0A192F', textAlign: 'left', fontSize: '0.65rem', textTransform: 'uppercase', borderBottom: '1px solid #CBD5E1' }}>
-                <th style={{ padding: '0.45rem 0.5rem', width: '14%' }}>Pkg ID</th>
-                <th style={{ padding: '0.45rem 0.5rem', width: '13%' }}>Type</th>
-                <th style={{ padding: '0.45rem 0.5rem', width: '30%' }}>Description of Goods</th>
-                <th style={{ padding: '0.45rem 0.5rem', width: '17%' }}>Dimensions (L×W×H)</th>
-                <th style={{ padding: '0.45rem 0.5rem', width: '8%', textAlign: 'center' }}>Pieces</th>
-                <th style={{ padding: '0.45rem 0.5rem', width: '9%', textAlign: 'right' }}>Weight</th>
-                <th style={{ padding: '0.45rem 0.5rem', width: '9%', textAlign: 'right' }}>Volume</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pkgs.map((p, idx) => (
-                <tr key={p.id || idx} style={{ borderBottom: '1px solid #E2E8F0' }}>
-                  <td style={{ padding: '0.5rem', fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', wordBreak: 'break-all' }}>
-                    {p.id || `PKG-${idx + 1}`}
-                  </td>
-                  <td style={{ padding: '0.5rem' }}>
-                    <span style={{ fontWeight: 600 }}>{p.packageType || 'Carton'}</span>
-                  </td>
-                  <td style={{ padding: '0.5rem' }}>
-                    <div>{p.description || receipt.cargoDescription || 'General Cargo'}</div>
-                  </td>
-                  <td style={{ padding: '0.5rem', color: '#475569' }}>
-                    {p.lengthInches || receipt.lengthInches || 0}" × {p.widthInches || receipt.widthInches || 0}" × {p.heightInches || receipt.heightInches || 0}"
-                  </td>
-                  <td style={{ padding: '0.5rem', textAlign: 'center', fontWeight: 700 }}>
-                    {p.pieces || 1}
-                  </td>
-                  <td style={{ padding: '0.5rem', textAlign: 'right', fontWeight: 600 }}>
-                    {p.weightLbs} lbs
-                  </td>
-                  <td style={{ padding: '0.5rem', textAlign: 'right', fontWeight: 700, color: '#0284C7' }}>
-                    {Number(p.cbm || 0).toFixed(2)} CBM<br />
-                    <span style={{ fontSize: '0.68rem', color: '#64748B', fontWeight: 400 }}>({Number(p.cft || 0).toFixed(2)} CFT)</span>
-                  </td>
+          {/* Individual Package-Level Items Table */}
+          <div className="receipt-table-box" style={{ border: '1px solid #0A192F', marginBottom: '0.85rem', width: '100%', boxSizing: 'border-box', minHeight: '220px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div style={{ background: '#0A192F', color: '#FFFFFF', padding: '0.45rem 0.65rem', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+              Package-Level Inventory Breakdown ({pkgs.length} Line Items • {totalPieces} Pieces Total)
+            </div>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem', tableLayout: 'fixed', height: '100%' }}>
+              <thead>
+                <tr style={{ background: '#F1F5F9', color: '#0A192F', textAlign: 'left', fontSize: '0.65rem', textTransform: 'uppercase', borderBottom: '1px solid #CBD5E1' }}>
+                  <th style={{ padding: '0.45rem 0.5rem', width: '14%', borderRight: '1px solid #CBD5E1' }}>Pkg ID</th>
+                  <th style={{ padding: '0.45rem 0.5rem', width: '13%', borderRight: '1px solid #CBD5E1' }}>Type</th>
+                  <th style={{ padding: '0.45rem 0.5rem', width: '30%', borderRight: '1px solid #CBD5E1' }}>Description of Goods</th>
+                  <th style={{ padding: '0.45rem 0.5rem', width: '17%', borderRight: '1px solid #CBD5E1' }}>Dimensions (L×W×H)</th>
+                  <th style={{ padding: '0.45rem 0.5rem', width: '8%', textAlign: 'center', borderRight: '1px solid #CBD5E1' }}>Pieces</th>
+                  <th style={{ padding: '0.45rem 0.5rem', width: '9%', textAlign: 'right', borderRight: '1px solid #CBD5E1' }}>Weight</th>
+                  <th style={{ padding: '0.45rem 0.5rem', width: '9%', textAlign: 'right' }}>Volume</th>
                 </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr style={{ background: '#F8FAFC', fontWeight: 800, borderTop: '2px solid #0A192F' }}>
-                <td colSpan={4} style={{ padding: '0.5rem', textAlign: 'right' }}>RECEIPT TOTALS:</td>
-                <td style={{ padding: '0.5rem', textAlign: 'center', color: '#0284C7' }}>{totalPieces} PCS</td>
-                <td style={{ padding: '0.5rem', textAlign: 'right' }}>{totalWeight} LBS</td>
-                <td style={{ padding: '0.5rem', textAlign: 'right', color: '#D97706', fontWeight: 800 }}>{totalCft} CFT <span style={{ color: '#0284C7', fontWeight: 600 }}>({totalCbm} CBM)</span></td>
-              </tr>
-            </tfoot>
-          </table>
+              </thead>
+              <tbody>
+                {pkgs.map((p, idx) => (
+                  <tr key={p.id || idx} style={{ borderBottom: '1px solid #E2E8F0' }}>
+                    <td style={{ padding: '0.5rem', fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', wordBreak: 'break-all', borderRight: '1px solid #E2E8F0' }}>
+                      {p.id || `PKG-${idx + 1}`}
+                    </td>
+                    <td style={{ padding: '0.5rem', borderRight: '1px solid #E2E8F0' }}>
+                      <span style={{ fontWeight: 600 }}>{p.packageType || 'Carton'}</span>
+                    </td>
+                    <td style={{ padding: '0.5rem', borderRight: '1px solid #E2E8F0' }}>
+                      <div>{p.description || receipt.cargoDescription || 'General Cargo'}</div>
+                    </td>
+                    <td style={{ padding: '0.5rem', color: '#475569', borderRight: '1px solid #E2E8F0' }}>
+                      {p.lengthInches || receipt.lengthInches || 0}" × {p.widthInches || receipt.widthInches || 0}" × {p.heightInches || receipt.heightInches || 0}"
+                    </td>
+                    <td style={{ padding: '0.5rem', textAlign: 'center', fontWeight: 700, borderRight: '1px solid #E2E8F0' }}>
+                      {p.pieces || 1}
+                    </td>
+                    <td style={{ padding: '0.5rem', textAlign: 'right', fontWeight: 600, borderRight: '1px solid #E2E8F0' }}>
+                      {p.weightLbs} lbs
+                    </td>
+                    <td style={{ padding: '0.5rem', textAlign: 'right', fontWeight: 700, color: '#0284C7' }}>
+                      {Number(p.cbm || 0).toFixed(2)} CBM<br />
+                      <span style={{ fontSize: '0.68rem', color: '#64748B', fontWeight: 400 }}>({Number(p.cft || 0).toFixed(2)} CFT)</span>
+                    </td>
+                  </tr>
+                ))}
+                {/* Flexible spacer row so the table body naturally stretches like an official intake document */}
+                <tr className="receipt-body-fill-row" style={{ height: '100%' }}>
+                  <td style={{ borderRight: '1px solid #E2E8F0', padding: '0.5rem' }}>&nbsp;</td>
+                  <td style={{ borderRight: '1px solid #E2E8F0', padding: '0.5rem' }}>&nbsp;</td>
+                  <td style={{ borderRight: '1px solid #E2E8F0', padding: '0.5rem' }}>&nbsp;</td>
+                  <td style={{ borderRight: '1px solid #E2E8F0', padding: '0.5rem' }}>&nbsp;</td>
+                  <td style={{ borderRight: '1px solid #E2E8F0', padding: '0.5rem' }}>&nbsp;</td>
+                  <td style={{ borderRight: '1px solid #E2E8F0', padding: '0.5rem' }}>&nbsp;</td>
+                  <td style={{ padding: '0.5rem' }}>&nbsp;</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr style={{ background: '#F8FAFC', fontWeight: 800, borderTop: '2px solid #0A192F' }}>
+                  <td colSpan={4} style={{ padding: '0.5rem', textAlign: 'right', borderRight: '1px solid #E2E8F0' }}>RECEIPT TOTALS:</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'center', color: '#0284C7', borderRight: '1px solid #E2E8F0' }}>{totalPieces} PCS</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right', borderRight: '1px solid #E2E8F0' }}>{totalWeight} LBS</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right', color: '#D97706', fontWeight: 800 }}>{totalCft} CFT <span style={{ color: '#0284C7', fontWeight: 600 }}>({totalCbm} CBM)</span></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
         </div>
 
-        {/* Cargo Remarks & Barcode Row */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', border: '1px solid #0A192F', padding: '0.75rem', gap: '1rem', background: '#F8FAFC', marginBottom: '0.85rem', width: '100%', boxSizing: 'border-box' }}>
-          <div>
-            <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748B' }}>CARGO INTAKE STATUS &amp; REMARKS</div>
-            <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0A192F' }}>{receipt.status || 'Ready for Consolidation'}</div>
-            <div style={{ fontSize: '0.75rem', color: '#475569', marginTop: '0.25rem' }}>
-              <strong>Notes:</strong> {receipt.notes || 'Goods inspected, measured and staged for consolidation.'}
+        <div className="receipt-content-lower" style={{ marginTop: 'auto' }}>
+          {/* Cargo Remarks & Barcode Row */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', border: '1px solid #0A192F', padding: '0.75rem', gap: '1rem', background: '#F8FAFC', marginBottom: '0.85rem', width: '100%', boxSizing: 'border-box' }}>
+            <div>
+              <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748B' }}>CARGO INTAKE STATUS &amp; REMARKS</div>
+              <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0A192F' }}>{receipt.status || 'Received'}</div>
+              <div style={{ fontSize: '0.75rem', color: '#475569', marginTop: '0.25rem' }}>
+                <strong>Notes:</strong> {receipt.notes || 'Goods inspected, measured and received into warehouse staging.'}
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <BarcodeVisual value={receipt.barcode || receipt.receiptNumber} height={40} showText={true} />
+              <QrVisual value={receipt.qrCode || receipt.receiptNumber} size={56} />
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <BarcodeVisual value={receipt.barcode || receipt.receiptNumber} height={40} showText={true} />
-            <QrVisual value={receipt.qrCode || receipt.receiptNumber} size={56} />
-          </div>
-        </div>
 
-        {/* Receiving Certification Signature */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', border: '1px solid #0A192F', padding: '0.75rem', gap: '1.5rem', background: '#FFFFFF', fontSize: '0.7rem', width: '100%', boxSizing: 'border-box' }}>
-          <div>
-            <div style={{ borderBottom: '1px solid #0A192F', paddingBottom: '0.4rem', marginBottom: '0.25rem', fontWeight: 700, color: '#0A192F' }}>
-              {receipt.receivedBy || (currentUser?.name ? `${currentUser.name} (${currentUser.role || 'CFS Receiving Operations'})` : 'Authorized CFS Receiving Clerk')}
+          {/* Receiving Certification Signature */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', border: '1px solid #0A192F', padding: '0.75rem', gap: '1.5rem', background: '#FFFFFF', fontSize: '0.7rem', width: '100%', boxSizing: 'border-box' }}>
+            <div>
+              <div style={{ borderBottom: '1px solid #0A192F', paddingBottom: '0.4rem', marginBottom: '0.25rem', fontWeight: 700, color: '#0A192F' }}>
+                {receipt.receivedBy || (currentUser?.name ? `${currentUser.name} (${currentUser.role || 'CFS Receiving Operations'})` : 'Authorized CFS Receiving Clerk')}
+              </div>
+              <div style={{ fontSize: '0.65rem', color: '#64748B' }}>
+                RECEIVED BY VI CFS OPERATIONS
+              </div>
             </div>
-            <div style={{ fontSize: '0.65rem', color: '#64748B' }}>
-              RECEIVED BY VI CFS OPERATIONS
-            </div>
-          </div>
-          <div>
-            <div style={{ borderBottom: '1px solid #0A192F', paddingBottom: '0.4rem', marginBottom: '0.25rem', fontWeight: 700, color: '#0A192F' }}>
-              Deliverer / Driver Signature
-            </div>
-            <div style={{ fontSize: '0.65rem', color: '#64748B' }}>
-              DELIVERING CARRIER SIGNATURE
+            <div>
+              <div style={{ borderBottom: '1px solid #0A192F', paddingBottom: '0.4rem', marginBottom: '0.25rem', fontWeight: 700, color: '#0A192F' }}>
+                Deliverer / Driver Signature
+              </div>
+              <div style={{ fontSize: '0.65rem', color: '#64748B' }}>
+                DELIVERING CARRIER SIGNATURE
+              </div>
             </div>
           </div>
         </div>

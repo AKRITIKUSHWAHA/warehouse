@@ -152,7 +152,12 @@ export const CustomerDetail = ({ customerId, onNavigate }) => {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.85rem' }}>
-
+              <div>
+                <span style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 700 }}>DESTINATION PORT / ISLAND</span>
+                <div style={{ fontWeight: 700, color: '#0284C7', marginTop: '2px' }}>
+                  {customer.destinationPort || 'All Ports'}
+                </div>
+              </div>
 
               <div>
                 <span style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 700 }}>DELIVERY / HEADQUARTERS ADDRESS</span>

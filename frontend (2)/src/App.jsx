@@ -369,9 +369,10 @@ const MainAppRouter = () => {
       case 'tracking':
         return <ShipmentTrackingPortal initialQuery={selectedRecordId} onNavigate={navigateTo} />;
 
-      // 13. Documents
+      // 13. Documents (Redirected to Warehouse Receipts)
       case 'documents':
-        return <DocumentCenter onNavigate={navigateTo} />;
+      case 'agent-documents':
+        return <WarehouseReceiptsList onNavigate={navigateTo} />;
 
       // 14. Agents Management
       case 'agents':

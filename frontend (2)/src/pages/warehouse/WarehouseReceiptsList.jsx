@@ -309,7 +309,6 @@ export const WarehouseReceiptsList = ({ onNavigate }) => {
         columns={columns}
         data={warehouseReceipts}
         searchPlaceholder="Search by receipt #, customer, cargo, destination..."
-        filterOptions={['All', 'Ready for Consolidation', 'Received', 'Consolidated']}
         pageSize={8}
         emptyTitle="No Warehouse Receipts Found"
         emptyWhy="No intake receipts match your search or filter."

@@ -28,7 +28,7 @@ export const WarehouseReceiptModal = ({
     weightLbs: 150,
     destinationCode: ports[0]?.code || ports[0]?.portCode || '',
     destinationPort: ports[0] ? `${ports[0].code || ports[0].portCode} - ${ports[0].name}` : '',
-    status: 'Ready for Consolidation',
+    status: 'Received',
     agentId: agents[0]?.id || null
   });
 
@@ -58,7 +58,7 @@ export const WarehouseReceiptModal = ({
         weightLbs: receipt.weightLbs || 150,
         destinationCode: receipt.destinationCode || ports[0]?.code || '',
         destinationPort: receipt.destinationPort || (ports[0] ? `${ports[0].code || ports[0].portCode} - ${ports[0].name}` : ''),
-        status: receipt.status || 'Ready for Consolidation',
+        status: receipt.status || 'Received',
         agentId: receipt.agentId || (agents[0]?.id || null)
       });
     }
@@ -109,7 +109,7 @@ export const WarehouseReceiptModal = ({
       customerName: formData.customerName || formData.customer || receipt?.customerName || receipt?.customer || 'General Cargo',
       customer: formData.customer || formData.customerName || receipt?.customer || 'General Cargo',
       consignee: formData.consignee,
-      shipper: formData.shipper,
+      shipper: formData.shipper || formData.customer || formData.customerName || receipt?.shipper || 'General Cargo',
       cargoDescription: formData.cargoDescription,
       packageCount: pkg,
       totalPieces: pkg,
@@ -172,14 +172,16 @@ export const WarehouseReceiptModal = ({
                       ...prev,
                       customerId: cust.id,
                       customer: cust.name,
-                      customerName: cust.name
+                      customerName: cust.name,
+                      shipper: cust.name
                     }));
                   } else {
                     setFormData(prev => ({
                       ...prev,
                       customerId: '',
                       customer: e.target.value,
-                      customerName: e.target.value
+                      customerName: e.target.value,
+                      shipper: e.target.value
                     }));
                   }
                 }}
@@ -193,29 +195,16 @@ export const WarehouseReceiptModal = ({
               </select>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="form-group">
-                <label className="form-label">Shipper / Supplier Name</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Amazon Fulfillment, Supplier LLC"
-                  className="form-control"
-                  value={formData.shipper}
-                  onChange={(e) => setFormData({ ...formData, shipper: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Consignee <span className="required">*</span></label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. John Doe, Island Imports Ltd"
-                  className="form-control"
-                  value={formData.consignee}
-                  onChange={(e) => setFormData({ ...formData, consignee: e.target.value })}
-                />
-              </div>
+            <div className="form-group">
+              <label className="form-label">Consignee <span className="required">*</span></label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. John Doe, Island Imports Ltd"
+                className="form-control"
+                value={formData.consignee}
+                onChange={(e) => setFormData({ ...formData, consignee: e.target.value })}
+              />
             </div>
 
             <div className="form-group">
@@ -346,8 +335,8 @@ export const WarehouseReceiptModal = ({
                   value={formData.status}
                   onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                 >
-                  <option value="Ready for Consolidation">Ready for Consolidation</option>
                   <option value="Received">Received</option>
+                  <option value="Ready for Consolidation">Ready for Consolidation</option>
                   <option value="Consolidated">Consolidated</option>
                   <option value="On Hold">On Hold</option>
                 </select>

@@ -54,7 +54,7 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
   const availableReceipts = useMemo(() => {
     return warehouseReceipts.filter(w => {
       const matchDest = destinationFilter === 'ALL' || w.destinationCode === destinationFilter || w.destinationPort?.includes(destinationFilter);
-      const isReady = w.status === 'Ready for Consolidation' || !w.assignedConsolidationId;
+      const isReady = w.status === 'Ready for Consolidation' || w.status === 'Received' || !w.assignedConsolidationId;
       return matchDest && isReady;
     });
   }, [warehouseReceipts, destinationFilter]);

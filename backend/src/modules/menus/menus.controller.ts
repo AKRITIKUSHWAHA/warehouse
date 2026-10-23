@@ -22,7 +22,7 @@ export class MenusController {
     try {
       const allWRs = await db.select().from(warehouseReceipts);
       const totalReceipts = allWRs.length;
-      const stagedItems = allWRs.filter(w => w.status === 'Ready for Consolidation' || w.status === 'STAGED');
+      const stagedItems = allWRs.filter(w => w.status === 'Ready for Consolidation' || w.status === 'Received' || w.status === 'STAGED');
       
       let totalCft = 0;
       let totalCbm = 0;
@@ -147,7 +147,7 @@ export class MenusController {
       const allShipments = await db.select().from(shipments);
       const stagedReceipts = await db.select().from(warehouseReceipts);
 
-      const awaitingConsolidation = stagedReceipts.filter(r => r.status === 'Ready for Consolidation' || r.status === 'STAGED');
+      const awaitingConsolidation = stagedReceipts.filter(r => r.status === 'Ready for Consolidation' || r.status === 'Received' || r.status === 'STAGED');
 
       reply.send(successResponse({
         stageName: 'Stage 2: Cargo Consolidation',
