@@ -171,12 +171,12 @@ export async function seedDatabase(): Promise<void> {
       value: {
         super_admin: [
           'dashboard', 'customers', 'warehouse-receipts', 'documents',
-          'house-bills', 'consolidations', 'bills-of-lading', 'manifests',
+          'house-bills', 'consolidations', 'shipments', 'bills-of-lading', 'manifests',
           'vessels', 'tracking', 'agent-portal', 'hold-authorization',
           'history', 'audit', 'users', 'settings'
         ],
         operations: [
-          'dashboard', 'customers', 'consolidations', 'bills-of-lading',
+          'dashboard', 'customers', 'consolidations', 'shipments', 'bills-of-lading',
           'manifests', 'vessels', 'tracking'
         ],
         warehouse: [
@@ -185,7 +185,7 @@ export async function seedDatabase(): Promise<void> {
         ],
         documentation: [
           'dashboard', 'customers', 'warehouse-receipts', 'house-bills',
-          'consolidations', 'bills-of-lading', 'manifests', 'tracking',
+          'consolidations', 'shipments', 'bills-of-lading', 'manifests', 'tracking',
           'hold-authorization'
         ],
         agent: [

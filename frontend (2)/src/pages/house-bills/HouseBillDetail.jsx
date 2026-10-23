@@ -77,49 +77,6 @@ export const HouseBillDetail = ({ hblId, onNavigate }) => {
                 <ArrowLeft size={15} />
                 <span>Back</span>
               </button>
-
-              {canManageHolds(currentUser?.roleKey) && (
-                isOnHold ? (
-                  <button
-                    onClick={async () => {
-                      await clearHBLHold(hbl.id || hbl.hblNumber, 'Hold cleared by user');
-                    }}
-                    className="btn btn-success btn-sm"
-                  >
-                    <CheckCircle2 size={15} />
-                    <span>Clear Hold &amp; Release</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={async () => {
-                      await placeHBLHold(hbl.id || hbl.hblNumber, 'Administrative Hold', 'Pending verification');
-                    }}
-                    className="btn btn-warning btn-sm"
-                  >
-                    <AlertTriangle size={15} />
-                    <span>Place Hold</span>
-                  </button>
-                )
-              )}
-
-              {!hbl.assignedConsolidationId && (
-                <button
-                  onClick={() => onNavigate('consolidations', 'create')}
-                  className="btn btn-primary btn-sm"
-                >
-                  <Layers size={15} />
-                  <span>Consolidate House B/L</span>
-                </button>
-              )}
-
-              <button onClick={() => setShowEditModal(true)} className="btn btn-secondary btn-sm">
-                <Edit2 size={15} />
-                <span>Edit HBL</span>
-              </button>
-              <button onClick={() => setShowDeleteModal(true)} className="btn btn-danger btn-sm">
-                <Trash2 size={15} />
-                <span>Delete</span>
-              </button>
             </div>
           }
         />

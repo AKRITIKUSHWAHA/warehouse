@@ -228,6 +228,11 @@ export const AuthProvider = ({ children }) => {
         const res = await apiClient.get('settings/role_permissions');
         if (res && res.data && typeof res.data === 'object' && (res.data.value || res.data.super_admin)) {
           const remoteMap = res.data.value || res.data;
+          ['super_admin', 'operations', 'documentation'].forEach(rk => {
+            if (Array.isArray(remoteMap[rk]) && !remoteMap[rk].includes('shipments')) {
+              remoteMap[rk].push('shipments');
+            }
+          });
           setRolePermissionsMap(remoteMap);
           saveStoredPermissionsMap(remoteMap);
         }
@@ -353,7 +358,12 @@ export const AuthProvider = ({ children }) => {
     if (!roleKey) return false;
 
     // Core security lock: Users & Settings must always remain accessible to Super Admin
-    if (roleKey === 'super_admin' && (moduleIdOrTab === 'users' || moduleIdOrTab === 'settings')) {
+    if (roleKey === 'super_admin' && (moduleIdOrTab === 'users' || moduleIdOrTab === 'settings' || moduleIdOrTab === 'shipments')) {
+      return true;
+    }
+
+    // Core logistics flow: shipments is essential for operations and documentation
+    if (moduleIdOrTab === 'shipments' && (roleKey === 'super_admin' || roleKey === 'operations' || roleKey === 'documentation')) {
       return true;
     }
 

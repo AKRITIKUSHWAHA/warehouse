@@ -146,136 +146,19 @@ export const BillOfLadingDetail = ({ blId, onNavigate }) => {
             { label: bl.blNumber }
           ]}
           actions={
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-              <button
-                onClick={() => onNavigate('bills-of-lading')}
-                className="btn btn-outline btn-sm"
-              >
-                <ArrowLeft size={15} />
-                <span>Back</span>
-              </button>
-              <button
-                onClick={handleOneClickManifest}
-                disabled={isGeneratingManifest}
-                className="btn btn-primary btn-sm"
-                style={{ background: '#0284C7', borderColor: '#0284C7', color: '#FFFFFF', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '5px' }}
-                title="Generate customs cargo manifest from this Master B/L in 1 click"
-              >
-                <FileSpreadsheet size={15} />
-                <span>{isGeneratingManifest ? 'Generating...' : '⚡ Generate Manifest (1-Click)'}</span>
-              </button>
-              {bl.shipmentId && (
-                <button
-                  onClick={() => onNavigate('shipments', bl.shipmentId)}
-                  className="btn btn-outline btn-sm"
-                >
-                  <Ship size={15} />
-                  <span>View Shipment</span>
-                </button>
-              )}
-              <button
-                onClick={() => setShowEditModal(true)}
-                className="btn btn-secondary btn-sm"
-              >
-                <Edit2 size={15} />
-                <span>Edit B/L</span>
-              </button>
-              <button
-                onClick={() => setShowDeleteModal(true)}
-                className="btn btn-danger btn-sm"
-              >
-                <Trash2 size={15} />
-                <span>Delete B/L</span>
-              </button>
-              {!isAgent && bl.status !== 'Cancelled' && (
-                <>
-                  {isOnHold ? (
-                    <button
-                      onClick={() => setShowClearModal(true)}
-                      className="btn btn-success btn-sm"
-                    >
-                      <CheckCircle2 size={15} />
-                      <span>Clear Hold &amp; Release B/L</span>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => setShowPlaceModal(true)}
-                      className="btn btn-warning btn-sm"
-                    >
-                      <ShieldAlert size={15} />
-                      <span>Place B/L On Hold</span>
-                    </button>
-                  )}
-                </>
-              )}
-            </div>
+            <button
+              onClick={() => onNavigate('bills-of-lading')}
+              className="btn btn-outline btn-sm"
+              title="Back to Bills of Lading"
+            >
+              <ArrowLeft size={15} />
+              <span>Back</span>
+            </button>
           }
         />
 
         {/* Primary Workflow Journey Indicator */}
         <WorkflowIndicator currentStage="bills-of-lading" onStageClick={(stageId) => onNavigate(stageId)} />
-
-        {/* Status + Next Step Action Guide */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '1rem',
-          padding: '0.875rem 1.25rem',
-          background: isOnHold ? '#FEF2F2' : '#F0FDF4',
-          border: `1px solid ${isOnHold ? '#FECACA' : '#BBF7D0'}`,
-          borderRadius: '10px'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <div style={{
-              background: isOnHold ? '#DC2626' : '#16A34A',
-              color: '#FFFFFF',
-              borderRadius: '6px',
-              padding: '0.35rem 0.65rem',
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              letterSpacing: '0.04em'
-            }}>
-              CURRENT STATUS: {bl.status?.toUpperCase() || 'DRAFT'}
-            </div>
-            <span style={{ fontSize: '0.85rem', color: isOnHold ? '#991B1B' : '#166534', fontWeight: 600 }}>
-              {isOnHold
-                ? `Hold Active: ${bl.holdDetails?.reason || 'Requires supervisor resolution before release'}`
-                : bl.status === 'Released'
-                ? 'Ready for Customs Port Manifest generation & Destination Agent clearance'
-                : 'Review cargo & shipper details, link House B/Ls, then release'}
-            </span>
-          </div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            {isOnHold ? (
-              <button
-                onClick={() => setShowClearModal(true)}
-                className="btn btn-danger btn-sm"
-                style={{ fontSize: '0.8rem' }}
-              >
-                Clear Hold
-              </button>
-            ) : (
-              <button
-                onClick={handleOneClickManifest}
-                disabled={isGeneratingManifest}
-                className="btn btn-primary btn-sm"
-                style={{ fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}
-              >
-                <FileSpreadsheet size={13} />
-                <span>⚡ 1-Click Manifest</span>
-              </button>
-            )}
-            <button
-              onClick={() => onNavigate('house-bills')}
-              className="btn btn-outline btn-sm"
-              style={{ fontSize: '0.8rem', background: '#FFFFFF' }}
-            >
-              Manage House B/Ls
-            </button>
-          </div>
-        </div>
 
         {/* Cancelled B/L Banner */}
         {bl.status === 'Cancelled' && (

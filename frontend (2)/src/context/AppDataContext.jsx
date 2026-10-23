@@ -176,31 +176,66 @@ export const AppDataProvider = ({ children }) => {
         }
 
         case 'consolidations': {
-          const consRes = await apiClient.get('/consolidations').catch(() => null);
+          const [consRes, wrRes, hbData] = await Promise.all([
+            apiClient.get('/consolidations').catch(() => null),
+            apiClient.get('/warehouse-receipts').catch(() => null),
+            houseBillService.getHouseBills().catch(() => null)
+          ]);
           const list = extractListFromRes(consRes);
           if (list !== null) {
             setConsolidations(list);
             setStored(KEYS.CONSOLIDATIONS, list);
           }
+          const wList = extractListFromRes(wrRes);
+          if (wList !== null) {
+            setWarehouseReceipts(wList);
+            setStored(KEYS.WAREHOUSE_RECEIPTS, wList);
+          }
+          if (Array.isArray(hbData)) {
+            setHouseBills(hbData);
+            setStored(KEYS.HOUSE_BILLS, hbData);
+          }
           break;
         }
 
         case 'shipments': {
-          const shpRes = await apiClient.get('/shipments').catch(() => null);
+          const [shpRes, consRes] = await Promise.all([
+            apiClient.get('/shipments').catch(() => null),
+            apiClient.get('/consolidations').catch(() => null)
+          ]);
           const list = extractListFromRes(shpRes);
           if (list !== null) {
             setShipments(list);
             setStored(KEYS.SHIPMENTS, list);
           }
+          const cList = extractListFromRes(consRes);
+          if (cList !== null) {
+            setConsolidations(cList);
+            setStored(KEYS.CONSOLIDATIONS, cList);
+          }
           break;
         }
 
         case 'bills-of-lading': {
-          const blRes = await apiClient.get('/bills-of-lading').catch(() => null);
+          const [blRes, shpRes, consRes] = await Promise.all([
+            apiClient.get('/bills-of-lading').catch(() => null),
+            apiClient.get('/shipments').catch(() => null),
+            apiClient.get('/consolidations').catch(() => null)
+          ]);
           const list = extractListFromRes(blRes);
           if (list !== null) {
             setBillsOfLading(list);
             setStored(KEYS.BILLS_OF_LADING, list);
+          }
+          const shpList = extractListFromRes(shpRes);
+          if (shpList !== null) {
+            setShipments(shpList);
+            setStored(KEYS.SHIPMENTS, shpList);
+          }
+          const cList = extractListFromRes(consRes);
+          if (cList !== null) {
+            setConsolidations(cList);
+            setStored(KEYS.CONSOLIDATIONS, cList);
           }
           break;
         }
@@ -579,8 +614,19 @@ export const AppDataProvider = ({ children }) => {
     if (!created) {
       created = await shipmentService.createShipment(shipmentData, currentUser?.name || "Operations Staff");
     }
+    if (shipmentData.consolidationId || shipmentData.containerNumber) {
+      setConsolidations(prev => (prev || []).map(c => {
+        if (
+          (shipmentData.consolidationId && (c.id === shipmentData.consolidationId || c.consolidationNumber === shipmentData.consolidationId)) ||
+          (shipmentData.containerNumber && c.containerNumber && c.containerNumber === shipmentData.containerNumber)
+        ) {
+          return { ...c, assignedShipmentId: created?.id || created?.shipmentNumber, status: 'Consolidated' };
+        }
+        return c;
+      }));
+    }
     await fetchMenuApi('shipments');
-    showToast(`Shipment ${created.shipmentNumber || created.id} created successfully.`, 'success', 'Shipment Created');
+    showToast(`Shipment ${created.shipmentNumber || created.id} is ready! Navigating to Master B/L...`, 'success', 'Shipment Ready');
     return created;
   };
 

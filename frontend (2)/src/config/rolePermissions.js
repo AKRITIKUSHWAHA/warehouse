@@ -160,7 +160,7 @@ export const DEFAULT_ROLE_PERMISSIONS_MAP = {
   ],
   documentation: [
     'dashboard', 'customers', 'warehouse-receipts', 'house-bills',
-    'consolidations', 'bills-of-lading', 'tracking', 'hold-authorization'
+    'consolidations', 'shipments', 'bills-of-lading', 'tracking', 'hold-authorization'
   ],
   agent: [
     'dashboard', 'consolidations', 'bills-of-lading', 'tracking', 'documents'
@@ -174,6 +174,12 @@ export const getStoredPermissionsMap = () => {
     if (saved) {
       const parsed = JSON.parse(saved);
       if (parsed && typeof parsed === 'object' && parsed.super_admin) {
+        // Self-heal shipments for core staff roles if missing from legacy cache
+        ['super_admin', 'operations', 'documentation'].forEach(rk => {
+          if (Array.isArray(parsed[rk]) && !parsed[rk].includes('shipments')) {
+            parsed[rk].push('shipments');
+          }
+        });
         return parsed;
       }
     }

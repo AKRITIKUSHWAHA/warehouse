@@ -100,11 +100,11 @@ export const CreateHouseBill = ({ onNavigate }) => {
     customsAdminFee: 0.00
   });
 
-  // Parties state (Shipper & Consignee decoupled from customer profile)
+  // Parties state (Shipper Address & Delivery Address)
   const [shipperParty, setShipperParty] = useState({
     id: '',
-    name: 'Global Retail Suppliers Inc.',
-    address: 'Miami CFS Cargo Hub, FL'
+    name: '',
+    address: 'echMart Supply Hub, Medley, FL'
   });
 
   const [consigneeParty, setConsigneeParty] = useState({
@@ -114,18 +114,17 @@ export const CreateHouseBill = ({ onNavigate }) => {
     taxId: ''
   });
 
-  // Auto-populate shipper & consignee from linked WR and selected customer
+  // Auto-populate shipper address & delivery address from linked WR and selected customer
   React.useEffect(() => {
     if (selectedWrs.length > 0) {
       const firstWr = selectedWrs[0];
       if (firstWr?.shipper) {
         setShipperParty(prev => {
-          if (!prev.id && (prev.name === 'Global Retail Suppliers Inc.' || !prev.name)) {
-            const sLines = firstWr.shipper.split('\n');
+          if (!prev.address || prev.address === 'Miami CFS Cargo Hub, FL') {
             return {
               id: firstWr.shipperId || '',
-              name: sLines[0],
-              address: sLines.slice(1).join(', ') || 'Miami CFS Cargo Hub, FL'
+              name: (firstWr.shipper || '').split('\n')[0] || '',
+              address: firstWr.shipper || 'echMart Supply Hub, Medley, FL'
             };
           }
           return prev;
@@ -133,12 +132,16 @@ export const CreateHouseBill = ({ onNavigate }) => {
       }
 
       setConsigneeParty(prev => {
-        if (!prev.name) {
-          const cLines = (firstWr?.consignee || '').split('\n');
+        if (!prev.address) {
+          const fullDelivery = [
+            firstWr?.consignee || selectedCustomer?.name,
+            selectedCustomer?.address || selectedCustomer?.destinationPort || firstWr?.destinationPort
+          ].filter(Boolean).join('\n');
+
           return {
             id: selectedCustomer?.id || firstWr?.customerId || '',
-            name: cLines[0] || selectedCustomer?.name || '',
-            address: cLines.slice(1).join(', ') || selectedCustomer?.address || selectedCustomer?.destinationPort || firstWr?.destinationPort || 'Destination Port Area',
+            name: selectedCustomer?.name || (firstWr?.consignee || '').split('\n')[0] || '',
+            address: fullDelivery || 'Destination Port Area',
             taxId: selectedCustomer?.taxId || ''
           };
         }
@@ -146,11 +149,16 @@ export const CreateHouseBill = ({ onNavigate }) => {
       });
     } else if (selectedCustomer) {
       setConsigneeParty(prev => {
-        if (!prev.name) {
+        if (!prev.address) {
+          const fullDelivery = [
+            selectedCustomer.name,
+            selectedCustomer.address || selectedCustomer.destinationPort
+          ].filter(Boolean).join('\n');
+
           return {
             id: selectedCustomer.id || '',
             name: selectedCustomer.name || '',
-            address: selectedCustomer.address || selectedCustomer.destinationPort || 'Destination Port Area',
+            address: fullDelivery || 'Destination Port Area',
             taxId: selectedCustomer.taxId || ''
           };
         }
@@ -242,21 +250,46 @@ export const CreateHouseBill = ({ onNavigate }) => {
     const firstWr = selectedWrs[0];
     const customerName = selectedCustomer?.name || selectedCustomer?.companyName || "Valued Customer";
 
+    // Extract name & address parts cleanly
+    const sRaw = (shipperParty.address || '').trim();
+    const sLines = sRaw.split('\n');
+    let sName = sLines[0] || '';
+    let sAddr = sLines.slice(1).join(', ') || '';
+    if (!sAddr && sName.includes(',')) {
+      const parts = sName.split(',');
+      sName = parts[0].trim();
+      sAddr = parts.slice(1).join(',').trim();
+    }
+    if (!sName) sName = firstWr?.shipper || "Global Retail Suppliers Inc.";
+    if (!sAddr) sAddr = sRaw || "Miami CFS Cargo Hub, FL";
+
+    const cRaw = (consigneeParty.address || '').trim();
+    const cLines = cRaw.split('\n');
+    let dName = cLines[0] || '';
+    let dAddr = cLines.slice(1).join(', ') || '';
+    if (!dAddr && dName.includes(',')) {
+      const parts = dName.split(',');
+      dName = parts[0].trim();
+      dAddr = parts.slice(1).join(',').trim();
+    }
+    if (!dName) dName = customerName;
+    if (!dAddr) dAddr = cRaw || selectedCustomer?.address || firstWr?.destinationPort || "Destination Port Area";
+
     const payload = {
       hblNumber: formData.hblNumber,
       customerId: selectedCustomer?.id || null,
-      customerName: customerName,
+      customerName: dName || customerName,
       shipperId: shipperParty.id || null,
       consigneeId: consigneeParty.id || null,
       shipper: {
         id: shipperParty.id || null,
-        name: shipperParty.name || firstWr?.shipper || "Global Retail Suppliers Inc.",
-        address: shipperParty.address || "Miami CFS Cargo Hub, FL"
+        name: sName,
+        address: sRaw || sAddr
       },
       consignee: {
         id: consigneeParty.id || null,
-        name: consigneeParty.name || customerName,
-        address: consigneeParty.address || selectedCustomer?.address || firstWr?.destinationPort || "Destination Port Area",
+        name: dName,
+        address: cRaw || dAddr,
         taxId: consigneeParty.taxId || selectedCustomer?.taxId || ""
       },
       notifyParty: {
@@ -790,54 +823,24 @@ export const CreateHouseBill = ({ onNavigate }) => {
             </div>
           </div>
 
-          {/* Transport Parties: Shipper & Consignee selected from Customers list */}
+          {/* Transport Parties: Full Shipper Address & Full Delivery Address */}
           <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '1.25rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
               <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0A192F', margin: 0 }}>
-                Transport Parties (Shipper &amp; Consignee)
+                Transport Parties (Shipper Address &amp; Delivery Address)
               </h4>
-              <span style={{ fontSize: '0.75rem', color: '#64748B' }}>
-                Both selectable from the master Customers directory
-              </span>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div style={{ background: '#FFFFFF', padding: '0.85rem', borderRadius: '6px', border: '1px solid #CBD5E1' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <label className="form-label" style={{ margin: 0, fontWeight: 700 }}>Shipper / Supplier</label>
-                  <select
-                    style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', maxWidth: '180px' }}
-                    defaultValue=""
-                    onChange={(e) => {
-                      const c = customers.find(cust => cust.id === e.target.value);
-                      if (c) {
-                        setShipperParty({
-                          id: c.id,
-                          name: c.name,
-                          address: c.address || 'Miami CFS Cargo Hub, FL'
-                        });
-                      }
-                    }}
-                  >
-                    <option value="" disabled>Select from Customers...</option>
-                    {customers.map(c => (
-                      <option key={`hb-shipper-${c.id}`} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group" style={{ marginBottom: '0.5rem' }}>
-                  <label style={{ fontSize: '0.75rem', color: '#64748B' }}>Shipper Name</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={shipperParty.name}
-                    onChange={(e) => setShipperParty(prev => ({ ...prev, name: e.target.value }))}
-                  />
-                </div>
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label style={{ fontSize: '0.75rem', color: '#64748B' }}>Shipper Address</label>
-                  <input
-                    type="text"
+                  <label className="form-label" style={{ fontWeight: 700, marginBottom: '0.4rem', display: 'block' }}>
+                    Shipper Address
+                  </label>
+                  <textarea
+                    rows={3}
                     className="form-control"
+                    style={{ width: '100%', resize: 'vertical' }}
+                    placeholder="Enter full Shipper / Supplier address (e.g. echMart Supply Hub, Medley, FL)"
                     value={shipperParty.address}
                     onChange={(e) => setShipperParty(prev => ({ ...prev, address: e.target.value }))}
                   />
@@ -845,46 +848,18 @@ export const CreateHouseBill = ({ onNavigate }) => {
               </div>
 
               <div style={{ background: '#FFFFFF', padding: '0.85rem', borderRadius: '6px', border: '1px solid #CBD5E1' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <label className="form-label" style={{ margin: 0, fontWeight: 700 }}>Consignee <span className="required">*</span></label>
-                  <select
-                    style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', maxWidth: '180px' }}
-                    defaultValue=""
-                    onChange={(e) => {
-                      const c = customers.find(cust => cust.id === e.target.value);
-                      if (c) {
-                        setConsigneeParty({
-                          id: c.id,
-                          name: c.name,
-                          address: c.address || 'Destination Port Area',
-                          taxId: c.taxId || ''
-                        });
-                      }
-                    }}
-                  >
-                    <option value="" disabled>Select from Customers...</option>
-                    {customers.map(c => (
-                      <option key={`hb-consignee-${c.id}`} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group" style={{ marginBottom: '0.5rem' }}>
-                  <label style={{ fontSize: '0.75rem', color: '#64748B' }}>Consignee Name</label>
-                  <input
-                    type="text"
-                    required
-                    className="form-control"
-                    value={consigneeParty.name}
-                    onChange={(e) => setConsigneeParty(prev => ({ ...prev, name: e.target.value }))}
-                  />
-                </div>
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label style={{ fontSize: '0.75rem', color: '#64748B' }}>Delivery Address / Area</label>
-                  <input
-                    type="text"
+                  <label className="form-label" style={{ fontWeight: 700, marginBottom: '0.4rem', display: 'block' }}>
+                    Delivery Address <span className="required">*</span>
+                  </label>
+                  <textarea
+                    rows={3}
                     className="form-control"
+                    style={{ width: '100%', resize: 'vertical' }}
+                    placeholder="Enter full Consignee delivery address (e.g. Sharma Traders, Shop No. 5, Main Market, MG Road, Indore, MP 452001)"
                     value={consigneeParty.address}
                     onChange={(e) => setConsigneeParty(prev => ({ ...prev, address: e.target.value }))}
+                    required
                   />
                 </div>
               </div>
@@ -978,10 +953,10 @@ export const CreateHouseBill = ({ onNavigate }) => {
             <div style={{ background: '#F8FAFC', padding: '1rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
               <h4 style={{ fontSize: '0.85rem', color: '#0A192F', marginBottom: '0.5rem' }}>Party Information</h4>
               <div><strong>Customer Profile:</strong> {selectedCustomer?.name}</div>
-              <div><strong>Shipper:</strong> {shipperParty.name}</div>
-              <div><strong>Consignee:</strong> {consigneeParty.name || selectedCustomer?.name}</div>
-              <div><strong>Destination Port:</strong> {selectedCustomer?.destinationPort || selectedWrs[0]?.destinationPort || 'STT - Port of Charlotte Amalie, St. Thomas'}</div>
-              <div><strong>Terms:</strong> <span style={{ color: '#0284C7', fontWeight: 700 }}>{formData.freightTerms}</span></div>
+              <div style={{ marginTop: '3px' }}><strong>Shipper Address:</strong> <span style={{ color: '#334155' }}>{shipperParty.address || '—'}</span></div>
+              <div style={{ marginTop: '3px' }}><strong>Delivery Address:</strong> <span style={{ color: '#334155' }}>{consigneeParty.address || '—'}</span></div>
+              <div style={{ marginTop: '3px' }}><strong>Destination Port:</strong> {selectedCustomer?.destinationPort || selectedWrs[0]?.destinationPort || 'STT - Port of Charlotte Amalie, St. Thomas'}</div>
+              <div style={{ marginTop: '3px' }}><strong>Terms:</strong> <span style={{ color: '#0284C7', fontWeight: 700 }}>{formData.freightTerms}</span></div>
             </div>
 
             <div style={{ background: '#F8FAFC', padding: '1rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>

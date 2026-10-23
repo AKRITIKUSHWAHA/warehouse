@@ -9,7 +9,8 @@ export const BillOfLadingModal = ({
   onSave,
   bl = null,
   isEdit = false,
-  initialConsolidationNumber = null
+  initialConsolidationNumber = null,
+  initialShipment = null
 }) => {
   const { ports = [], consolidations = [], houseBills = [], vessels = [] } = useAppData();
   const { currentUser, isAgent } = useAuth();
@@ -143,27 +144,33 @@ export const BillOfLadingModal = ({
         status: bl.status || 'Draft'
       });
     } else {
-      const initConsolNum = initialConsolidationNumber || '';
+      const initConsolNum = initialShipment?.consolidationId || initialShipment?.consolidationNumber || initialConsolidationNumber || '';
       setSelectedConsolidationNumber(initConsolNum);
 
       const generatedBlNumber = `BL-VI-2026-${Math.floor(100 + Math.random() * 899)}`;
-      let initialVessel = '';
-      let initialCarrier = 'Tropical Shipping';
-      let initialPod = pod;
-      let initialContainer = '';
-      let initialSeal = '';
-      let initialConsignee = '';
+      let initialVessel = initialShipment?.vesselName || '';
+      let initialCarrier = initialShipment?.carrier || 'Tropical Shipping';
+      let initialPod = initialShipment?.destinationPort || pod;
+      let initialContainer = initialShipment?.containerNumber || '';
+      let initialSeal = initialShipment?.sealNumber || '';
+      let initialConsignee = initialShipment?.agentName ? `${initialShipment.agentName} (Destination Agent)` : '';
       let initialHblIds = [];
+      let initialPackageCount = Number(initialShipment?.totalPackages) || 0;
+      let initialGrossWeight = Number(initialShipment?.totalWeightLbs) || 0;
+      let initialCbm = Number(initialShipment?.totalCbm) || 0;
 
       if (initConsolNum) {
         const found = consolidations.find(c => c.consolidationNumber === initConsolNum || c.id === initConsolNum);
         if (found) {
-          initialVessel = found.vesselName || '';
-          initialCarrier = found.carrier || 'Tropical Shipping';
-          initialPod = found.destinationPort || found.dischargePort || pod;
-          initialContainer = found.containerNumber || '';
-          initialSeal = found.sealNumber || '';
-          initialConsignee = found.agentName ? `${found.agentName} (Destination Agent)` : 'To Order of Destination Agent';
+          if (!initialVessel) initialVessel = found.vesselName || '';
+          if (!initialCarrier) initialCarrier = found.carrier || 'Tropical Shipping';
+          if (!initialPod || initialPod === pod) initialPod = found.destinationPort || found.dischargePort || pod;
+          if (!initialContainer) initialContainer = found.containerNumber || '';
+          if (!initialSeal) initialSeal = found.sealNumber || '';
+          if (!initialConsignee) initialConsignee = found.agentName ? `${found.agentName} (Destination Agent)` : 'To Order of Destination Agent';
+          if (!initialPackageCount && found.totalPackages) initialPackageCount = Number(found.totalPackages);
+          if (!initialGrossWeight && found.totalWeightLbs) initialGrossWeight = Number(found.totalWeightLbs);
+          if (!initialCbm && found.totalCbm) initialCbm = Number(found.totalCbm);
 
           // Gather HBLs linked to this consolidation
           const linkedHbls = houseBills.filter(h =>
@@ -176,6 +183,7 @@ export const BillOfLadingModal = ({
         }
       }
 
+      if (!initialConsignee) initialConsignee = 'To Order of Destination Agent';
       setSelectedHouseBillIds(initialHblIds);
 
       setFormData({
@@ -193,16 +201,16 @@ export const BillOfLadingModal = ({
         portOfDischarge: initialPod,
         containerNumber: initialContainer,
         sealNumber: initialSeal,
-        cargoDescription: 'General Consignment: Consolidated ocean freight merchandise.',
-        packageCount: 0,
+        cargoDescription: `Consolidated ocean freight merchandise for ${initialPod}.`,
+        packageCount: initialPackageCount,
         packageType: 'Packages',
-        grossWeightLbs: 0,
-        cbm: 0,
+        grossWeightLbs: initialGrossWeight,
+        cbm: initialCbm,
         freightTerms: 'Freight Prepaid',
         status: 'Draft'
       });
     }
-  }, [isOpen, bl, isEdit, initialConsolidationNumber, consolidations, houseBills]);
+  }, [isOpen, bl, isEdit, initialConsolidationNumber, initialShipment, consolidations, houseBills]);
 
   // Handle Consolidation text input change
   const handleConsolidationChange = (consolNum) => {
@@ -399,25 +407,45 @@ export const BillOfLadingModal = ({
   );
 
   return (
-    <div className="modal-backdrop">
+    <div
+      className="modal-backdrop"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(10, 25, 47, 0.65)',
+        backdropFilter: 'blur(4px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1050,
+        padding: '1.5rem',
+        overflowY: 'auto'
+      }}
+      onClick={onClose}
+    >
       <div
-        className="modal-dialog modal-xl"
+        className="modal-dialog"
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: '95vw',
-          maxWidth: '980px',
-          maxHeight: '88vh',
+          width: '100%',
+          maxWidth: '680px',
+          maxHeight: '84vh',
           display: 'flex',
           flexDirection: 'column',
           margin: 'auto',
           borderRadius: '12px',
+          background: '#FFFFFF',
+          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.25)',
           overflow: 'hidden'
         }}
       >
-        <div className="modal-header" style={{ padding: '0.85rem 1.25rem', borderBottom: '1px solid #E2E8F0', flexShrink: 0 }}>
+        <div className="modal-header" style={{ padding: '0.75rem 1.25rem', borderBottom: '1px solid #E2E8F0', flexShrink: 0 }}>
           <div className="modal-title">
-            <FileText size={20} style={{ color: '#0A192F' }} />
-            <span>{isEdit ? `Edit Master Bill of Lading ${formData.blNumber}` : 'Create Master Bill of Lading (B/L)'}</span>
+            <FileText size={18} style={{ color: '#0A192F' }} />
+            <span style={{ fontSize: '1rem', fontWeight: 800 }}>{isEdit ? `Edit Master Bill of Lading ${formData.blNumber}` : 'Create Master Bill of Lading (B/L)'}</span>
           </div>
           <button type="button" onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}>
             <X size={18} />
@@ -433,8 +461,49 @@ export const BillOfLadingModal = ({
           }}
           style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}
         >
-          <div className="modal-body custom-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', overflowY: 'auto', flex: 1, minHeight: 0, padding: '1.25rem' }}>
+          <div className="modal-body custom-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', overflowY: 'auto', flex: 1, minHeight: 0, padding: '1rem 1.25rem' }}>
             
+            {/* Linked Shipment Banner */}
+            {initialShipment && (
+              <div
+                style={{
+                  background: '#F0FDF4',
+                  border: '1px solid #BBF7D0',
+                  borderRadius: '8px',
+                  padding: '8px 12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '8px'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '1.2rem' }}>🚢</span>
+                  <div>
+                    <div style={{ fontSize: '0.825rem', fontWeight: 700, color: '#166534' }}>
+                      Linked Ocean Shipment: {initialShipment.shipmentNumber}
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: '#15803D' }}>
+                      Container: {formData.containerNumber || initialShipment.containerNumber || 'TBD'} • Seal: {formData.sealNumber || initialShipment.sealNumber || 'N/A'} • {formData.packageCount} pkgs • {formData.grossWeightLbs} lbs
+                    </div>
+                  </div>
+                </div>
+                <span
+                  style={{
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    background: '#DCFCE7',
+                    color: '#166534',
+                    padding: '2px 8px',
+                    borderRadius: '12px',
+                    border: '1px solid #86EFAC'
+                  }}
+                >
+                  ✓ Auto-Filled
+                </span>
+              </div>
+            )}
+
             {/* STEP 1: Consolidation Link & Input */}
             <div style={{
               background: '#F0F9FF',

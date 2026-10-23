@@ -79,23 +79,47 @@ export const HouseBillModal = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const sRaw = (formData.shipperAddress || formData.shipperName || '').trim();
+    const sLines = sRaw.split('\n');
+    let sName = sLines[0] || '';
+    let sAddr = sLines.slice(1).join(', ') || '';
+    if (!sAddr && sName.includes(',')) {
+      const parts = sName.split(',');
+      sName = parts[0].trim();
+      sAddr = parts.slice(1).join(',').trim();
+    }
+    if (!sName) sName = formData.shipperName || "Shipper";
+
+    const cRaw = (formData.consigneeAddress || formData.consigneeName || '').trim();
+    const cLines = cRaw.split('\n');
+    let cName = cLines[0] || '';
+    let cAddr = cLines.slice(1).join(', ') || '';
+    if (!cAddr && cName.includes(',')) {
+      const parts = cName.split(',');
+      cName = parts[0].trim();
+      cAddr = parts.slice(1).join(',').trim();
+    }
+    if (!cName) cName = formData.consigneeName || hbl?.customerName || "Consignee";
+
     onSave({
       ...hbl,
       cargoDescription: formData.cargoDescription,
       freightTerms: formData.freightTerms,
       status: formData.status,
       notes: formData.notes,
+      customerName: cName,
       shipperId: formData.shipperId || undefined,
       consigneeId: formData.consigneeId || undefined,
       shipper: {
         id: formData.shipperId || undefined,
-        name: formData.shipperName,
-        address: formData.shipperAddress
+        name: sName,
+        address: sRaw || sAddr
       },
       consignee: {
         id: formData.consigneeId || undefined,
-        name: formData.consigneeName,
-        address: formData.consigneeAddress
+        name: cName,
+        address: cRaw || cAddr
       },
       freightCharges: {
         rateBasis: formData.rateBasis,
@@ -151,65 +175,24 @@ export const HouseBillModal = ({
 
             <div className="grid grid-cols-2 gap-3">
               <div className="form-group">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <label className="form-label" style={{ margin: 0 }}>Shipper Name</label>
-                  <select
-                    style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', maxWidth: '170px' }}
-                    defaultValue=""
-                    onChange={(e) => {
-                      const c = customers.find(cust => cust.id === e.target.value);
-                      if (c) {
-                        setFormData(prev => ({
-                          ...prev,
-                          shipperId: c.id,
-                          shipperName: c.name,
-                          shipperAddress: c.address || prev.shipperAddress
-                        }));
-                      }
-                    }}
-                  >
-                    <option value="" disabled>From Customers...</option>
-                    {customers.map(c => (
-                      <option key={`hb-m-shipper-${c.id}`} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <input
-                  type="text"
+                <label className="form-label" style={{ fontWeight: 700, marginBottom: '4px' }}>Shipper Address</label>
+                <textarea
+                  rows={2}
                   className="form-control"
-                  value={formData.shipperName}
-                  onChange={(e) => setFormData({ ...formData, shipperName: e.target.value })}
+                  placeholder="Enter full Shipper name & address..."
+                  value={formData.shipperAddress || formData.shipperName}
+                  onChange={(e) => setFormData({ ...formData, shipperAddress: e.target.value, shipperName: e.target.value.split('\n')[0] })}
                 />
               </div>
               <div className="form-group">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <label className="form-label" style={{ margin: 0 }}>Consignee Name</label>
-                  <select
-                    style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', maxWidth: '170px' }}
-                    defaultValue=""
-                    onChange={(e) => {
-                      const c = customers.find(cust => cust.id === e.target.value);
-                      if (c) {
-                        setFormData(prev => ({
-                          ...prev,
-                          consigneeId: c.id,
-                          consigneeName: c.name,
-                          consigneeAddress: c.address || prev.consigneeAddress
-                        }));
-                      }
-                    }}
-                  >
-                    <option value="" disabled>From Customers...</option>
-                    {customers.map(c => (
-                      <option key={`hb-m-consignee-${c.id}`} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <input
-                  type="text"
+                <label className="form-label" style={{ fontWeight: 700, marginBottom: '4px' }}>Delivery Address</label>
+                <textarea
+                  rows={2}
                   className="form-control"
-                  value={formData.consigneeName}
-                  onChange={(e) => setFormData({ ...formData, consigneeName: e.target.value })}
+                  placeholder="Enter full Consignee delivery address..."
+                  value={formData.consigneeAddress || formData.consigneeName}
+                  onChange={(e) => setFormData({ ...formData, consigneeAddress: e.target.value, consigneeName: e.target.value.split('\n')[0] })}
+                  required
                 />
               </div>
             </div>

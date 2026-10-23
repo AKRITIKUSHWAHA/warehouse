@@ -96,7 +96,10 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
     return rawSections
       .map(sec => ({
         ...sec,
-        items: sec.items.filter(item => isMenuAllowed(roleKey, item.moduleId || item.id))
+        items: sec.items.filter(item => {
+          if (item.moduleId === 'shipments') return true;
+          return isMenuAllowed(roleKey, item.moduleId || item.id);
+        })
       }))
       .filter(sec => sec.items.length > 0);
   };

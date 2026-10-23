@@ -135,23 +135,6 @@ export const HouseBillsList = ({ onNavigate }) => {
       )
     },
     {
-      header: 'Consolidation',
-      accessor: 'assignedConsolidationId',
-      render: (item) => (
-        <div>
-          {item.assignedConsolidationId ? (
-            <span style={{ fontWeight: 700, color: '#059669', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.8rem' }}>
-              {item.assignedConsolidationId}
-            </span>
-          ) : (
-            <span style={{ fontSize: '0.72rem', color: '#94A3B8', fontStyle: 'italic' }}>
-              Not Consolidated
-            </span>
-          )}
-        </div>
-      )
-    },
-    {
       header: 'Status',
       accessor: 'status',
       render: (item) => (
@@ -600,7 +583,7 @@ export const HouseBillsList = ({ onNavigate }) => {
           columns={columns}
           data={visibleHouseBills}
           searchPlaceholder="Search by HBL #, customer, shipper, consignee, WR #, destination..."
-          filterOptions={['All', 'Active', 'Draft', 'On Hold', 'Consolidated', 'Released']}
+          filterOptions={['All']}
           pageSize={8}
           emptyTitle="No House Bills of Lading Found"
           emptyWhy="No customer House B/L records match your search or filter criteria."

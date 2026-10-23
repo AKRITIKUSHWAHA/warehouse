@@ -272,173 +272,19 @@ export const ShipmentDetail = ({ shipmentId, onNavigate }) => {
           { label: shipment.shipmentNumber }
         ]}
         actions={
-          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-end' }}>
-            <button
-              onClick={() => onNavigate('shipments')}
-              className="btn btn-outline btn-sm"
-              title="Back to Shipments List"
-            >
-              <ArrowLeft size={14} />
-              <span>Back</span>
-            </button>
-            <button
-              onClick={() => onNavigate('tracking', shipment.trackingNumber)}
-              className="btn btn-outline btn-sm"
-              title="Track Live Cargo Location"
-            >
-              <Compass size={14} />
-              <span>Live Tracking</span>
-            </button>
-
-            {/* Completely Dynamic 1-Click Action Button for Current Next Milestone */}
-            {nextMilestone && nextMilestone.actionBtn && (
-              <button
-                onClick={() => handleAdvanceToStage(nextMilestone.key)}
-                disabled={isUpdatingStatus}
-                className="btn btn-sm btn-primary"
-                style={{
-                  background: nextMilestone.key === 'In Transit'
-                    ? 'linear-gradient(135deg, #16A34A 0%, #15803D 100%)'
-                    : nextMilestone.key === 'Arrived at Port'
-                    ? 'linear-gradient(135deg, #D97706 0%, #B45309 100%)'
-                    : nextMilestone.key === 'Delivered / Released'
-                    ? 'linear-gradient(135deg, #059669 0%, #047857 100%)'
-                    : 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.35rem',
-                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.12)',
-                  cursor: isUpdatingStatus ? 'not-allowed' : 'pointer'
-                }}
-                title={`1-Click: Advance shipment to ${nextMilestone.key}`}
-              >
-                {React.createElement(nextMilestone.icon, { size: 14 })}
-                <span>{isUpdatingStatus ? 'Updating...' : nextMilestone.actionBtn}</span>
-              </button>
-            )}
-
-            <button
-              onClick={() => setShowEditModal(true)}
-              className="btn btn-secondary btn-sm"
-              title="Edit Shipment Parameters"
-            >
-              <Edit2 size={14} />
-              <span>Edit Shipment</span>
-            </button>
-            <button
-              onClick={() => setShowDeleteModal(true)}
-              className="btn btn-danger btn-sm"
-              title="Delete Shipment Record"
-            >
-              <Trash2 size={14} />
-              <span>Delete Shipment</span>
-            </button>
-            {linkedBL && (
-              <button
-                onClick={() => onNavigate('bills-of-lading', linkedBL.id)}
-                className="btn btn-primary btn-sm"
-                title="Open Master Bill of Lading"
-              >
-                <FileText size={14} />
-                <span>View Master B/L</span>
-              </button>
-            )}
-          </div>
+          <button
+            onClick={() => onNavigate('shipments')}
+            className="btn btn-outline btn-sm"
+            title="Back to Shipments List"
+          >
+            <ArrowLeft size={14} />
+            <span>Back</span>
+          </button>
         }
       />
 
       {/* Primary Workflow Journey Indicator */}
       <WorkflowIndicator currentStage="shipments" onStageClick={(stageId) => onNavigate(stageId)} />
-
-      {/* Status + Next Step Action Guide */}
-      <div className="no-print" style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '1rem',
-        padding: '1rem 1.25rem',
-        background: shipment.status === 'Delivered / Released' ? '#F0FDF4' : '#F8FAFC',
-        border: '1px solid #E2E8F0',
-        borderLeft: `4px solid ${nextMilestone?.color || '#0284C7'}`,
-        borderRadius: '10px',
-        boxShadow: '0 1px 3px rgba(10, 25, 47, 0.05)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
-          <div style={{
-            background: '#0F172A',
-            color: '#FFFFFF',
-            borderRadius: '6px',
-            padding: '0.35rem 0.75rem',
-            fontSize: '0.75rem',
-            fontWeight: 800,
-            letterSpacing: '0.04em',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px'
-          }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#38BDF8' }} />
-            CURRENT STATUS: {shipment.status?.toUpperCase() || 'BOOKED'}
-          </div>
-          <span style={{ fontSize: '0.85rem', color: '#334155', fontWeight: 600 }}>
-            {nextMilestone
-              ? `Next Action: Click "${nextMilestone.actionBtn}" to advance shipment to ${nextMilestone.label}.`
-              : 'All shipping milestones completed. Consignment cleared & delivered.'}
-          </span>
-        </div>
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          {nextMilestone && nextMilestone.actionBtn && (
-            <button
-              onClick={() => handleAdvanceToStage(nextMilestone.key)}
-              disabled={isUpdatingStatus}
-              className="btn btn-sm btn-primary"
-              style={{
-                fontSize: '0.825rem',
-                padding: '0.45rem 0.85rem',
-                background: nextMilestone.color || '#0284C7',
-                color: '#FFFFFF',
-                border: 'none',
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                cursor: isUpdatingStatus ? 'not-allowed' : 'pointer',
-                boxShadow: '0 2px 4px rgba(2, 132, 199, 0.25)'
-              }}
-            >
-              {React.createElement(nextMilestone.icon, { size: 14 })}
-              <span>{isUpdatingStatus ? 'Updating...' : nextMilestone.actionBtn}</span>
-            </button>
-          )}
-          {linkedBL ? (
-            <button
-              onClick={() => onNavigate('bills-of-lading', linkedBL.id)}
-              className="btn btn-secondary btn-sm"
-              style={{ fontSize: '0.825rem', padding: '0.45rem 0.85rem', fontWeight: 600 }}
-            >
-              Review Master B/L &rarr;
-            </button>
-          ) : (
-            <button
-              onClick={() => onNavigate('bills-of-lading')}
-              className="btn btn-secondary btn-sm"
-              style={{ fontSize: '0.825rem', padding: '0.45rem 0.85rem', fontWeight: 600 }}
-            >
-              View Bills of Lading &rarr;
-            </button>
-          )}
-          <button
-            onClick={() => onNavigate('manifests')}
-            className="btn btn-outline btn-sm"
-            style={{ fontSize: '0.825rem', padding: '0.45rem 0.85rem', background: '#FFFFFF', fontWeight: 600 }}
-          >
-            Create Manifest
-          </button>
-        </div>
-      </div>
 
       {/* Prominent B/L Hold Warning if On Hold */}
       {isHoldActive && linkedBL && (

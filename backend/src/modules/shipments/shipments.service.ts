@@ -158,6 +158,20 @@ export class ShipmentsService {
       }
     }
 
+    // Link consolidation in database if provided
+    if (created && input.consolidationId) {
+      const isConsolUuid = UUID_REGEX.test(input.consolidationId);
+      const cond = isConsolUuid
+        ? or(eq(consolidations.id, input.consolidationId), eq(consolidations.consolidationNumber, input.consolidationId))
+        : eq(consolidations.consolidationNumber, input.consolidationId);
+
+      await db
+        .update(consolidations)
+        .set({ assignedShipmentId: created.id, updatedAt: new Date() })
+        .where(cond)
+        .catch(() => {});
+    }
+
     // Insert tracking events
     if (created) {
       for (let i = 0; i < checkpoints.length; i++) {

@@ -44,11 +44,29 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
     ? (currentUser?.destinationPortCode || 'ALL')
     : 'ALL';
 
+  const [selectedWrIds, setSelectedWrIds] = useState(() => {
+    try {
+      const stored = localStorage.getItem('vicustoms_selected_consol_wrs');
+      if (stored) {
+        localStorage.removeItem('vicustoms_selected_consol_wrs');
+        return JSON.parse(stored);
+      }
+    } catch (e) {}
+    return [];
+  });
+  const [selectedHblIds, setSelectedHblIds] = useState(() => {
+    try {
+      const stored = localStorage.getItem('vicustoms_selected_consol_hbls');
+      if (stored) {
+        localStorage.removeItem('vicustoms_selected_consol_hbls');
+        return JSON.parse(stored);
+      }
+    } catch (e) {}
+    return [];
+  });
   const [currentStep, setCurrentStep] = useState(1);
   const [destinationFilter, setDestinationFilter] = useState(defaultDestinationCode);
-  const [selectedWrIds, setSelectedWrIds] = useState([]);
-  const [selectedHblIds, setSelectedHblIds] = useState([]);
-  const [cargoTab, setCargoTab] = useState('wr'); // 'wr' | 'hbl'
+  const [cargoTab, setCargoTab] = useState('hbl');
 
   // Eligible staged Warehouse Receipts for chosen destination
   const availableReceipts = useMemo(() => {
@@ -153,8 +171,12 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
   };
 
   const selectAllFiltered = () => {
-    const ids = availableReceipts.map(w => w.id || w.receiptNumber);
-    setSelectedWrIds(ids);
+    const ids = availableHouseBills.map(h => h.hblNumber || h.id);
+    if (selectedHblIds.length === ids.length) {
+      setSelectedHblIds([]);
+    } else {
+      setSelectedHblIds(ids);
+    }
   };
 
   const selectAllHbls = () => {
@@ -214,9 +236,10 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
           <button
             onClick={() => onNavigate('consolidations')}
             className="btn btn-outline btn-sm"
+            title="Back to Consolidations"
           >
             <ArrowLeft size={15} />
-            <span>Cancel</span>
+            <span>Back</span>
           </button>
         }
       />
@@ -278,7 +301,7 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
                 <span>Step 1: Select Cargo</span>
               </h3>
               <p style={{ fontSize: '0.825rem', color: '#64748B', margin: '4px 0 0' }}>
-                “Choose staged Warehouse Receipts to consolidate.”
+                “Choose staged House Bills of Lading to consolidate into ocean container.”
               </p>
             </div>
 
@@ -297,188 +320,93 @@ export const NewConsolidationWizard = ({ onNavigate }) => {
                   </option>
                 ))}
               </select>
-              {availableReceipts.length > 0 && (
+              {availableHouseBills.length > 0 && (
                 <button
                   type="button"
                   onClick={selectAllFiltered}
                   className="btn btn-sm btn-outline"
                   style={{ fontSize: '0.75rem' }}
                 >
-                  Select All ({availableReceipts.length} WRs)
+                  {selectedHblIds.length === availableHouseBills.length ? 'Deselect All' : `Select All (${availableHouseBills.length} House Bills)`}
                 </button>
               )}
             </div>
           </div>
 
-          {/* Cargo Source Switcher: Warehouse Receipts vs House Bills */}
-          <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid #E2E8F0', paddingBottom: '0.5rem' }}>
-            <button
-              type="button"
-              onClick={() => setCargoTab('wr')}
-              className={`btn btn-sm ${cargoTab === 'wr' ? 'btn-primary' : 'btn-outline'}`}
-              style={{ fontSize: '0.8rem' }}
-            >
-              <Package size={14} />
-              <span>Warehouse Receipts ({selectedWrIds.length} / {availableReceipts.length} selected)</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setCargoTab('hbl')}
-              className={`btn btn-sm ${cargoTab === 'hbl' ? 'btn-primary' : 'btn-outline'}`}
-              style={{ fontSize: '0.8rem' }}
-            >
-              <FileText size={14} />
-              <span>House Bills of Lading ({selectedHblIds.length} / {availableHouseBills.length} selected)</span>
-            </button>
-          </div>
-
-          {/* Table of Available Staged Warehouse Receipts */}
-          {cargoTab === 'wr' && (
-            availableReceipts.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '3rem 1rem', background: '#F8FAFC', borderRadius: '8px', border: '1px dashed #CBD5E1' }}>
-                <Package size={36} style={{ color: '#94A3B8', margin: '0 auto 0.5rem' }} />
-                <div style={{ fontWeight: 700, fontSize: '1rem', color: '#0A192F' }}>No Staged Cargo Yet for {destinationFilter}</div>
-                <div style={{ fontSize: '0.825rem', color: '#64748B', marginTop: '4px' }}>
-                  Create a Warehouse Receipt to add cargo to the consolidation queue.
-                </div>
-                <button
-                  onClick={() => onNavigate('warehouse-receipts', 'create')}
-                  className="btn btn-primary btn-sm mt-3"
-                >
-                  + Create Warehouse Receipt
-                </button>
-              </div>
-            ) : (
-              <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '8px' }}>
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th style={{ width: '45px', textAlign: 'center' }}>Select</th>
-                      <th>WR #</th>
-                      <th>Customer / Consignee</th>
-                      <th>Cargo Description</th>
-                      <th>Pieces</th>
-                      <th>Weight</th>
-                      <th>Volume (CFT / CBM)</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {availableReceipts.map(wr => {
-                      const isSelected = selectedWrIds.includes(wr.id) || selectedWrIds.includes(wr.receiptNumber);
-                      return (
-                        <tr
-                          key={wr.id}
-                          onClick={() => toggleWrSelect(wr.id || wr.receiptNumber)}
-                          style={{
-                            cursor: 'pointer',
-                            background: isSelected ? '#EFF6FF' : '#FFFFFF'
-                          }}
-                        >
-                          <td style={{ textAlign: 'center' }}>
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={() => {}}
-                              style={{ cursor: 'pointer' }}
-                            />
-                          </td>
-                          <td style={{ fontWeight: 800, color: '#D97706', fontFamily: 'JetBrains Mono, monospace' }}>
-                            {wr.receiptNumber}
-                          </td>
-                          <td style={{ fontWeight: 600 }}>{wr.customer || wr.customerName || wr.customer_name || wr.consignee}</td>
-                          <td style={{ fontSize: '0.8rem', color: '#334155' }}>{wr.cargoDescription || wr.cargo_description}</td>
-                          <td style={{ fontWeight: 700 }}>{wr.totalPieces || wr.total_pieces || wr.packageCount} pcs</td>
-                          <td>{(Number(wr.weightLbs || wr.weight_lbs || 0)).toLocaleString()} lbs</td>
-                          <td>
-                            <strong style={{ color: '#D97706' }}>{Number(wr.totalCft || wr.total_cft || wr.cft || 0)} CFT</strong> <span style={{ color: '#0284C7', fontSize: '0.75rem' }}>({Number(wr.totalCbm || wr.total_cbm || wr.cbm || 0)} CBM)</span>
-                          </td>
-                          <td><StatusBadge status={wr.status} size="sm" /></td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )
-          )}
-
           {/* Table of Available House Bills of Lading */}
-          {cargoTab === 'hbl' && (
-            availableHouseBills.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '3rem 1rem', background: '#F8FAFC', borderRadius: '8px', border: '1px dashed #CBD5E1' }}>
-                <FileText size={36} style={{ color: '#94A3B8', margin: '0 auto 0.5rem' }} />
-                <div style={{ fontWeight: 700, fontSize: '1rem', color: '#0A192F' }}>No Unconsolidated House B/Ls for {destinationFilter}</div>
-                <div style={{ fontSize: '0.825rem', color: '#64748B', marginTop: '4px' }}>
-                  Issue a customer House B/L to consolidate by House B/L reference.
-                </div>
-                <button
-                  type="button"
-                  onClick={() => onNavigate('house-bills', 'create')}
-                  className="btn btn-primary btn-sm mt-3"
-                >
-                  + Issue House B/L
-                </button>
+          {availableHouseBills.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '3rem 1rem', background: '#F8FAFC', borderRadius: '8px', border: '1px dashed #CBD5E1' }}>
+              <FileText size={36} style={{ color: '#94A3B8', margin: '0 auto 0.5rem' }} />
+              <div style={{ fontWeight: 700, fontSize: '1rem', color: '#0A192F' }}>No Unconsolidated House B/Ls for {destinationFilter}</div>
+              <div style={{ fontSize: '0.825rem', color: '#64748B', marginTop: '4px' }}>
+                Issue a customer House B/L to consolidate by House B/L reference.
               </div>
-            ) : (
-              <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '8px' }}>
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th style={{ width: '45px', textAlign: 'center' }}>Select</th>
-                      <th>House B/L #</th>
-                      <th>Consignee</th>
-                      <th>Shipper</th>
-                      <th>Pieces</th>
-                      <th>Weight</th>
-                      <th>Volume</th>
-                      <th>Destination</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {availableHouseBills.map(hb => {
-                      const isSelected = selectedHblIds.includes(hb.id) || selectedHblIds.includes(hb.hblNumber);
-                      const cft = hb.totalCft || (hb.totalCbm ? Number((hb.totalCbm * 35.3147).toFixed(1)) : 0);
-                      return (
-                        <tr
-                          key={hb.id || hb.hblNumber}
-                          onClick={() => toggleHblSelect(hb.hblNumber || hb.id)}
-                          style={{
-                            cursor: 'pointer',
-                            background: isSelected ? '#EFF6FF' : '#FFFFFF'
-                          }}
-                        >
-                          <td style={{ textAlign: 'center' }}>
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={() => {}}
-                              style={{ cursor: 'pointer' }}
-                            />
-                          </td>
-                          <td style={{ fontWeight: 800, color: '#0284C7', fontFamily: 'JetBrains Mono, monospace' }}>
-                            {hb.hblNumber}
-                          </td>
-                          <td style={{ fontWeight: 600 }}>{hb.consignee?.name || hb.consignee || 'Consignee'}</td>
-                          <td style={{ fontSize: '0.8rem', color: '#334155' }}>{hb.shipper?.name || hb.shipper || 'Shipper'}</td>
-                          <td style={{ fontWeight: 700 }}>{hb.totalPieces || hb.totalPackages || 1} pcs</td>
-                          <td>{(Number(hb.totalWeightLbs || 0)).toLocaleString()} lbs</td>
-                          <td>
-                            <strong style={{ color: '#D97706' }}>{cft} CFT</strong> <span style={{ color: '#0284C7', fontSize: '0.75rem' }}>({hb.totalCbm || 0} CBM)</span>
-                          </td>
-                          <td style={{ color: '#0284C7' }}>{hb.destinationPort}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )
+              <button
+                type="button"
+                onClick={() => onNavigate('house-bills', 'create')}
+                className="btn btn-primary btn-sm mt-3"
+              >
+                + Issue House B/L
+              </button>
+            </div>
+          ) : (
+            <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '8px' }}>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: '45px', textAlign: 'center' }}>Select</th>
+                    <th>House B/L #</th>
+                    <th>Consignee</th>
+                    <th>Shipper</th>
+                    <th>Pieces</th>
+                    <th>Weight</th>
+                    <th>Volume</th>
+                    <th>Destination</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {availableHouseBills.map(hb => {
+                    const isSelected = selectedHblIds.includes(hb.id) || selectedHblIds.includes(hb.hblNumber);
+                    const cft = hb.totalCft || (hb.totalCbm ? Number((hb.totalCbm * 35.3147).toFixed(1)) : 0);
+                    return (
+                      <tr
+                        key={hb.id || hb.hblNumber}
+                        onClick={() => toggleHblSelect(hb.hblNumber || hb.id)}
+                        style={{
+                          cursor: 'pointer',
+                          background: isSelected ? '#EFF6FF' : '#FFFFFF'
+                        }}
+                      >
+                        <td style={{ textAlign: 'center' }}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => {}}
+                            style={{ cursor: 'pointer' }}
+                          />
+                        </td>
+                        <td style={{ fontWeight: 800, color: '#0284C7', fontFamily: 'JetBrains Mono, monospace' }}>
+                          {hb.hblNumber}
+                        </td>
+                        <td style={{ fontWeight: 600 }}>{hb.consignee?.name || hb.consignee || 'Consignee'}</td>
+                        <td style={{ fontSize: '0.8rem', color: '#334155' }}>{hb.shipper?.name || hb.shipper || 'Shipper'}</td>
+                        <td style={{ fontWeight: 700 }}>{hb.totalPieces || hb.totalPackages || 1} pcs</td>
+                        <td>{(Number(hb.totalWeightLbs || 0)).toLocaleString()} lbs</td>
+                        <td>
+                          <strong style={{ color: '#D97706' }}>{cft} CFT</strong> <span style={{ color: '#0284C7', fontSize: '0.75rem' }}>({hb.totalCbm || 0} CBM)</span>
+                        </td>
+                        <td style={{ color: '#0284C7' }}>{hb.destinationPort}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '1rem', borderTop: '1px solid #E2E8F0' }}>
             <div style={{ fontSize: '0.85rem', color: '#334155' }}>
-              Selected: <strong style={{ color: '#0284C7' }}>{selectedWrIds.length}</strong> Warehouse Receipt(s) ({totals.totalPieces} pieces • {totals.totalCft} CFT)
+              Selected: <strong style={{ color: '#0284C7' }}>{selectedHblIds.length}</strong> House Bill(s) ({totals.totalPieces} pieces • {totals.totalCft} CFT)
             </div>
             <button
               onClick={() => setCurrentStep(2)}
