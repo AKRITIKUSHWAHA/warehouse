@@ -102,7 +102,7 @@ export const LoginPage = ({ onLoginSuccess }) => {
 
   const [selectedUser, setSelectedUser] = useState(() => sortedUsers[0]);
   const [email, setEmail] = useState(() => sortedUsers[0]?.email || 'marcus.vance@vicustoms.com');
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState('password123');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -110,7 +110,7 @@ export const LoginPage = ({ onLoginSuccess }) => {
   const handleSelectPersona = (u) => {
     setSelectedUser(u);
     setEmail(u.email);
-    setPassword('');
+    setPassword('password123');
   };
 
   const handleFormSubmit = async (e) => {

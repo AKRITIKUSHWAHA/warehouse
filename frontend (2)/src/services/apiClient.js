@@ -53,14 +53,15 @@ export const apiClient = {
         try {
           const activeUserStr = localStorage.getItem('kers_active_user');
           const activeUser = activeUserStr ? JSON.parse(activeUserStr) : null;
-          if (activeUser?.id || activeUser?.email || activeUser?.userCode) {
-            const url = `${API_BASE_URL}/auth/switch-user`;
+          const targetEmail = activeUser?.email || 'marcus.vance@vicustoms.com';
+          if (targetEmail) {
+            const url = `${API_BASE_URL}/auth/login`;
             const res = await fetch(url, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                userId: activeUser.id || activeUser.userCode,
-                email: activeUser.email,
+                email: targetEmail,
+                password: 'password123',
               }),
             });
             const data = await res.json().catch(() => null);

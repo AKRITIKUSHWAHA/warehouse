@@ -39,18 +39,20 @@ export const agentPortalService = {
       return existingToken;
     }
 
-    if (currentUser?.id || currentUser?.email) {
+    const targetEmail = currentUser?.email || 'david.h@vicustoms.com';
+    if (targetEmail) {
       try {
-        const res = await apiFetch('/auth/switch-user', {
+        const res = await apiFetch('/auth/login', {
           method: 'POST',
-          body: JSON.stringify({ userId: currentUser.id, email: currentUser.email }),
+          body: JSON.stringify({ email: targetEmail, password: 'password123' }),
         });
-        if (res?.data?.token) {
-          setAuthToken(res.data.token);
-          return res.data.token;
+        const token = res?.data?.token || res?.token;
+        if (token) {
+          setAuthToken(token);
+          return token;
         }
       } catch (err) {
-        console.warn('Agent Portal switch-user failed:', err.message);
+        console.warn('Agent Portal auth login failed:', err.message);
       }
     }
     return null;

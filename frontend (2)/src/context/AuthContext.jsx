@@ -187,9 +187,9 @@ export const AuthProvider = ({ children }) => {
     if (!found) return null;
 
     try {
-      const res = await apiClient.post('/auth/switch-user', {
-        userId: found.id,
+      const res = await apiClient.post('/auth/login', {
         email: found.email,
+        password: 'password123',
       });
       const authResult = res?.data || res;
       if (authResult && authResult.token) {
@@ -202,7 +202,7 @@ export const AuthProvider = ({ children }) => {
         return loggedUser;
       }
     } catch (err) {
-      console.warn('[AuthContext] /auth/switch-user notice, using local persona:', err.message);
+      console.warn('[AuthContext] Quick login API fallback:', err.message);
     }
 
     // Fallback persona switch for offline / mock resilience

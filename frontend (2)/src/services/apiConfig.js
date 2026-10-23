@@ -51,18 +51,19 @@ export async function apiFetch(endpoint, options = {}, isRetry = false) {
     const response = await fetch(url, config);
 
     // If 401 Unauthorized, automatically refresh session once using active user session and retry
-    if (response.status === 401 && !isRetry && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/switch-user') && typeof window !== 'undefined') {
+    if (response.status === 401 && !isRetry && !endpoint.includes('/auth/login') && typeof window !== 'undefined') {
       try {
         const activeUserStr = localStorage.getItem('kers_active_user');
         const activeUser = activeUserStr ? JSON.parse(activeUserStr) : null;
-        if (activeUser?.id || activeUser?.email) {
-          const switchRes = await fetch(`${API_BASE_URL}/auth/switch-user`, {
+        const targetEmail = activeUser?.email || 'marcus.vance@vicustoms.com';
+        if (targetEmail) {
+          const switchRes = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: activeUser.id, email: activeUser.email })
+            body: JSON.stringify({ email: targetEmail, password: 'password123' })
           });
           const switchData = await switchRes.json();
-          const freshToken = switchData?.data?.token;
+          const freshToken = switchData?.data?.token || switchData?.token;
           if (freshToken) {
             setAuthToken(freshToken);
             return apiFetch(endpoint, options, true);
