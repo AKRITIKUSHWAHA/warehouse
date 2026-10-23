@@ -34,21 +34,21 @@ const KEYS = {
 
 // Initialize localStorage with mock seed data if empty
 export const initializeStorage = () => {
-  const CLEAN_SLATE_KEY = 'kers_clean_slate_v9';
+  const CLEAN_SLATE_KEY = 'kers_clean_slate_v10';
   if (!localStorage.getItem(CLEAN_SLATE_KEY)) {
-    localStorage.setItem(KEYS.VESSELS, JSON.stringify([]));
-    localStorage.setItem(KEYS.SHIPMENTS, JSON.stringify([]));
-    localStorage.setItem(KEYS.CARGO, JSON.stringify([]));
-    localStorage.setItem(KEYS.CONSOLIDATIONS, JSON.stringify([]));
-    localStorage.setItem(KEYS.BILLS_OF_LADING, JSON.stringify([]));
-    localStorage.setItem(KEYS.HOUSE_BILLS, JSON.stringify([]));
-    localStorage.setItem(KEYS.WAREHOUSE_RECEIPTS, JSON.stringify([]));
     localStorage.setItem(KEYS.CUSTOMERS, JSON.stringify([]));
+    localStorage.setItem(KEYS.WAREHOUSE_RECEIPTS, JSON.stringify([]));
+    localStorage.setItem(KEYS.CARGO, JSON.stringify([]));
+    localStorage.setItem(KEYS.HOUSE_BILLS, JSON.stringify([]));
+    localStorage.setItem(KEYS.CONSOLIDATIONS, JSON.stringify([]));
+    localStorage.setItem(KEYS.SHIPMENTS, JSON.stringify([]));
+    localStorage.setItem(KEYS.BILLS_OF_LADING, JSON.stringify([]));
     localStorage.setItem(KEYS.MANIFESTS, JSON.stringify([]));
     localStorage.setItem(KEYS.DOCUMENTS, JSON.stringify([]));
     localStorage.setItem(KEYS.AUDIT_LOGS, JSON.stringify([]));
-    localStorage.setItem(KEYS.AGENTS, JSON.stringify([]));
-    localStorage.setItem(KEYS.PORTS, JSON.stringify([]));
+    localStorage.setItem(KEYS.VESSELS, JSON.stringify(initialVessels));
+    localStorage.setItem(KEYS.AGENTS, JSON.stringify(initialAgents));
+    localStorage.setItem(KEYS.PORTS, JSON.stringify(initialPorts));
 
     // Master configuration
     localStorage.setItem(KEYS.USERS, JSON.stringify(initialUsers));

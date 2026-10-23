@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, ChevronLeft, ChevronRight, Inbox, Filter, Plus } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
 
 export const ResponsiveTable = ({
   columns = [],
@@ -192,35 +192,11 @@ export const ResponsiveTable = ({
               ))
             ) : (
               <tr>
-                <td colSpan={columns.length} style={{ padding: '3.5rem 1.5rem', textAlign: 'center' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.6rem', maxWidth: '440px', margin: '0 auto', color: '#64748B' }}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8' }}>
-                      <Inbox size={26} />
+                <td colSpan={columns.length} style={{ padding: '3rem 1.5rem', textAlign: 'center' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.6rem', color: '#64748B' }}>
+                    <div style={{ fontWeight: 600, fontSize: '0.95rem', color: '#64748B' }}>
+                      No Data Available
                     </div>
-                    <div style={{ fontWeight: 700, fontSize: '1.05rem', color: '#0A192F' }}>
-                      {emptyTitle || emptyMessage || "No records found"}
-                    </div>
-                    {(emptyWhy || emptySubtext) && (
-                      <div style={{ fontSize: '0.825rem', color: '#64748B', lineHeight: 1.4 }}>
-                        {emptyWhy || emptySubtext}
-                      </div>
-                    )}
-                    {emptyNextStep && (
-                      <div style={{ fontSize: '0.8rem', color: '#0284C7', fontWeight: 600, background: '#F0F9FF', padding: '0.4rem 0.85rem', borderRadius: '6px', border: '1px solid #BAE6FD' }}>
-                        💡 Next step: {emptyNextStep}
-                      </div>
-                    )}
-                    {emptyActionLabel && onEmptyAction && (
-                      <button
-                        type="button"
-                        onClick={onEmptyAction}
-                        className="btn btn-primary btn-sm"
-                        style={{ marginTop: '0.4rem', gap: '4px' }}
-                      >
-                        <Plus size={14} />
-                        <span>{emptyActionLabel}</span>
-                      </button>
-                    )}
                   </div>
                 </td>
               </tr>

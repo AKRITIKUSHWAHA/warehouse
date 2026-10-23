@@ -424,38 +424,9 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
                     <span style={{ fontSize: '0.68rem', color: '#64748B', background: '#F1F5F9', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>Origin</span>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <select
-                      className="form-select"
-                      style={{ fontSize: '0.8rem', padding: '0.4rem 0.55rem', flex: 1 }}
-                      onChange={(e) => handleShipperSelect(e.target.value)}
-                      defaultValue=""
-                    >
-                      <option value="" disabled>Select Shipper from Directory...</option>
-                      {customers.map(c => (
-                        <option key={c.id} value={c.id}>
-                          {c.name} ({c.customerNumber || c.id})
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCustomerCreationTarget('shipper');
-                        setShowAddCustomerModal(true);
-                      }}
-                      className="btn btn-outline btn-sm"
-                      style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', color: '#0284C7', borderColor: '#0284C7', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}
-                      title="Register New Customer"
-                    >
-                      <Plus size={13} />
-                      <span>New</span>
-                    </button>
-                  </div>
-
                   <textarea
                     className="form-textarea"
-                    rows={3}
+                    rows={4}
                     placeholder="Enter Shipper / Vendor name, origin warehouse, address, phone..."
                     value={formData.shipper}
                     onChange={(e) => handleInputChange('shipper', e.target.value)}
@@ -475,38 +446,9 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
                     <span style={{ fontSize: '0.68rem', color: '#0284C7', background: '#E0F2FE', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>Destination</span>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <select
-                      className="form-select"
-                      style={{ fontSize: '0.8rem', padding: '0.4rem 0.55rem', flex: 1, borderColor: '#7DD3FC' }}
-                      onChange={(e) => handleConsigneeSelect(e.target.value)}
-                      defaultValue=""
-                    >
-                      <option value="" disabled>Select Consignee from Directory...</option>
-                      {customers.map(c => (
-                        <option key={c.id} value={c.id}>
-                          {c.name} ({c.customerNumber || c.id})
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCustomerCreationTarget('consignee');
-                        setShowAddCustomerModal(true);
-                      }}
-                      className="btn btn-outline btn-sm"
-                      style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', color: '#0284C7', borderColor: '#0284C7', background: '#FFFFFF', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}
-                      title="Register New Customer"
-                    >
-                      <Plus size={13} />
-                      <span>New</span>
-                    </button>
-                  </div>
-
                   <textarea
                     className="form-textarea"
-                    rows={3}
+                    rows={4}
                     required
                     placeholder="Enter Consignee name, island address, contact person, phone..."
                     value={formData.consignee}
