@@ -45,8 +45,7 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
             moduleId: 'dashboard'
           },
           { id: 'customers', label: 'Customers', icon: Users, moduleId: 'customers' },
-          { id: 'warehouse-receipts', label: 'Warehouse Receipts', icon: Package, moduleId: 'warehouse-receipts' },
-          { id: 'cargo', label: 'Cargo Inventory', icon: Box, moduleId: 'cargo' }
+          { id: 'warehouse-receipts', label: 'Warehouse Receipts', icon: Package, moduleId: 'warehouse-receipts' }
         ]
       },
       {

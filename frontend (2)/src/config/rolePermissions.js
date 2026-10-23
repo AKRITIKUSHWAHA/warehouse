@@ -3,7 +3,7 @@
  * Allows Super Admin to dynamically configure menu visibility and module access per role.
  */
 
-export const STORAGE_KEY_ROLE_PERMISSIONS = 'kers_role_permissions_map_v5';
+export const STORAGE_KEY_ROLE_PERMISSIONS = 'kers_role_permissions_map_v6';
 
 export const SYSTEM_MODULES = [
   // 1. CARGO & INTAKE
@@ -30,14 +30,6 @@ export const SYSTEM_MODULES = [
     description: 'Cargo intake, dimension calculations, barcode generation, intake receipts',
     icon: 'Package',
     tabs: ['warehouse-receipts']
-  },
-  {
-    id: 'cargo',
-    label: 'Cargo Inventory & Staging',
-    category: 'Cargo & Intake',
-    description: 'Real-time package storage, location racking, holding bay tracking',
-    icon: 'Box',
-    tabs: ['cargo']
   },
   {
     id: 'documents',
@@ -145,17 +137,17 @@ export const SYSTEM_MODULES = [
 
 export const DEFAULT_ROLE_PERMISSIONS_MAP = {
   super_admin: [
-    'dashboard', 'customers', 'warehouse-receipts', 'cargo', 'documents',
+    'dashboard', 'customers', 'warehouse-receipts', 'documents',
     'house-bills', 'consolidations', 'shipments', 'bills-of-lading',
     'vessels', 'tracking', 'history', 'audit', 'users', 'settings',
     'hold-authorization'
   ],
   operations: [
-    'dashboard', 'customers', 'cargo', 'consolidations', 'bills-of-lading',
+    'dashboard', 'customers', 'consolidations', 'bills-of-lading',
     'vessels', 'shipments', 'tracking'
   ],
   warehouse: [
-    'dashboard', 'customers', 'warehouse-receipts', 'cargo',
+    'dashboard', 'customers', 'warehouse-receipts',
     'documents', 'consolidations', 'tracking'
   ],
   documentation: [
