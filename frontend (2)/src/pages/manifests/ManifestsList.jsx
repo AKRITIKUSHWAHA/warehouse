@@ -79,7 +79,7 @@ export const ManifestsList = ({ onNavigate, hideHeaderWorkflow = false }) => {
         <div>
           <div style={{ fontWeight: 600, color: '#0A192F' }}>{item.title}</div>
           <div style={{ fontSize: '0.72rem', color: '#0284C7', fontWeight: 600 }}>
-            {item.portOfLoading} → {item.portOfDischarge}
+            {item.portOfLoading || 'Miami'} → {item.portOfDischarge || 'Pending Port'}
           </div>
         </div>
       )

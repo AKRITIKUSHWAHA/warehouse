@@ -270,7 +270,9 @@ export const BillsOfLadingList = ({ onNavigate, initialTab = null }) => {
       accessor: 'oceanVessel',
       render: (item) => (
         <div>
-          <div style={{ fontWeight: 600, fontSize: '0.8rem' }}>{item.oceanVessel}</div>
+          <div style={{ fontWeight: 600, fontSize: '0.8rem', color: item.oceanVessel ? '#0A192F' : '#94A3B8', fontStyle: item.oceanVessel ? 'normal' : 'italic' }}>
+            {item.oceanVessel || 'Awaiting Vessel'}
+          </div>
           <div style={{ fontSize: '0.72rem', color: '#64748B' }}>{item.carrier}</div>
         </div>
       )
@@ -278,9 +280,29 @@ export const BillsOfLadingList = ({ onNavigate, initialTab = null }) => {
     {
       header: 'Port of Discharge',
       accessor: 'portOfDischarge',
-      render: (item) => (
-        <span style={{ fontWeight: 600, color: '#0284C7' }}>{item.portOfDischarge}</span>
-      )
+      render: (item) => {
+        const pod = item.portOfDischarge?.trim();
+        return pod ? (
+          <span style={{ fontWeight: 600, color: '#0284C7' }}>{pod}</span>
+        ) : (
+          <span
+            style={{
+              color: '#64748B',
+              fontSize: '0.72rem',
+              fontWeight: 600,
+              background: '#F1F5F9',
+              padding: '2px 8px',
+              borderRadius: '4px',
+              border: '1px dashed #CBD5E1',
+              display: 'inline-flex',
+              alignItems: 'center',
+              letterSpacing: '0.02em'
+            }}
+          >
+            Pending / Not Set
+          </span>
+        );
+      }
     },
     {
       header: 'Container & Volume',
