@@ -7,6 +7,8 @@ export const ResponsiveTable = ({
   searchable = true,
   searchPlaceholder = "Search records...",
   filterOptions = [],
+  filterType = 'buttons', // 'buttons' | 'dropdown'
+  filterDropdown = false,
   pageSize = 8,
   emptyTitle,
   emptyMessage,
@@ -125,22 +127,54 @@ export const ResponsiveTable = ({
             )}
 
             {filterOptions.length > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', maxWidth: '100%' }}>
-                <Filter size={14} style={{ color: '#94A3B8' }} />
-                {filterOptions.map(opt => (
-                  <button
-                    key={opt}
-                    onClick={() => {
-                      setActiveFilter(opt);
+              (filterType === 'dropdown' || filterDropdown) ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', minWidth: '180px' }}>
+                  <Filter size={14} style={{ color: '#94A3B8' }} />
+                  <select
+                    className="form-control"
+                    value={activeFilter}
+                    onChange={(e) => {
+                      setActiveFilter(e.target.value);
                       setCurrentPage(1);
                     }}
-                    className={`btn btn-sm ${activeFilter === opt ? 'btn-primary' : 'btn-ghost'}`}
-                    style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem' }}
+                    style={{
+                      fontSize: '0.78rem',
+                      padding: '0.35rem 0.65rem',
+                      height: '36px',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      minWidth: '175px',
+                      background: '#FFFFFF',
+                      borderColor: '#CBD5E1',
+                      color: '#0A192F',
+                      fontWeight: 500
+                    }}
                   >
-                    {opt}
-                  </button>
-                ))}
-              </div>
+                    {filterOptions.map(opt => (
+                      <option key={opt} value={opt}>
+                        {opt === 'All' ? 'Filter: All Categories' : opt}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', maxWidth: '100%' }}>
+                  <Filter size={14} style={{ color: '#94A3B8' }} />
+                  {filterOptions.map(opt => (
+                    <button
+                      key={opt}
+                      onClick={() => {
+                        setActiveFilter(opt);
+                        setCurrentPage(1);
+                      }}
+                      className={`btn btn-sm ${activeFilter === opt ? 'btn-primary' : 'btn-ghost'}`}
+                      style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem' }}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              )
             )}
           </div>
 

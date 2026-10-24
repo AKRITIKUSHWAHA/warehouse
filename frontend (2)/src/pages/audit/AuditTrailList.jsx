@@ -169,6 +169,7 @@ export const AuditTrailList = () => {
         data={enrichedAuditLogs}
         searchPlaceholder="Search user, action, module, record ID..."
         filterOptions={['All', 'Bill of Lading', 'Warehouse Receipt', 'Consolidation', 'Shipping Manifest', 'Agent Portal']}
+        filterType="dropdown"
         pageSize={8}
       />
     </div>
