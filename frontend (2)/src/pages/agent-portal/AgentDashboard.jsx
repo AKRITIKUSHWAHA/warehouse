@@ -136,9 +136,9 @@ export const AgentDashboard = ({ onNavigate }) => {
       )}
 
       {/* KPI Cards for Agent */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 gap-3">
         <StatCard
-          title="Assigned Shipments"
+          title="Incoming Ships"
           value={stats.assignedCount}
           subtitle="Nassau Port destination"
           icon={Ship}
@@ -148,7 +148,7 @@ export const AgentDashboard = ({ onNavigate }) => {
           onClick={() => onNavigate('agent-shipments')}
         />
         <StatCard
-          title="B/L On Hold (Locked)"
+          title="Hold Cargo"
           value={stats.holdCount}
           subtitle={stats.holdCount > 0 ? "Document release restricted" : "No holds"}
           icon={AlertTriangle}
@@ -158,7 +158,7 @@ export const AgentDashboard = ({ onNavigate }) => {
           onClick={() => onNavigate('agent-documents')}
         />
         <StatCard
-          title="Documents Ready"
+          title="Ready Documents"
           value={stats.documentsCount}
           subtitle="Bills of Lading & Manifests"
           icon={FileStack}
@@ -168,7 +168,7 @@ export const AgentDashboard = ({ onNavigate }) => {
           onClick={() => onNavigate('agent-documents')}
         />
         <StatCard
-          title="Inbound Volume"
+          title="Cargo Volume"
           value={`${stats.totalCbm} CBM`}
           subtitle={`${stats.totalPackages} packages scheduled`}
           icon={Package}
