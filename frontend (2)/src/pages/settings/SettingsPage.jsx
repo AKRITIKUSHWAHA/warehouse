@@ -144,8 +144,8 @@ export const SettingsPage = () => {
       {activeTab === 'ports' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div className="card" style={{ padding: '1.25rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
-              <div>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1.25rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+              <div style={{ flex: '1 1 320px', minWidth: 0 }}>
                 <h3 style={{ fontSize: '1rem', color: '#0A192F', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Anchor size={18} style={{ color: '#0284C7' }} />
                   <span>Custom Island Ports &amp; Cargo Discharge Terminals</span>
@@ -155,14 +155,17 @@ export const SettingsPage = () => {
                 </p>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setShowPortModal(true)}
-                className="btn btn-primary btn-sm"
-              >
-                <Plus size={15} />
-                <span>Add Island Port Destination</span>
-              </button>
+              <div style={{ marginLeft: 'auto', flexShrink: 0 }}>
+                <button
+                  type="button"
+                  onClick={() => setShowPortModal(true)}
+                  className="btn btn-primary btn-sm"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}
+                >
+                  <Plus size={15} />
+                  <span>Add Island Port Destination</span>
+                </button>
+              </div>
             </div>
 
             <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '6px' }}>
