@@ -86,7 +86,7 @@ export const AgentShipmentsList = ({ onNavigate }) => {
       )
     },
     {
-      header: 'ETA (Nassau)',
+      header: 'Estimated Arrival (ETA)',
       accessor: 'eta',
       render: (item) => (
         <span style={{ fontWeight: 700, color: '#0284C7' }}>{item.eta}</span>
@@ -130,7 +130,7 @@ export const AgentShipmentsList = ({ onNavigate }) => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       <PageHeader
         title="My Assigned Consignments"
-        subtitle="Inbound shipments assigned to Caribbean Express Freight Ltd. (Nassau Hub)."
+        subtitle="Inbound shipments assigned to your destination port hub."
         icon={Ship}
         breadcrumbs={[
           { label: 'Agent Portal', href: '#' },

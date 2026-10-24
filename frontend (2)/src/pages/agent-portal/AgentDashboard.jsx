@@ -83,7 +83,7 @@ export const AgentDashboard = ({ onNavigate }) => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <PageHeader
         title="Agent Portal Dashboard"
-        subtitle="Caribbean Express Freight Ltd. (Nassau Port Hub) — Manage assigned cargo, clearance documents, and vessel arrivals."
+        subtitle="Manage assigned cargo, clearance documents, and vessel arrivals for your destination port."
         icon={Shield}
         actions={
           <button
@@ -140,7 +140,7 @@ export const AgentDashboard = ({ onNavigate }) => {
         <StatCard
           title="Incoming Ships"
           value={stats.assignedCount}
-          subtitle="Nassau Port destination"
+          subtitle="Destination port arrivals"
           icon={Ship}
           accent="navy"
           trend="Inbound"
@@ -187,7 +187,7 @@ export const AgentDashboard = ({ onNavigate }) => {
               <div>
                 <h3 style={{ fontSize: '1rem', color: '#0A192F' }}>My Inbound Assigned Shipments</h3>
                 <p style={{ fontSize: '0.75rem', color: '#64748B', margin: 0 }}>
-                  Consignments staged or en-route to Nassau Container Port
+                  Consignments staged or en-route to destination port
                 </p>
               </div>
               <button
@@ -207,7 +207,7 @@ export const AgentDashboard = ({ onNavigate }) => {
                       <th>Shipment #</th>
                       <th>Vessel &amp; Carrier</th>
                       <th>Cargo Volume</th>
-                      <th>ETA (Nassau)</th>
+                      <th>Estimated Arrival (ETA)</th>
                       <th>B/L Status</th>
                       <th>Action</th>
                     </tr>

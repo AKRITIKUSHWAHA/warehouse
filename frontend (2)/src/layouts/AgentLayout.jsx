@@ -209,10 +209,10 @@ export const AgentLayout = ({
             </div>
             <div className="hide-mobile" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0A192F', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                Agent Portal — Caribbean Express Freight Ltd.
+                Destination Agent Portal
               </span>
               <span style={{ fontSize: '0.7rem', background: '#D97706', color: '#FFFFFF', padding: '1px 6px', borderRadius: '4px', fontWeight: 700, flexShrink: 0 }}>
-                NASSAU HUB
+                PORT HUB
               </span>
             </div>
           </div>
