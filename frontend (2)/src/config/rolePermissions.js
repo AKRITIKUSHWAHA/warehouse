@@ -3,7 +3,7 @@
  * Allows Super Admin to dynamically configure menu visibility and module access per role.
  */
 
-export const STORAGE_KEY_ROLE_PERMISSIONS = 'kers_role_permissions_map_v6';
+export const STORAGE_KEY_ROLE_PERMISSIONS = 'kers_role_permissions_map_v7';
 
 export const SYSTEM_MODULES = [
   // 1. CARGO & INTAKE
@@ -148,7 +148,7 @@ export const DEFAULT_ROLE_PERMISSIONS_MAP = {
   ],
   warehouse: [
     'dashboard', 'customers', 'warehouse-receipts',
-    'documents', 'consolidations', 'tracking'
+    'documents', 'consolidations', 'shipments', 'tracking'
   ],
   documentation: [
     'dashboard', 'customers', 'warehouse-receipts', 'house-bills',
@@ -166,8 +166,8 @@ export const getStoredPermissionsMap = () => {
     if (saved) {
       const parsed = JSON.parse(saved);
       if (parsed && typeof parsed === 'object' && parsed.super_admin) {
-        // Self-heal shipments for core staff roles and agent if missing from legacy cache
-        ['super_admin', 'operations', 'documentation', 'agent'].forEach(rk => {
+        // Self-heal shipments for all roles if missing from legacy cache
+        ['super_admin', 'operations', 'documentation', 'warehouse', 'agent'].forEach(rk => {
           if (Array.isArray(parsed[rk]) && !parsed[rk].includes('shipments')) {
             parsed[rk].push('shipments');
           }
@@ -197,9 +197,14 @@ export const hasModulePermission = (roleKey, tab) => {
   if (!roleKey) return false;
   if (roleKey === 'super_admin') return true;
 
-  // Agent always has access to ocean shipments and core agent portal tabs
+  // Ocean Shipments is a core module accessible to all authenticated roles
+  if (tab === 'shipments' || tab === 'agent-shipments') {
+    return true;
+  }
+
+  // Agent always has access to core agent portal tabs
   if (roleKey === 'agent') {
-    if (tab === 'shipments' || tab === 'agent-shipments' || tab === 'agent-dashboard' || tab === 'dashboard') {
+    if (tab === 'agent-dashboard' || tab === 'dashboard') {
       return true;
     }
   }
