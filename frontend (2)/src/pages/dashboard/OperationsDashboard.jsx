@@ -329,62 +329,68 @@ export const OperationsDashboard = ({ onNavigate }) => {
 
     // 4. SUPER ADMIN ROLE TASKS
     return (
-      <div className="grid grid-cols-4 gap-4" style={{ marginBottom: '1.25rem' }}>
+      <div className="grid grid-cols-4 gap-3" style={{ marginBottom: '1rem' }}>
         <div
           onClick={() => onNavigate('warehouse-receipts')}
           className="card card-hover"
-          style={{ padding: '0.85rem 1rem', cursor: 'pointer', borderLeft: '4px solid #D97706' }}
+          style={{ padding: '0.65rem 0.85rem', cursor: 'pointer', borderLeft: '4px solid #D97706' }}
         >
-          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#D97706', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+          <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#D97706', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
             Incoming Goods
           </div>
-          <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0A192F', margin: '0.15rem 0' }}>
-            {dbMetrics?.totalWarehouseReceipts ?? readyReceipts.length} WRs Ready
+          <div style={{ fontSize: '1.18rem', fontWeight: 700, color: '#0A192F', margin: '0.12rem 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {dbMetrics?.totalWarehouseReceipts ?? readyReceipts.length} Receipts Ready
           </div>
-          <div style={{ fontSize: '0.72rem', color: '#64748B' }}>Cargo Intake &amp; Receipts</div>
+          <div style={{ fontSize: '0.71rem', color: '#64748B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            New warehouse intake
+          </div>
         </div>
 
         <div
           onClick={() => onNavigate('consolidations')}
           className="card card-hover"
-          style={{ padding: '1rem', cursor: 'pointer', borderLeft: '4px solid #0284C7' }}
+          style={{ padding: '0.65rem 0.85rem', cursor: 'pointer', borderLeft: '4px solid #0284C7' }}
         >
-          <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#0284C7', textTransform: 'uppercase' }}>
-            Operations
+          <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#0284C7', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            Containers
           </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0A192F', margin: '0.2rem 0' }}>
-            {dbMetrics?.totalConsolidations ?? stagedCargo.length} Consolidations Active
+          <div style={{ fontSize: '1.18rem', fontWeight: 700, color: '#0A192F', margin: '0.12rem 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {dbMetrics?.totalConsolidations ?? stagedCargo.length} Active Containers
           </div>
-          <div style={{ fontSize: '0.72rem', color: '#64748B' }}>Consolidations</div>
+          <div style={{ fontSize: '0.71rem', color: '#64748B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            Packing &amp; consolidations
+          </div>
         </div>
 
         <div
           onClick={() => onNavigate('bills-of-lading')}
           className="card card-hover"
-          style={{ padding: '1rem', cursor: 'pointer', borderLeft: `4px solid ${(dbMetrics?.activeHoldsCount ?? holdBLs.length) > 0 ? '#EF4444' : '#10B981'}` }}
+          style={{ padding: '0.65rem 0.85rem', cursor: 'pointer', borderLeft: `4px solid ${(dbMetrics?.activeHoldsCount ?? holdBLs.length) > 0 ? '#EF4444' : '#10B981'}` }}
         >
-          <div style={{ fontSize: '0.72rem', fontWeight: 700, color: (dbMetrics?.activeHoldsCount ?? holdBLs.length) > 0 ? '#EF4444' : '#10B981', textTransform: 'uppercase' }}>
-            Documentation
+          <div style={{ fontSize: '0.68rem', fontWeight: 700, color: (dbMetrics?.activeHoldsCount ?? holdBLs.length) > 0 ? '#EF4444' : '#10B981', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            B/L Status
           </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0A192F', margin: '0.2rem 0' }}>
-            {dbMetrics?.activeHoldsCount ?? holdBLs.length} B/Ls On Hold
+          <div style={{ fontSize: '1.18rem', fontWeight: 700, color: '#0A192F', margin: '0.12rem 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {dbMetrics?.activeHoldsCount ?? holdBLs.length} Bills On Hold
           </div>
-          <div style={{ fontSize: '0.72rem', color: '#64748B' }}>Holds &amp; Releases</div>
+          <div style={{ fontSize: '0.71rem', color: '#64748B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            Master &amp; House B/L releases
+          </div>
         </div>
 
         <div
           onClick={() => onNavigate('shipments')}
           className="card card-hover"
-          style={{ padding: '1rem', cursor: 'pointer', borderLeft: '4px solid #10B981' }}
+          style={{ padding: '0.65rem 0.85rem', cursor: 'pointer', borderLeft: '4px solid #10B981' }}
         >
-          <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#10B981', textTransform: 'uppercase' }}>
-            Maritime Shipments
+          <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            Ocean Freight
           </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0A192F', margin: '0.2rem 0' }}>
-            {dbMetrics?.totalShipments ?? activeShipments.length} In Transit
+          <div style={{ fontSize: '1.18rem', fontWeight: 700, color: '#0A192F', margin: '0.12rem 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {dbMetrics?.totalShipments ?? activeShipments.length} Ships In Transit
           </div>
-          <div style={{ fontSize: '0.72rem', color: '#64748B' }}>
-            Active Ocean Freight Shipments
+          <div style={{ fontSize: '0.71rem', color: '#64748B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            Active vessel sailings
           </div>
         </div>
       </div>
