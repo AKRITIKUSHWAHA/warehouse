@@ -129,64 +129,64 @@ export const OperationsDashboard = ({ onNavigate }) => {
     // 1. WAREHOUSE ROLE TASKS
     if (roleKey === 'warehouse') {
       return (
-        <div className="grid grid-cols-3 gap-4" style={{ marginBottom: '1.25rem' }}>
+        <div className="grid grid-cols-3 gap-3" style={{ marginBottom: '1rem' }}>
           <div
             onClick={() => onNavigate('warehouse-receipts')}
             className="card card-hover"
-            style={{ padding: '1.15rem', cursor: 'pointer', borderLeft: '4px solid #D97706' }}
+            style={{ padding: '0.75rem 0.95rem', cursor: 'pointer', borderLeft: '4px solid #D97706' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#D97706', textTransform: 'uppercase' }}>
-                CFS Intake Queue
+              <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#D97706', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                Incoming Goods
               </span>
-              <Package size={18} style={{ color: '#D97706' }} />
+              <Package size={16} style={{ color: '#D97706' }} />
             </div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0A192F', margin: '0.25rem 0' }}>
-              {readyReceipts.length} Warehouse Receipts Ready
+            <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0A192F', margin: '0.15rem 0' }}>
+              {readyReceipts.length} Warehouse Receipts
             </div>
-            <div style={{ fontSize: '0.78rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>Intake complete • Received in warehouse</span>
-              <ArrowRight size={13} style={{ color: '#D97706' }} />
+            <div style={{ fontSize: '0.73rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span>New items received in warehouse</span>
+              <ArrowRight size={12} style={{ color: '#D97706' }} />
             </div>
           </div>
 
           <div
             onClick={() => onNavigate('cargo')}
             className="card card-hover"
-            style={{ padding: '1.15rem', cursor: 'pointer', borderLeft: '4px solid #0284C7' }}
+            style={{ padding: '0.75rem 0.95rem', cursor: 'pointer', borderLeft: '4px solid #0284C7' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0284C7', textTransform: 'uppercase' }}>
-                Warehouse Staging
+              <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#0284C7', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                Stored Cargo
               </span>
-              <Box size={18} style={{ color: '#0284C7' }} />
+              <Box size={16} style={{ color: '#0284C7' }} />
             </div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0A192F', margin: '0.25rem 0' }}>
-              {stagedCargo.length} Cargo Items Staged
+            <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0A192F', margin: '0.15rem 0' }}>
+              {stagedCargo.length} Items in Warehouse
             </div>
-            <div style={{ fontSize: '0.78rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>Check bay staging &amp; print roll labels</span>
-              <ArrowRight size={13} style={{ color: '#0284C7' }} />
+            <div style={{ fontSize: '0.73rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span>Stored in bays &amp; ready for container</span>
+              <ArrowRight size={12} style={{ color: '#0284C7' }} />
             </div>
           </div>
 
           <div
             onClick={() => onNavigate('documents')}
             className="card card-hover"
-            style={{ padding: '1.15rem', cursor: 'pointer', borderLeft: '4px solid #10B981' }}
+            style={{ padding: '0.75rem 0.95rem', cursor: 'pointer', borderLeft: '4px solid #10B981' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#10B981', textTransform: 'uppercase' }}>
-                Thermal Roll Printing
+              <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                Print Labels
               </span>
-              <Tag size={18} style={{ color: '#10B981' }} />
+              <Tag size={16} style={{ color: '#10B981' }} />
             </div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0A192F', margin: '0.25rem 0' }}>
-              4x6 Cargo Labels
+            <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0A192F', margin: '0.15rem 0' }}>
+              Barcode Stickers (4×6)
             </div>
-            <div style={{ fontSize: '0.78rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>Generate barcode stickers for pallets &amp; boxes</span>
-              <ArrowRight size={13} style={{ color: '#10B981' }} />
+            <div style={{ fontSize: '0.73rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span>Print labels for boxes &amp; pallets</span>
+              <ArrowRight size={12} style={{ color: '#10B981' }} />
             </div>
           </div>
         </div>
@@ -333,15 +333,15 @@ export const OperationsDashboard = ({ onNavigate }) => {
         <div
           onClick={() => onNavigate('warehouse-receipts')}
           className="card card-hover"
-          style={{ padding: '1rem', cursor: 'pointer', borderLeft: '4px solid #D97706' }}
+          style={{ padding: '0.85rem 1rem', cursor: 'pointer', borderLeft: '4px solid #D97706' }}
         >
-          <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#D97706', textTransform: 'uppercase' }}>
-            CFS Warehouse
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#D97706', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+            Incoming Goods
           </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0A192F', margin: '0.2rem 0' }}>
+          <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0A192F', margin: '0.15rem 0' }}>
             {dbMetrics?.totalWarehouseReceipts ?? readyReceipts.length} WRs Ready
           </div>
-          <div style={{ fontSize: '0.72rem', color: '#64748B' }}>Cargo Intake</div>
+          <div style={{ fontSize: '0.72rem', color: '#64748B' }}>Cargo Intake &amp; Receipts</div>
         </div>
 
         <div
