@@ -152,7 +152,7 @@ export const ResponsiveTable = ({
                   >
                     {filterOptions.map(opt => (
                       <option key={opt} value={opt}>
-                        {opt === 'All' ? 'Filter: All Categories' : opt}
+                        {opt === 'All' ? 'Filter: All' : opt}
                       </option>
                     ))}
                   </select>

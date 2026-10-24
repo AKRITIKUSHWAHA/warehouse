@@ -633,7 +633,8 @@ export const ShipmentTrackingPortal = ({ initialQuery = '', onNavigate }) => {
           columns={tableColumns}
           data={trackableItems}
           searchPlaceholder="Filter by tracking #, customer, vessel, port, status..."
-          filterOptions={['All', 'In Transit', 'Loaded & Sealed', 'Delivered', 'Ready for Consolidation']}
+          filterOptions={['All', 'Consolidated', 'In Transit', 'Loaded & Sealed', 'Delivered', 'Ready for Consolidation']}
+          filterType="dropdown"
           pageSize={6}
           onRowClick={(item) => {
             setSearchQuery(item.trackingNumber);
