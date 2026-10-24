@@ -155,7 +155,7 @@ export const DEFAULT_ROLE_PERMISSIONS_MAP = {
     'consolidations', 'shipments', 'bills-of-lading', 'tracking', 'hold-authorization'
   ],
   agent: [
-    'dashboard', 'consolidations', 'bills-of-lading', 'tracking', 'documents'
+    'dashboard', 'consolidations', 'shipments', 'bills-of-lading', 'tracking', 'documents'
   ]
 };
 
@@ -166,8 +166,8 @@ export const getStoredPermissionsMap = () => {
     if (saved) {
       const parsed = JSON.parse(saved);
       if (parsed && typeof parsed === 'object' && parsed.super_admin) {
-        // Self-heal shipments for core staff roles if missing from legacy cache
-        ['super_admin', 'operations', 'documentation'].forEach(rk => {
+        // Self-heal shipments for core staff roles and agent if missing from legacy cache
+        ['super_admin', 'operations', 'documentation', 'agent'].forEach(rk => {
           if (Array.isArray(parsed[rk]) && !parsed[rk].includes('shipments')) {
             parsed[rk].push('shipments');
           }
@@ -196,6 +196,13 @@ export const saveStoredPermissionsMap = (map) => {
 export const hasModulePermission = (roleKey, tab) => {
   if (!roleKey) return false;
   if (roleKey === 'super_admin') return true;
+
+  // Agent always has access to ocean shipments and core agent portal tabs
+  if (roleKey === 'agent') {
+    if (tab === 'shipments' || tab === 'agent-shipments' || tab === 'agent-dashboard' || tab === 'dashboard') {
+      return true;
+    }
+  }
 
   const permissionsMap = getStoredPermissionsMap();
   const allowedModuleIds = permissionsMap[roleKey] || DEFAULT_ROLE_PERMISSIONS_MAP[roleKey] || [];

@@ -151,6 +151,10 @@ const parseUrlToRoute = (isAgent, currentRoleKey = null) => {
       return { tab: 'dashboard', selectedRecordId: null, subAction: null, detectedPrefix };
     }
 
+    if (isAgent && tab === 'shipments') {
+      return { tab: 'agent-shipments', selectedRecordId: null, subAction: null, detectedPrefix };
+    }
+
     if (second === 'create') {
       return { tab, selectedRecordId: null, subAction: 'create', detectedPrefix };
     }
@@ -175,6 +179,9 @@ const getUrlForRoute = (tab, recordIdOrAction, roleKey = 'super_admin') => {
 
   if (cleanTab === 'dashboard') {
     return `/${prefix}/dashboard`;
+  }
+  if (cleanTab === 'agent-shipments') {
+    return `/${prefix}/shipments`;
   }
   if (recordIdOrAction === 'create') {
     return `/${prefix}/${cleanTab}/create`;
@@ -339,6 +346,9 @@ const MainAppRouter = () => {
 
       // 7. Shipments
       case 'shipments':
+        if (isAgent || userRoleKey === 'agent') {
+          return <AgentShipmentsList onNavigate={navigateTo} />;
+        }
         if (subAction === 'create') {
           return <CreateShipment onNavigate={navigateTo} />;
         }

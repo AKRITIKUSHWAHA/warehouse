@@ -171,7 +171,7 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
                 {sec.items.map((item) => {
                   const Icon = item.icon;
-                  const isActive = activeTab === item.id;
+                  const isActive = activeTab === item.id || (item.moduleId === 'shipments' && (activeTab === 'shipments' || activeTab === 'agent-shipments'));
                   return (
                     <button
                       key={item.id}

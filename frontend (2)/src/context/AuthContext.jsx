@@ -362,8 +362,8 @@ export const AuthProvider = ({ children }) => {
       return true;
     }
 
-    // Core logistics flow: shipments is essential for operations and documentation
-    if (moduleIdOrTab === 'shipments' && (roleKey === 'super_admin' || roleKey === 'operations' || roleKey === 'documentation')) {
+    // Core logistics flow: shipments is essential for operations, documentation, and agent
+    if ((moduleIdOrTab === 'shipments' || moduleIdOrTab === 'agent-shipments') && (roleKey === 'super_admin' || roleKey === 'operations' || roleKey === 'documentation' || roleKey === 'agent')) {
       return true;
     }
 
