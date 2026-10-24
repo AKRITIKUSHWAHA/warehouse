@@ -891,7 +891,6 @@ export const BillsOfLadingList = ({ onNavigate, initialTab = null }) => {
           columns={columns}
           data={visibleBLs}
           searchPlaceholder="Search B/L #, consignee, shipper, container, vessel..."
-          filterOptions={['All', 'Draft', 'On Hold', 'Released', 'Cancelled']}
           pageSize={8}
           emptyTitle="No Master Bills of Lading Found"
           emptyWhy="No Master B/L records match your search or filter criteria."
