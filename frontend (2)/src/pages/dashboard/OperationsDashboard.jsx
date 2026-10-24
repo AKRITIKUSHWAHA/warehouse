@@ -196,64 +196,64 @@ export const OperationsDashboard = ({ onNavigate }) => {
     // 2. OPERATIONS ROLE TASKS
     if (roleKey === 'operations') {
       return (
-        <div className="grid grid-cols-3 gap-4" style={{ marginBottom: '1.25rem' }}>
+        <div className="grid grid-cols-3 gap-3" style={{ marginBottom: '1rem' }}>
           <div
             onClick={() => onNavigate('consolidations', 'create')}
             className="card card-hover"
-            style={{ padding: '1.15rem', cursor: 'pointer', borderLeft: '4px solid #0284C7' }}
+            style={{ padding: '0.75rem 0.95rem', cursor: 'pointer', borderLeft: '4px solid #0284C7' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0284C7', textTransform: 'uppercase' }}>
-                Consolidation Queue
+              <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#0284C7', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                Packing Queue
               </span>
-              <Layers size={18} style={{ color: '#0284C7' }} />
+              <Layers size={16} style={{ color: '#0284C7' }} />
             </div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0A192F', margin: '0.25rem 0' }}>
-              {stagedCargo.length} Cargo Items Awaiting Consolidation
+            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0A192F', margin: '0.15rem 0' }}>
+              {stagedCargo.length} Items Ready to Pack
             </div>
-            <div style={{ fontSize: '0.78rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>Click to build ocean container consolidation</span>
-              <ArrowRight size={13} style={{ color: '#0284C7' }} />
+            <div style={{ fontSize: '0.73rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span>Click to build container box</span>
+              <ArrowRight size={12} style={{ color: '#0284C7' }} />
             </div>
           </div>
 
           <div
             onClick={() => onNavigate('consolidations')}
             className="card card-hover"
-            style={{ padding: '1.15rem', cursor: 'pointer', borderLeft: '4px solid #D97706' }}
+            style={{ padding: '0.75rem 0.95rem', cursor: 'pointer', borderLeft: '4px solid #D97706' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#D97706', textTransform: 'uppercase' }}>
+              <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#D97706', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
                 Active Containers
               </span>
-              <Box size={18} style={{ color: '#D97706' }} />
+              <Box size={16} style={{ color: '#D97706' }} />
             </div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0A192F', margin: '0.25rem 0' }}>
-              {activeConsolidations.length} Consolidations In Progress
+            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0A192F', margin: '0.15rem 0' }}>
+              {activeConsolidations.length} Containers Loading
             </div>
-            <div style={{ fontSize: '0.78rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>Monitor volume utilization &amp; seal numbers</span>
-              <ArrowRight size={13} style={{ color: '#D97706' }} />
+            <div style={{ fontSize: '0.73rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span>Monitor volume &amp; seal numbers</span>
+              <ArrowRight size={12} style={{ color: '#D97706' }} />
             </div>
           </div>
 
           <div
             onClick={() => onNavigate('shipments')}
             className="card card-hover"
-            style={{ padding: '1.15rem', cursor: 'pointer', borderLeft: '4px solid #10B981' }}
+            style={{ padding: '0.75rem 0.95rem', cursor: 'pointer', borderLeft: '4px solid #10B981' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#10B981', textTransform: 'uppercase' }}>
-                Ocean Transit
+              <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                Ocean Shipments
               </span>
-              <Ship size={18} style={{ color: '#10B981' }} />
+              <Ship size={16} style={{ color: '#10B981' }} />
             </div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0A192F', margin: '0.25rem 0' }}>
-              {activeShipments.length} Master Shipments Active
+            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0A192F', margin: '0.15rem 0' }}>
+              {activeShipments.length} Ships In Transit
             </div>
-            <div style={{ fontSize: '0.78rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>Track vessel sailings &amp; arrival milestones</span>
-              <ArrowRight size={13} style={{ color: '#10B981' }} />
+            <div style={{ fontSize: '0.73rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span>Track vessel sailings &amp; arrival</span>
+              <ArrowRight size={12} style={{ color: '#10B981' }} />
             </div>
           </div>
         </div>
@@ -263,64 +263,64 @@ export const OperationsDashboard = ({ onNavigate }) => {
     // 3. DOCUMENTATION ROLE TASKS
     if (roleKey === 'documentation') {
       return (
-        <div className="grid grid-cols-3 gap-4" style={{ marginBottom: '1.25rem' }}>
+        <div className="grid grid-cols-3 gap-3" style={{ marginBottom: '1rem' }}>
           <div
             onClick={() => onNavigate('bills-of-lading')}
             className="card card-hover"
-            style={{ padding: '1.15rem', cursor: 'pointer', borderLeft: `4px solid ${holdBLs.length > 0 ? '#EF4444' : '#10B981'}` }}
+            style={{ padding: '0.75rem 0.95rem', cursor: 'pointer', borderLeft: `4px solid ${holdBLs.length > 0 ? '#EF4444' : '#10B981'}` }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: holdBLs.length > 0 ? '#EF4444' : '#10B981', textTransform: 'uppercase' }}>
-                Hold Management
+              <span style={{ fontSize: '0.7rem', fontWeight: 700, color: holdBLs.length > 0 ? '#EF4444' : '#10B981', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                B/L Status
               </span>
-              <AlertTriangle size={18} style={{ color: holdBLs.length > 0 ? '#EF4444' : '#10B981' }} />
+              <AlertTriangle size={16} style={{ color: holdBLs.length > 0 ? '#EF4444' : '#10B981' }} />
             </div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0A192F', margin: '0.25rem 0' }}>
-              {holdBLs.length} B/Ls On Hold
+            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0A192F', margin: '0.15rem 0' }}>
+              {holdBLs.length} Bills On Hold
             </div>
-            <div style={{ fontSize: '0.78rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>{holdBLs.length > 0 ? 'Review payment / compliance holds' : 'All Master B/Ls clear'}</span>
-              <ArrowRight size={13} style={{ color: '#EF4444' }} />
+            <div style={{ fontSize: '0.73rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span>{holdBLs.length > 0 ? 'Review payment holds' : 'All Master B/Ls clear'}</span>
+              <ArrowRight size={12} style={{ color: '#EF4444' }} />
             </div>
           </div>
 
           <div
             onClick={() => onNavigate('manifests')}
             className="card card-hover"
-            style={{ padding: '1.15rem', cursor: 'pointer', borderLeft: '4px solid #0284C7' }}
+            style={{ padding: '0.75rem 0.95rem', cursor: 'pointer', borderLeft: '4px solid #0284C7' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0284C7', textTransform: 'uppercase' }}>
-                Customs Clearance
+              <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#0284C7', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                Customs Manifests
               </span>
-              <FileSpreadsheet size={18} style={{ color: '#0284C7' }} />
+              <FileSpreadsheet size={16} style={{ color: '#0284C7' }} />
             </div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0A192F', margin: '0.25rem 0' }}>
-              {pendingManifestShipments.length} Shipment Awaiting Manifest
+            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0A192F', margin: '0.15rem 0' }}>
+              {pendingManifestShipments.length} Manifests Needed
             </div>
-            <div style={{ fontSize: '0.78rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>Generate XML / CSV for customs</span>
-              <ArrowRight size={13} style={{ color: '#0284C7' }} />
+            <div style={{ fontSize: '0.73rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span>Generate outward cargo manifest</span>
+              <ArrowRight size={12} style={{ color: '#0284C7' }} />
             </div>
           </div>
 
           <div
             onClick={() => onNavigate('bills-of-lading')}
             className="card card-hover"
-            style={{ padding: '1.15rem', cursor: 'pointer', borderLeft: '4px solid #D97706' }}
+            style={{ padding: '0.75rem 0.95rem', cursor: 'pointer', borderLeft: '4px solid #D97706' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#D97706', textTransform: 'uppercase' }}>
-                Document Issuance
+              <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#D97706', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                Issued Bills
               </span>
-              <FileText size={18} style={{ color: '#D97706' }} />
+              <FileText size={16} style={{ color: '#D97706' }} />
             </div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0A192F', margin: '0.25rem 0' }}>
+            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0A192F', margin: '0.15rem 0' }}>
               {billsOfLading.length} Master &amp; {houseBills.length} House B/Ls
             </div>
-            <div style={{ fontSize: '0.78rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>Review Drafts &amp; authorize releases</span>
-              <ArrowRight size={13} style={{ color: '#D97706' }} />
+            <div style={{ fontSize: '0.73rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span>Review drafts &amp; authorize releases</span>
+              <ArrowRight size={12} style={{ color: '#D97706' }} />
             </div>
           </div>
         </div>
