@@ -455,43 +455,7 @@ export const UsersList = ({ onNavigate }) => {
             </div>
           )}
 
-          {/* Admin Access Status Bar */}
-          <div style={{
-            background: isSuperAdmin ? '#F0FDF4' : '#FFFBEB',
-            border: isSuperAdmin ? '1px solid #BBF7D0' : '1px solid #FDE68A',
-            borderRadius: '8px',
-            padding: '0.65rem 1rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '0.65rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              {isSuperAdmin ? (
-                <Unlock size={15} style={{ color: '#16A34A' }} />
-              ) : (
-                <Lock size={15} style={{ color: '#D97706' }} />
-              )}
-              <span style={{ fontSize: '0.78rem', color: isSuperAdmin ? '#166534' : '#92400E', fontWeight: 600 }}>
-                {isSuperAdmin
-                  ? 'Role Permissions Matrix: Toggle any menu button to show or hide it for that role. Changes sync live to the sidebar.'
-                  : 'Role Permissions Matrix (Read-Only Mode): Only Super Admin can change role permissions.'}
-              </span>
-            </div>
 
-            {isSuperAdmin && (
-              <button
-                onClick={() => setShowResetConfirm(true)}
-                className="btn btn-secondary btn-sm"
-                style={{ fontSize: '0.72rem', padding: '0.2rem 0.6rem' }}
-                title="Reset all role menu permissions to standard defaults"
-              >
-                <RotateCcw size={12} />
-                <span>Reset Defaults</span>
-              </button>
-            )}
-          </div>
 
           {/* Matrix Filter & Search Bar */}
           <div className="card" style={{ padding: '0.85rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
