@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { PageHeader } from '../../components/common/PageHeader';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { HoldAlertBanner } from '../../components/common/HoldAlertBanner';
@@ -27,12 +27,44 @@ export const ShipmentTrackingPortal = ({ initialQuery = '', onNavigate }) => {
   const [searched, setSearched] = useState(Boolean(initialQuery));
   const [isLoading, setIsLoading] = useState(false);
 
+  // Smooth scroll to tracking timeline result
+  const scrollToResult = useCallback(() => {
+    setTimeout(() => {
+      const resultEl = document.getElementById('tracking-result-section');
+      const scrollContainer = document.getElementById('main-content-scroll');
+
+      if (resultEl && scrollContainer) {
+        const containerRect = scrollContainer.getBoundingClientRect();
+        const resultRect = resultEl.getBoundingClientRect();
+        const offsetTop = resultRect.top - containerRect.top;
+        const targetScroll = scrollContainer.scrollTop + offsetTop - 20;
+
+        scrollContainer.scrollTo({
+          top: Math.max(0, targetScroll),
+          behavior: 'smooth'
+        });
+      } else if (resultEl) {
+        resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else if (scrollContainer) {
+        scrollContainer.scrollTo({ top: 180, behavior: 'smooth' });
+      } else {
+        window.scrollTo({ top: 180, behavior: 'smooth' });
+      }
+    }, 120);
+  }, []);
+
   useEffect(() => {
     if (initialQuery) {
       setSearchQuery(initialQuery);
       handleSearch(null, initialQuery);
     }
   }, [initialQuery]);
+
+  useEffect(() => {
+    if (searched && searchResult) {
+      scrollToResult();
+    }
+  }, [searched, searchResult, scrollToResult]);
 
   const formatWRToTracking = (wr) => ({
     trackingNumber: wr.receiptNumber || wr.id,
@@ -276,7 +308,7 @@ export const ShipmentTrackingPortal = ({ initialQuery = '', onNavigate }) => {
             onClick={() => {
               setSearchQuery(item.trackingNumber);
               handleSearch(null, item.trackingNumber);
-              window.scrollTo({ top: 180, behavior: 'smooth' });
+              scrollToResult();
             }}
             style={{
               background: 'none',
@@ -370,7 +402,7 @@ export const ShipmentTrackingPortal = ({ initialQuery = '', onNavigate }) => {
             onClick={() => {
               setSearchQuery(item.trackingNumber);
               handleSearch(null, item.trackingNumber);
-              window.scrollTo({ top: 180, behavior: 'smooth' });
+              scrollToResult();
             }}
             className="btn btn-primary btn-sm"
             style={{ fontSize: '0.72rem', padding: '0.25rem 0.55rem', gap: '4px' }}
@@ -473,7 +505,7 @@ export const ShipmentTrackingPortal = ({ initialQuery = '', onNavigate }) => {
 
       {/* Tracking Result View */}
       {searchResult ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <div id="tracking-result-section" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           {/* Hold notice if applicable */}
           {searchResult.blStatus === 'On Hold' && (
             <HoldAlertBanner
@@ -572,7 +604,7 @@ export const ShipmentTrackingPortal = ({ initialQuery = '', onNavigate }) => {
           </div>
         </div>
       ) : searched ? (
-        <div className="card" style={{ padding: '3rem 1.5rem', textAlign: 'center', color: '#64748B' }}>
+        <div id="tracking-result-section" className="card" style={{ padding: '3rem 1.5rem', textAlign: 'center', color: '#64748B' }}>
           <Compass size={40} style={{ color: '#CBD5E1', margin: '0 auto 0.5rem' }} />
           <div style={{ fontWeight: 700, color: '#0A192F', fontSize: '1.05rem' }}>No Consignment Found</div>
           <div style={{ fontSize: '0.85rem', marginTop: '4px' }}>
@@ -606,7 +638,7 @@ export const ShipmentTrackingPortal = ({ initialQuery = '', onNavigate }) => {
           onRowClick={(item) => {
             setSearchQuery(item.trackingNumber);
             handleSearch(null, item.trackingNumber);
-            window.scrollTo({ top: 180, behavior: 'smooth' });
+            scrollToResult();
           }}
         />
       </div>
