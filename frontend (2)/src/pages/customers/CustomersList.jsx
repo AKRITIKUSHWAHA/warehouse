@@ -319,6 +319,7 @@ export const CustomersList = ({ onNavigate }) => {
         data={customers}
         searchPlaceholder="Search by customer name, ID, phone, email, destination..."
         filterOptions={['All', 'Active', 'Inactive']}
+        filterType="dropdown"
         pageSize={8}
         onRowClick={(item) => onNavigate('customers', item.id)}
       />
