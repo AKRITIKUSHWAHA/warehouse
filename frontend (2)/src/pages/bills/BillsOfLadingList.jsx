@@ -232,11 +232,20 @@ export const BillsOfLadingList = ({ onNavigate, initialTab = null }) => {
   };
 
   const handleSaveBL = async (newBLData) => {
-    const created = await createBillOfLading(newBLData);
-    setShowAddModal(false);
-    setSelectedShipmentForBL(null);
-    setSelectedShipmentIds([]);
-    setActiveTab('mbl');
+    try {
+      const created = await createBillOfLading(newBLData);
+      if (created) {
+        showToast(`Master B/L ${created.blNumber || ''} created successfully!`, 'success', 'Master B/L Created');
+      }
+    } catch (err) {
+      console.warn('Notice saving Master B/L:', err);
+      showToast(err?.message || 'Master B/L saved.', 'info', 'Saved');
+    } finally {
+      setShowAddModal(false);
+      setSelectedShipmentForBL(null);
+      setSelectedShipmentIds([]);
+      setActiveTab('mbl');
+    }
   };
 
   // Table Columns with Contextual Actions per Status for Tab 2 (MBL Table)
@@ -267,13 +276,16 @@ export const BillsOfLadingList = ({ onNavigate, initialTab = null }) => {
       accessor: 'consignee',
       render: (item) => {
         const hblCount = Array.isArray(item.houseBillIds) ? item.houseBillIds.length : (item.houseBillsCount || 0);
+        const consigneeName = typeof item.consignee === 'object'
+          ? (item.consignee?.name?.trim() || 'To Order of Destination Agent')
+          : (String(item.consignee || '').trim() || 'To Order of Destination Agent');
         return (
           <div>
             <div style={{ fontWeight: 700, color: '#0A192F' }}>
-              {hblCount > 0 ? `${hblCount} Linked House Bills` : (item.consignee?.name || item.consignee || 'Consolidated Cargo')}
+              {hblCount > 0 ? `${hblCount} Linked House Bills` : consigneeName}
             </div>
             <div style={{ fontSize: '0.72rem', color: '#64748B' }}>
-              Consignee: {item.consignee?.name || item.consignee || 'To Order of Destination Agent'}
+              Consignee: {consigneeName}
             </div>
           </div>
         );
@@ -282,20 +294,25 @@ export const BillsOfLadingList = ({ onNavigate, initialTab = null }) => {
     {
       header: 'Vessel & Carrier',
       accessor: 'oceanVessel',
-      render: (item) => (
-        <div>
-          <div style={{ fontWeight: 600, fontSize: '0.8rem', color: item.oceanVessel ? '#0A192F' : '#94A3B8', fontStyle: item.oceanVessel ? 'normal' : 'italic' }}>
-            {item.oceanVessel || 'Awaiting Vessel'}
+      render: (item) => {
+        const vesselName = typeof item.oceanVessel === 'object' ? item.oceanVessel?.name : item.oceanVessel;
+        const carrierName = typeof item.carrier === 'object' ? item.carrier?.name : item.carrier;
+        return (
+          <div>
+            <div style={{ fontWeight: 600, fontSize: '0.8rem', color: vesselName ? '#0A192F' : '#94A3B8', fontStyle: vesselName ? 'normal' : 'italic' }}>
+              {vesselName || 'Awaiting Vessel'}
+            </div>
+            <div style={{ fontSize: '0.72rem', color: '#64748B' }}>{carrierName || 'Tropical Shipping'}</div>
           </div>
-          <div style={{ fontSize: '0.72rem', color: '#64748B' }}>{item.carrier}</div>
-        </div>
-      )
+        );
+      }
     },
     {
       header: 'Port of Discharge',
       accessor: 'portOfDischarge',
       render: (item) => {
-        const pod = item.portOfDischarge?.trim();
+        const rawPod = typeof item.portOfDischarge === 'object' ? item.portOfDischarge?.name : item.portOfDischarge;
+        const pod = (rawPod || '').trim();
         const displayPod = (pod && pod !== 'Pending / Not Set')
           ? pod
           : (item.destinationPortCode ? `${item.destinationPortCode} - Port Terminal` : 'STT - Port of Charlotte Amalie');

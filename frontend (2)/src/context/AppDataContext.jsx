@@ -28,7 +28,7 @@ export const AppDataProvider = ({ children }) => {
   const [houseBills, setHouseBills] = useState([]);
   const [consolidations, setConsolidations] = useState([]);
   const [shipments, setShipments] = useState([]);
-  const [billsOfLading, setBillsOfLading] = useState([]);
+  const [billsOfLading, setBillsOfLading] = useState(() => getStored(KEYS.BILLS_OF_LADING, []));
   const [manifests, setManifests] = useState([]);
   const [vessels, setVessels] = useState([]);
   const [agents, setAgents] = useState([]);
@@ -226,6 +226,9 @@ export const AppDataProvider = ({ children }) => {
           if (list !== null) {
             setBillsOfLading(list);
             setStored(KEYS.BILLS_OF_LADING, list);
+          } else {
+            const localBLs = getStored(KEYS.BILLS_OF_LADING, []);
+            setBillsOfLading(localBLs);
           }
           const shpList = extractListFromRes(shpRes);
           if (shpList !== null) {
@@ -661,6 +664,9 @@ export const AppDataProvider = ({ children }) => {
   const createBillOfLading = async (blData) => {
     try {
       const created = await billOfLadingService.createBillOfLading(blData, currentUser?.name || "Documentation Staff");
+      if (created) {
+        setBillsOfLading(prev => [created, ...prev.filter(b => b.id !== created.id && b.blNumber !== created.blNumber)]);
+      }
       await fetchMenuApi('bills-of-lading');
       showToast(`Master B/L ${created?.blNumber || created?.id} created successfully.`, 'success', 'Master B/L Created');
       return created;

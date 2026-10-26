@@ -209,13 +209,13 @@ export const BillOfLadingModal = ({
         blNumber: bl.blNumber || '',
         issueDate: bl.issueDate || bl.createdDate || new Date().toISOString().split('T')[0],
         shipperId: bl.shipperId || (typeof bl.shipper === 'object' ? bl.shipper?.id : '') || '',
-        shipperName: bl.shipper?.name || 'VI Customs Brokers & Logistics',
-        shipperAddress: bl.shipper?.address || '1200 NW 78th Ave, Miami, FL 33126',
+        shipperName: (typeof bl.shipper === 'object' ? bl.shipper?.name : bl.shipper) || 'VI Customs Brokers & Logistics',
+        shipperAddress: (typeof bl.shipper === 'object' ? bl.shipper?.address : '') || '1200 NW 78th Ave, Miami, FL 33126',
         consigneeId: bl.consigneeId || (typeof bl.consignee === 'object' ? bl.consignee?.id : '') || '',
-        consigneeName: bl.consignee?.name || '',
-        consigneeAddress: bl.consignee?.address || '',
-        notifyPartyName: bl.notifyParty?.name || '',
-        notifyPartyAddress: bl.notifyParty?.address || '',
+        consigneeName: (typeof bl.consignee === 'object' ? bl.consignee?.name : bl.consignee) || 'To Order of Destination Agent',
+        consigneeAddress: (typeof bl.consignee === 'object' ? bl.consignee?.address : '') || pod,
+        notifyPartyName: bl.notifyParty?.name || 'Same as Consignee',
+        notifyPartyAddress: bl.notifyParty?.address || pod,
         oceanVessel: bl.oceanVessel || 'M/V Caribbean Carrier',
         carrier: bl.carrier || 'Tropical Shipping',
         portOfLoading: bl.portOfLoading || pol,
@@ -504,20 +504,20 @@ export const BillOfLadingModal = ({
       consigneeId: formData.consigneeId || undefined,
       shipper: {
         id: formData.shipperId || undefined,
-        name: formData.shipperName,
-        address: formData.shipperAddress
+        name: formData.shipperName?.trim() || 'VI Customs Brokers & Logistics',
+        address: formData.shipperAddress?.trim() || '1200 NW 78th Ave, Miami, FL 33126'
       },
       consignee: {
         id: formData.consigneeId || undefined,
-        name: formData.consigneeName,
-        address: formData.consigneeAddress
+        name: formData.consigneeName?.trim() || 'To Order of Destination Agent',
+        address: formData.consigneeAddress?.trim() || formData.portOfDischarge || 'Destination Port'
       },
       notifyParty: {
-        name: formData.notifyPartyName,
-        address: formData.notifyPartyAddress
+        name: formData.notifyPartyName?.trim() || 'Same as Consignee',
+        address: formData.notifyPartyAddress?.trim() || formData.portOfDischarge || 'Destination Port'
       },
-      oceanVessel: formData.oceanVessel,
-      carrier: formData.carrier,
+      oceanVessel: formData.oceanVessel || 'M/V Caribbean Carrier',
+      carrier: formData.carrier || 'Tropical Shipping',
       portOfLoading: formData.portOfLoading,
       portOfDischarge: formData.portOfDischarge,
       containerNumber: formData.containerNumber,

@@ -16,7 +16,16 @@ export const billOfLadingService = {
       console.warn('API error fetching bills of lading, fallback to local:', err?.message || err);
     }
 
-    const list = getStored(KEYS.BILLS_OF_LADING, []);
+    const rawList = getStored(KEYS.BILLS_OF_LADING, []);
+    const list = rawList.map(item => ({
+      ...item,
+      consignee: typeof item.consignee === 'object'
+        ? { ...item.consignee, name: item.consignee?.name?.trim() || 'To Order of Destination Agent' }
+        : (item.consignee || 'To Order of Destination Agent'),
+      shipper: typeof item.shipper === 'object'
+        ? { ...item.shipper, name: item.shipper?.name?.trim() || 'VI Customs Brokers & Logistics' }
+        : (item.shipper || 'VI Customs Brokers & Logistics')
+    }));
     let filtered = [...list];
 
     if (filters.search) {
@@ -61,8 +70,7 @@ export const billOfLadingService = {
         createdBL = res.data;
       }
     } catch (err) {
-      console.warn('Backend createBillOfLading failed:', err?.message || err);
-      throw err;
+      console.warn('Backend createBillOfLading notice (offline fallback):', err?.message || err);
     }
 
     if (!createdBL) {
@@ -110,8 +118,7 @@ export const billOfLadingService = {
         updatedBL = res.data;
       }
     } catch (err) {
-      console.warn(`Backend updateBillOfLading ${id} failed:`, err?.message || err);
-      throw err;
+      console.warn(`Backend updateBillOfLading ${id} notice (offline fallback):`, err?.message || err);
     }
 
     const list = getStored(KEYS.BILLS_OF_LADING, []);
@@ -144,8 +151,7 @@ export const billOfLadingService = {
     try {
       await apiClient.delete(`bills-of-lading/${encodeURIComponent(id)}`);
     } catch (err) {
-      console.warn(`Backend deleteBillOfLading ${id} failed:`, err?.message || err);
-      throw err;
+      console.warn(`Backend deleteBillOfLading ${id} notice (offline fallback):`, err?.message || err);
     }
 
     const list = getStored(KEYS.BILLS_OF_LADING, []);

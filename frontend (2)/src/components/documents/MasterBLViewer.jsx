@@ -259,8 +259,12 @@ export const MasterBLViewer = ({ bl, linkedHbls = [], onNavigate }) => {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', border: '1px solid #0A192F', marginBottom: '0.75rem' }}>
           <div style={{ padding: '0.65rem', borderRight: '1px solid #0A192F', borderBottom: '1px solid #0A192F' }}>
             <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>1. SHIPPER / CONSOLIDATOR</div>
-            <div style={{ fontWeight: 700, fontSize: '0.85rem', marginTop: '2px' }}>{bl.shipper?.name}</div>
-            <div style={{ fontSize: '0.75rem', color: '#334155', marginTop: '2px', whiteSpace: 'pre-line' }}>{bl.shipper?.address}</div>
+            <div style={{ fontWeight: 700, fontSize: '0.85rem', marginTop: '2px' }}>
+              {typeof bl.shipper === 'object' ? (bl.shipper?.name || 'VI Customs Brokers & Logistics') : (bl.shipper || 'VI Customs Brokers & Logistics')}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: '#334155', marginTop: '2px', whiteSpace: 'pre-line' }}>
+              {typeof bl.shipper === 'object' ? (bl.shipper?.address || '') : ''}
+            </div>
             {bl.shipper?.taxId && <div style={{ fontSize: '0.7rem', color: '#64748B', marginTop: '2px' }}>Tax ID: {bl.shipper.taxId}</div>}
           </div>
 
@@ -277,15 +281,23 @@ export const MasterBLViewer = ({ bl, linkedHbls = [], onNavigate }) => {
 
           <div style={{ padding: '0.65rem', borderRight: '1px solid #0A192F' }}>
             <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>3. CONSIGNEE / DESTINATION AGENT</div>
-            <div style={{ fontWeight: 700, fontSize: '0.85rem', marginTop: '2px' }}>{bl.consignee?.name}</div>
-            <div style={{ fontSize: '0.75rem', color: '#334155', marginTop: '2px', whiteSpace: 'pre-line' }}>{bl.consignee?.address}</div>
+            <div style={{ fontWeight: 700, fontSize: '0.85rem', marginTop: '2px' }}>
+              {typeof bl.consignee === 'object' ? (bl.consignee?.name || 'To Order of Destination Agent') : (bl.consignee || 'To Order of Destination Agent')}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: '#334155', marginTop: '2px', whiteSpace: 'pre-line' }}>
+              {typeof bl.consignee === 'object' ? (bl.consignee?.address || '') : ''}
+            </div>
             {bl.consignee?.taxId && <div style={{ fontSize: '0.7rem', color: '#64748B', marginTop: '2px' }}>TIN/VAT: {bl.consignee.taxId}</div>}
           </div>
 
           <div style={{ padding: '0.65rem' }}>
             <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>4. NOTIFY PARTY / INWARD DESK</div>
-            <div style={{ fontWeight: 700, fontSize: '0.85rem', marginTop: '2px' }}>{bl.notifyParty?.name || bl.agentName}</div>
-            <div style={{ fontSize: '0.75rem', color: '#334155', marginTop: '2px', whiteSpace: 'pre-line' }}>{bl.notifyParty?.address}</div>
+            <div style={{ fontWeight: 700, fontSize: '0.85rem', marginTop: '2px' }}>
+              {typeof bl.notifyParty === 'object' ? (bl.notifyParty?.name || bl.agentName || 'Same as Consignee') : (bl.notifyParty || bl.agentName || 'Same as Consignee')}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: '#334155', marginTop: '2px', whiteSpace: 'pre-line' }}>
+              {typeof bl.notifyParty === 'object' ? (bl.notifyParty?.address || '') : ''}
+            </div>
             {bl.notifyParty?.contact && <div style={{ fontSize: '0.7rem', color: '#64748B', marginTop: '2px' }}>Contact: {bl.notifyParty.contact}</div>}
           </div>
         </div>

@@ -298,10 +298,16 @@ export const ManifestViewer = ({ manifest }) => {
                       MBL: {item.blNumber}
                     </div>
                   </td>
-                  <td style={{ padding: '0.6rem 0.5rem' }}>{item.shipper}</td>
                   <td style={{ padding: '0.6rem 0.5rem' }}>
-                    <strong>{item.consignee}</strong>
-                    {item.notifyParty && <div style={{ fontSize: '0.68rem', color: '#64748B' }}>Notify: {item.notifyParty}</div>}
+                    {typeof item.shipper === 'object' ? (item.shipper?.name || 'Shipper') : (item.shipper || 'Shipper')}
+                  </td>
+                  <td style={{ padding: '0.6rem 0.5rem' }}>
+                    <strong>{typeof item.consignee === 'object' ? (item.consignee?.name || 'Consignee') : (item.consignee || 'Consignee')}</strong>
+                    {item.notifyParty && (
+                      <div style={{ fontSize: '0.68rem', color: '#64748B' }}>
+                        Notify: {typeof item.notifyParty === 'object' ? (item.notifyParty?.name || '') : item.notifyParty}
+                      </div>
+                    )}
                   </td>
                   <td style={{ padding: '0.6rem 0.5rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem' }}>
                     <div><strong>CONT:</strong> {item.containerNumber}</div>
