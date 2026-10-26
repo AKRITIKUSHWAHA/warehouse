@@ -471,7 +471,7 @@ export const ShipmentsList = ({ onNavigate }) => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       <PageHeader
         title="Ocean Freight Shipments"
-        subtitle="Manage container boxes, prepare shipments, and issue Master Bills of Lading."
+        subtitle="Manage container boxes, prepare shipments, and create Master Bills of Lading."
         icon={Ship}
         breadcrumbs={[
           { label: 'Operations', href: '#' },

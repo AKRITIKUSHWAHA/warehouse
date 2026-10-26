@@ -183,7 +183,7 @@ export const TopHeader = ({
                   className="card-hover"
                 >
                   <FileText size={16} style={{ color: '#8B5CF6' }} />
-                  <span>3. Issue Master B/L & Manifest</span>
+                  <span>3. Create Master B/L & Manifest</span>
                 </div>
               </div>
             )}

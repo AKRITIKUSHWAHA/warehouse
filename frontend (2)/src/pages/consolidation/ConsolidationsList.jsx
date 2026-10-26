@@ -341,7 +341,7 @@ export const ConsolidationsList = ({ onNavigate }) => {
                     }}
                   >
                     <FileText size={14} style={{ color: '#0284C7' }} />
-                    <span>Issue Master B/L</span>
+                    <span>Create Master B/L</span>
                   </button>
                 )}
 

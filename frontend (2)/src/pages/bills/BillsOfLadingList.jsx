@@ -617,11 +617,11 @@ export const BillsOfLadingList = ({ onNavigate, initialTab = null }) => {
                 setShowAddModal(true);
               }}
               className="btn btn-primary btn-sm"
-              title="Issue ocean carrier Master Bill of Lading"
+              title="Create ocean carrier Master Bill of Lading"
               style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}
             >
               <Plus size={15} />
-              <span>Issue Master B/L</span>
+              <span>Create Master Bill of Lading</span>
             </button>
           )
         }
@@ -653,7 +653,7 @@ export const BillsOfLadingList = ({ onNavigate, initialTab = null }) => {
             style={{ fontWeight: 700, fontSize: '0.8rem', padding: '0.35rem 0.85rem', gap: '6px', display: 'flex', alignItems: 'center' }}
           >
             <FileText size={15} />
-            <span>Issued Master Bills of Lading (MBL)</span>
+            <span>Master Bills of Lading (MBL)</span>
             <span
               style={{
                 background: activeTab === 'mbl' ? 'rgba(255,255,255,0.25)' : '#F1F5F9',
@@ -709,8 +709,8 @@ export const BillsOfLadingList = ({ onNavigate, initialTab = null }) => {
           pageSize={8}
           emptyTitle="No Master Bills of Lading Found"
           emptyWhy="No Master B/L records match your search or filter criteria."
-          emptyNextStep="Issue a new Master B/L or select a ready shipment from Tab 1."
-          emptyActionLabel="Issue Master B/L"
+          emptyNextStep="Create a new Master B/L to consolidate your House Bills."
+          emptyActionLabel="Create Master Bill of Lading"
           onEmptyAction={() => {
             setSelectedShipmentForBL(null);
             setShowAddModal(true);

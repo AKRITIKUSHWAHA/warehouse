@@ -110,17 +110,81 @@ export const BillOfLadingModal = ({
     });
   }, [selectedConsolidationNumber, consolidations, houseBills, formData.portOfDischarge, bl]);
 
-  // Unified list of all Consolidation Numbers across both HBLs and Consolidations
-  const allConsolidationNumbers = useMemo(() => {
-    const set = new Set();
+  // Unified list of all Consolidation Numbers with aggregate stats across HBLs and Consolidations
+  const consolidationOptions = useMemo(() => {
+    const map = new Map();
+
+    // 1. Scan consolidations
     consolidations.forEach(c => {
-      if (c.consolidationNumber) set.add(c.consolidationNumber.trim());
+      const num = (c.consolidationNumber || c.id || '').trim();
+      if (num && !map.has(num)) {
+        const matchingHbls = houseBills.filter(h =>
+          (h.assignedConsolidationId && h.assignedConsolidationId.trim().toLowerCase() === num.toLowerCase()) ||
+          (Array.isArray(c.houseBillIds) && (c.houseBillIds.includes(h.hblNumber) || c.houseBillIds.includes(h.id)))
+        );
+        let pkgs = 0;
+        let lbs = 0;
+        let cbm = 0;
+        matchingHbls.forEach(h => {
+          pkgs += Number(h.totalPackages || h.packageCount || 1);
+          lbs += Number(h.totalWeightLbs || 0);
+          cbm += Number(h.totalCbm || 0);
+        });
+
+        map.set(num, {
+          num,
+          destinationPort: c.destinationPort || c.dischargePort || (matchingHbls[0]?.destinationPort) || '',
+          vesselName: c.vesselName || '',
+          carrier: c.carrier || 'Tropical Shipping',
+          containerNumber: c.containerNumber || '',
+          sealNumber: c.sealNumber || '',
+          agentName: c.agentName || '',
+          hblCount: matchingHbls.length,
+          totalPackages: pkgs || Number(c.totalPackages) || 0,
+          totalWeightLbs: lbs || Number(c.totalWeightLbs) || 0,
+          totalCbm: cbm || Number(c.totalCbm) || 0
+        });
+      }
     });
+
+    // 2. Scan house bills for assignedConsolidationId
     houseBills.forEach(h => {
-      if (h.assignedConsolidationId) set.add(h.assignedConsolidationId.trim());
+      const num = (h.assignedConsolidationId || '').trim();
+      if (num && !map.has(num)) {
+        const matchingHbls = houseBills.filter(hb =>
+          hb.assignedConsolidationId && hb.assignedConsolidationId.trim().toLowerCase() === num.toLowerCase()
+        );
+        let pkgs = 0;
+        let lbs = 0;
+        let cbm = 0;
+        matchingHbls.forEach(hb => {
+          pkgs += Number(hb.totalPackages || hb.packageCount || 1);
+          lbs += Number(hb.totalWeightLbs || 0);
+          cbm += Number(hb.totalCbm || 0);
+        });
+
+        map.set(num, {
+          num,
+          destinationPort: h.destinationPort || '',
+          vesselName: '',
+          carrier: 'Tropical Shipping',
+          containerNumber: '',
+          sealNumber: '',
+          agentName: '',
+          hblCount: matchingHbls.length,
+          totalPackages: pkgs,
+          totalWeightLbs: lbs,
+          totalCbm: cbm
+        });
+      }
     });
-    return Array.from(set);
+
+    return Array.from(map.values());
   }, [consolidations, houseBills]);
+
+  const allConsolidationNumbers = useMemo(() => {
+    return consolidationOptions.map(c => c.num);
+  }, [consolidationOptions]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -164,7 +228,10 @@ export const BillOfLadingModal = ({
         status: bl.status || 'Draft'
       });
     } else {
-      const initConsolNum = initialShipment?.consolidationId || initialShipment?.consolidationNumber || initialConsolidationNumber || '';
+      let initConsolNum = initialShipment?.consolidationId || initialShipment?.consolidationNumber || initialConsolidationNumber || '';
+      if (!initConsolNum && consolidationOptions.length > 0) {
+        initConsolNum = consolidationOptions[0].num;
+      }
       setSelectedConsolidationNumber(initConsolNum);
 
       const generatedBlNumber = `BL-VI-2026-${Math.floor(100 + Math.random() * 899)}`;
@@ -180,30 +247,55 @@ export const BillOfLadingModal = ({
       let initialCbm = Number(initialShipment?.totalCbm) || 0;
 
       if (initConsolNum) {
-        const found = consolidations.find(c => c.consolidationNumber === initConsolNum || c.id === initConsolNum);
-        if (found) {
-          if (!initialVessel) initialVessel = found.vesselName || '';
-          if (!initialCarrier) initialCarrier = found.carrier || 'Tropical Shipping';
-          if (!initialPod || initialPod === pod) initialPod = found.destinationPort || found.dischargePort || pod;
-          if (!initialContainer) initialContainer = found.containerNumber || '';
-          if (!initialSeal) initialSeal = found.sealNumber || '';
-          if (!initialConsignee) initialConsignee = found.agentName ? `${found.agentName} (Destination Agent)` : 'To Order of Destination Agent';
-          if (!initialPackageCount && found.totalPackages) initialPackageCount = Number(found.totalPackages);
-          if (!initialGrossWeight && found.totalWeightLbs) initialGrossWeight = Number(found.totalWeightLbs);
-          if (!initialCbm && found.totalCbm) initialCbm = Number(found.totalCbm);
-
-          // Gather HBLs linked to this consolidation
-          const linkedHbls = houseBills.filter(h =>
-            h.assignedConsolidationId === found.consolidationNumber ||
-            h.assignedConsolidationId === found.id ||
-            found.houseBillIds?.includes(h.hblNumber) ||
-            found.houseBillIds?.includes(h.id)
+        const trimmed = initConsolNum.trim().toLowerCase();
+        let targetHbls = houseBills.filter(hb =>
+          hb.assignedConsolidationId && hb.assignedConsolidationId.trim().toLowerCase() === trimmed
+        );
+        const found = consolidations.find(c =>
+          (c.consolidationNumber && c.consolidationNumber.toLowerCase() === trimmed) ||
+          (c.id && String(c.id).toLowerCase() === trimmed)
+        );
+        if (targetHbls.length === 0 && found) {
+          const matchedHbls = houseBills.filter(hb =>
+            hb.assignedConsolidationId === found.consolidationNumber ||
+            hb.assignedConsolidationId === found.id ||
+            (Array.isArray(found.houseBillIds) && (found.houseBillIds.includes(hb.hblNumber) || found.houseBillIds.includes(hb.id)))
           );
-          initialHblIds = linkedHbls.map(h => h.hblNumber || h.id);
+          targetHbls = matchedHbls;
+        }
+
+        if (targetHbls.length > 0) {
+          initialHblIds = targetHbls.map(h => h.hblNumber || h.id);
+          let sumPkgs = 0;
+          let sumWeightLbs = 0;
+          let sumCbm = 0;
+          targetHbls.forEach(h => {
+            sumPkgs += Number(h.totalPackages || h.packageCount || 1);
+            sumWeightLbs += Number(h.totalWeightLbs || 0);
+            sumCbm += Number(h.totalCbm || 0);
+          });
+          initialPackageCount = sumPkgs;
+          initialGrossWeight = Math.round(sumWeightLbs);
+          initialCbm = Number(sumCbm.toFixed(2));
+          initialPod = found?.destinationPort || targetHbls[0]?.destinationPort || initialPod || 'STT - Port of Charlotte Amalie';
+        }
+
+        if (found) {
+          if (!initialVessel) initialVessel = found.vesselName || 'M/V Caribbean Carrier';
+          if (!initialCarrier) initialCarrier = found.carrier || 'Tropical Shipping';
+          if (!initialContainer) initialContainer = found.containerNumber || 'MSKU-829104-5';
+          if (!initialSeal) initialSeal = found.sealNumber || 'SEAL-VI-8821';
+          if (!initialConsignee) initialConsignee = found.agentName ? `${found.agentName} (Destination Agent)` : 'To Order of Destination Agent';
         }
       }
 
+      if (!initialVessel) initialVessel = 'M/V Caribbean Carrier';
+      if (!initialCarrier) initialCarrier = 'Tropical Shipping';
+      if (!initialContainer) initialContainer = 'MSKU-829104-5';
+      if (!initialSeal) initialSeal = 'SEAL-VI-8821';
+      if (!initialPod) initialPod = 'STT - Port of Charlotte Amalie';
       if (!initialConsignee) initialConsignee = 'To Order of Destination Agent';
+
       setSelectedHouseBillIds(initialHblIds);
 
       setFormData({
@@ -221,7 +313,9 @@ export const BillOfLadingModal = ({
         portOfDischarge: initialPod,
         containerNumber: initialContainer,
         sealNumber: initialSeal,
-        cargoDescription: `Consolidated ocean freight merchandise for ${initialPod}.`,
+        cargoDescription: initialHblIds.length > 0
+          ? `Consolidation ${initConsolNum}: ${initialHblIds.length} House B/Ls (${initialPackageCount} Packages) consigned for ${initialPod}.`
+          : `Consolidated ocean freight merchandise for ${initialPod}.`,
         packageCount: initialPackageCount,
         packageType: 'Packages',
         grossWeightLbs: initialGrossWeight,
@@ -230,13 +324,14 @@ export const BillOfLadingModal = ({
         status: 'Draft'
       });
     }
-  }, [isOpen, bl, isEdit, initialConsolidationNumber, initialShipment, consolidations, houseBills]);
+  }, [isOpen, bl, isEdit, initialConsolidationNumber, initialShipment, consolidations, houseBills, consolidationOptions]);
 
   // Handle Consolidation text input change
   const handleConsolidationChange = (consolNum) => {
     setSelectedConsolidationNumber(consolNum);
 
     if (!consolNum) {
+      setSelectedHouseBillIds([]);
       return;
     }
 
@@ -280,19 +375,19 @@ export const BillOfLadingModal = ({
       });
 
       const firstHbl = targetHbls[0];
-      const destPortName = selectedConsol?.destinationPort || firstHbl?.destinationPort || formData.portOfDischarge;
+      const destPortName = selectedConsol?.destinationPort || firstHbl?.destinationPort || formData.portOfDischarge || 'STT - Port of Charlotte Amalie';
 
       setFormData(prev => ({
         ...prev,
-        oceanVessel: selectedConsol?.vesselName || prev.oceanVessel,
-        carrier: selectedConsol?.carrier || prev.carrier,
+        oceanVessel: selectedConsol?.vesselName || prev.oceanVessel || 'M/V Caribbean Carrier',
+        carrier: selectedConsol?.carrier || prev.carrier || 'Tropical Shipping',
         portOfDischarge: destPortName || prev.portOfDischarge,
         consigneeName: prev.consigneeName || (selectedConsol?.agentName ? `${selectedConsol.agentName} (Destination Agent)` : 'To Order of Destination Agent'),
         consigneeAddress: prev.consigneeAddress || destPortName,
         notifyPartyName: prev.notifyPartyName || selectedConsol?.agentName || 'Same as Consignee',
         notifyPartyAddress: prev.notifyPartyAddress || destPortName,
-        containerNumber: selectedConsol?.containerNumber || prev.containerNumber,
-        sealNumber: selectedConsol?.sealNumber || prev.sealNumber,
+        containerNumber: selectedConsol?.containerNumber || prev.containerNumber || 'MSKU-829104-5',
+        sealNumber: selectedConsol?.sealNumber || prev.sealNumber || 'SEAL-VI-8821',
         packageCount: sumPkgs,
         grossWeightLbs: Math.round(sumWeightLbs),
         cbm: Number(sumCbm.toFixed(2)),
@@ -302,11 +397,11 @@ export const BillOfLadingModal = ({
       const destPortName = selectedConsol.destinationPort || selectedConsol.dischargePort || formData.portOfDischarge;
       setFormData(prev => ({
         ...prev,
-        oceanVessel: selectedConsol.vesselName || prev.oceanVessel,
-        carrier: selectedConsol.carrier || prev.carrier,
+        oceanVessel: selectedConsol.vesselName || prev.oceanVessel || 'M/V Caribbean Carrier',
+        carrier: selectedConsol.carrier || prev.carrier || 'Tropical Shipping',
         portOfDischarge: destPortName,
-        containerNumber: selectedConsol.containerNumber || prev.containerNumber,
-        sealNumber: selectedConsol.sealNumber || prev.sealNumber,
+        containerNumber: selectedConsol.containerNumber || prev.containerNumber || 'MSKU-829104-5',
+        sealNumber: selectedConsol.sealNumber || prev.sealNumber || 'SEAL-VI-8821',
         packageCount: Number(selectedConsol.totalPackages) || 0,
         grossWeightLbs: Math.round(Number(selectedConsol.totalWeightLbs) || 0),
         cbm: Number(Number(selectedConsol.totalCbm || 0).toFixed(2)),
@@ -534,22 +629,42 @@ export const BillOfLadingModal = ({
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '0.75rem', alignItems: 'center' }}>
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label" style={{ fontWeight: 700 }}>Consolidation #</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Enter Consolidation # (e.g. CNS-2026-001)"
-                    value={selectedConsolidationNumber}
-                    onChange={(e) => handleConsolidationChange(e.target.value)}
-                    list="consolidation-numbers-list"
-                  />
-                  <datalist id="consolidation-numbers-list">
-                    {allConsolidationNumbers.map(cn => (
-                      <option key={cn} value={cn}>
-                        {cn}
-                      </option>
-                    ))}
-                  </datalist>
+                  <label className="form-label" style={{ fontWeight: 700 }}>
+                    Consolidation # <span className="required">*</span>
+                  </label>
+                  {consolidationOptions.length > 0 ? (
+                    <select
+                      className="form-select"
+                      style={{
+                        fontWeight: 600,
+                        color: '#0A192F',
+                        background: '#FFFFFF',
+                        border: '1.5px solid #0284C7'
+                      }}
+                      value={selectedConsolidationNumber}
+                      onChange={(e) => handleConsolidationChange(e.target.value)}
+                    >
+                      <option value="">-- Select Company Consolidation Number --</option>
+                      {consolidationOptions.map(opt => (
+                        <option key={opt.num} value={opt.num}>
+                          {opt.num} • {opt.destinationPort || 'Caribbean'} ({opt.hblCount} House Bills • {opt.totalPackages} pkgs • {opt.totalWeightLbs} lbs)
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Enter Consolidation # (e.g. CNS-2026-001)"
+                        value={selectedConsolidationNumber}
+                        onChange={(e) => handleConsolidationChange(e.target.value)}
+                      />
+                      <span style={{ fontSize: '0.72rem', color: '#64748B' }}>
+                        Create House Bills with your company consolidation number in Step 2 to populate this dropdown.
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <div style={{ fontSize: '0.8rem', color: '#475569', background: '#FFFFFF', padding: '0.65rem 0.85rem', borderRadius: '6px', border: '1px solid #BAE6FD' }}>
@@ -942,7 +1057,7 @@ export const BillOfLadingModal = ({
             </button>
             <button type="submit" className="btn btn-primary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               {isEdit ? <Save size={14} /> : <Plus size={14} />}
-              <span>{isEdit ? 'Save B/L Changes' : 'Issue Master B/L'}</span>
+              <span>{isEdit ? 'Save Master B/L Changes' : `Create Master Bill of Lading (${selectedHouseBillIds.length} Linked HBLs)`}</span>
             </button>
           </div>
         </form>
