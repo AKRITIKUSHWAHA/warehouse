@@ -263,14 +263,21 @@ export const BillsOfLadingList = ({ onNavigate, initialTab = null }) => {
       )
     },
     {
-      header: 'Consignee & Shipper',
+      header: 'Consolidated Cargo',
       accessor: 'consignee',
-      render: (item) => (
-        <div>
-          <div style={{ fontWeight: 700, color: '#0A192F' }}>{item.consignee?.name || item.consignee}</div>
-          <div style={{ fontSize: '0.72rem', color: '#64748B' }}>From: {item.shipper?.name || item.shipper}</div>
-        </div>
-      )
+      render: (item) => {
+        const hblCount = Array.isArray(item.houseBillIds) ? item.houseBillIds.length : (item.houseBillsCount || 0);
+        return (
+          <div>
+            <div style={{ fontWeight: 700, color: '#0A192F' }}>
+              {hblCount > 0 ? `${hblCount} Linked House Bills` : (item.consignee?.name || item.consignee || 'Consolidated Cargo')}
+            </div>
+            <div style={{ fontSize: '0.72rem', color: '#64748B' }}>
+              Consignee: {item.consignee?.name || item.consignee || 'To Order of Destination Agent'}
+            </div>
+          </div>
+        );
+      }
     },
     {
       header: 'Vessel & Carrier',

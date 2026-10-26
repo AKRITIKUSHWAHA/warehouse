@@ -791,250 +791,167 @@ export const BillOfLadingModal = ({
               )}
             </div>
 
-            {/* B/L Number and Issue Date */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.75rem' }}>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">Master B/L Number <span className="required">*</span></label>
-                <input
-                  type="text"
-                  required
-                  disabled={isEdit}
-                  className="form-control"
-                  value={formData.blNumber}
-                  onChange={(e) => setFormData({ ...formData, blNumber: e.target.value })}
-                />
+            {/* Live Aggregated Cargo Summary (Read-only, derived automatically from selected House Bills) */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
+              gap: '0.65rem',
+              background: '#F0F9FF',
+              border: '1.5px solid #BAE6FD',
+              borderRadius: '8px',
+              padding: '0.75rem 1rem'
+            }}>
+              <div>
+                <div style={{ fontSize: '0.68rem', color: '#0369A1', fontWeight: 700, textTransform: 'uppercase' }}>Selected HBLs</div>
+                <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0C4A6E' }}>
+                  {selectedHouseBillIds.length} House B/Ls
+                </div>
               </div>
-
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">Issue Date</label>
-                <input
-                  type="date"
-                  className="form-control"
-                  value={formData.issueDate}
-                  onChange={(e) => setFormData({ ...formData, issueDate: e.target.value })}
-                />
+              <div>
+                <div style={{ fontSize: '0.68rem', color: '#0369A1', fontWeight: 700, textTransform: 'uppercase' }}>Total Packages</div>
+                <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0C4A6E' }}>
+                  {formData.packageCount} pkgs
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.68rem', color: '#0369A1', fontWeight: 700, textTransform: 'uppercase' }}>Gross Weight</div>
+                <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0C4A6E' }}>
+                  {Number(formData.grossWeightLbs).toLocaleString()} lbs
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.68rem', color: '#0369A1', fontWeight: 700, textTransform: 'uppercase' }}>Volume</div>
+                <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#D97706' }}>
+                  {Number((formData.cbm * 35.3147).toFixed(1))} CFT <span style={{ fontSize: '0.72rem', color: '#0369A1' }}>({formData.cbm} CBM)</span>
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.68rem', color: '#0369A1', fontWeight: 700, textTransform: 'uppercase' }}>Discharge Port</div>
+                <div style={{ fontSize: '0.825rem', fontWeight: 800, color: '#0284C7', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {formData.portOfDischarge || 'Destination'}
+                </div>
               </div>
             </div>
 
-            {/* Shipper & Consignee */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '0.75rem' }}>
-              <div style={{ background: '#F8FAFC', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '0.4rem' }}>
-                  Shipper / Forwarder Details
-                </span>
-                <div className="form-group" style={{ marginBottom: '0.5rem' }}>
-                  <label className="form-label" style={{ fontSize: '0.75rem' }}>Shipper Name</label>
+            {/* STEP 3: Carrier & Leased Container (VOCC Ocean Equipment) */}
+            <div style={{
+              background: '#FFFFFF',
+              border: '1px solid #E2E8F0',
+              borderRadius: '8px',
+              padding: '0.85rem 1rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.65rem'
+            }}>
+              <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#0A192F', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span>Carrier & Leased Container (VOCC Equipment)</span>
+                <span style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 400 }}>POL: Miami (USMIA)</span>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.65rem' }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label" style={{ fontSize: '0.75rem' }}>Ocean Carrier</label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="e.g. VI Customs Brokers & Logistics"
-                    value={formData.shipperName}
-                    onChange={(e) => setFormData({ ...formData, shipperName: e.target.value })}
+                    placeholder="e.g. Tropical Shipping"
+                    value={formData.carrier}
+                    onChange={(e) => setFormData({ ...formData, carrier: e.target.value })}
                   />
                 </div>
+
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label" style={{ fontSize: '0.75rem' }}>Shipper Address</label>
+                  <label className="form-label" style={{ fontSize: '0.75rem' }}>Ocean Vessel / Voyage</label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="e.g. 1200 NW 78th Ave, Miami, FL 33126"
-                    value={formData.shipperAddress}
-                    onChange={(e) => setFormData({ ...formData, shipperAddress: e.target.value })}
+                    placeholder="e.g. M/V Caribbean Carrier"
+                    value={formData.oceanVessel}
+                    onChange={(e) => setFormData({ ...formData, oceanVessel: e.target.value })}
+                    list="vessels-suggestions-list"
+                  />
+                  <datalist id="vessels-suggestions-list">
+                    {vessels.map(v => (
+                      <option key={`mbl-ves-${v.id || v.name}`} value={v.name} />
+                    ))}
+                  </datalist>
+                </div>
+
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label" style={{ fontSize: '0.75rem' }}>Container Number</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="e.g. MSKU-829104-5"
+                    value={formData.containerNumber}
+                    onChange={(e) => setFormData({ ...formData, containerNumber: e.target.value })}
+                  />
+                </div>
+
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label" style={{ fontSize: '0.75rem' }}>Bolt Seal Number</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="e.g. SEAL-VI-8821"
+                    value={formData.sealNumber}
+                    onChange={(e) => setFormData({ ...formData, sealNumber: e.target.value })}
                   />
                 </div>
               </div>
+            </div>
 
-              <div style={{ background: '#F8FAFC', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '0.4rem' }}>
-                  Consignee Details <span className="required">*</span>
-                </span>
-                <div className="form-group" style={{ marginBottom: '0.5rem' }}>
-                  <label className="form-label" style={{ fontSize: '0.75rem' }}>Consignee Name <span className="required">*</span></label>
+            {/* STEP 4: Master B/L Reference & Parties Summary */}
+            <div style={{
+              background: '#F8FAFC',
+              border: '1px solid #E2E8F0',
+              borderRadius: '8px',
+              padding: '0.75rem 1rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.5rem'
+            }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.65rem' }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label" style={{ fontSize: '0.75rem' }}>Master B/L Number</label>
                   <input
                     type="text"
                     required
+                    disabled={isEdit}
                     className="form-control"
-                    placeholder="e.g. Caribbean Distribution Ltd"
-                    value={formData.consigneeName}
-                    onChange={(e) => setFormData({ ...formData, consigneeName: e.target.value })}
+                    value={formData.blNumber}
+                    onChange={(e) => setFormData({ ...formData, blNumber: e.target.value })}
                   />
                 </div>
+
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label" style={{ fontSize: '0.75rem' }}>Consignee Address</label>
+                  <label className="form-label" style={{ fontSize: '0.75rem' }}>Issue Date</label>
                   <input
-                    type="text"
+                    type="date"
                     className="form-control"
-                    placeholder="e.g. Port Road, Port of Discharge"
-                    value={formData.consigneeAddress}
-                    onChange={(e) => setFormData({ ...formData, consigneeAddress: e.target.value })}
+                    value={formData.issueDate}
+                    onChange={(e) => setFormData({ ...formData, issueDate: e.target.value })}
                   />
                 </div>
               </div>
-            </div>
 
-            {/* Ocean Vessel & Carrier */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.75rem' }}>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">Ocean Vessel</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="e.g. M/V Caribbean Carrier"
-                  value={formData.oceanVessel}
-                  onChange={(e) => setFormData({ ...formData, oceanVessel: e.target.value })}
-                  list="vessels-suggestions-list"
-                />
-                <datalist id="vessels-suggestions-list">
-                  {vessels.map(v => (
-                    <option key={`mbl-ves-${v.id || v.name}`} value={v.name} />
-                  ))}
-                </datalist>
-              </div>
-
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">Carrier</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="e.g. Tropical Shipping"
-                  value={formData.carrier}
-                  onChange={(e) => setFormData({ ...formData, carrier: e.target.value })}
-                />
-              </div>
-            </div>
-
-            {/* Routing Ports (Input fields) */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.75rem' }}>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">Port of Loading (POL)</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="e.g. MIA - Port of Miami"
-                  value={formData.portOfLoading}
-                  onChange={(e) => setFormData({ ...formData, portOfLoading: e.target.value })}
-                  list="pol-suggestions-list"
-                />
-                <datalist id="pol-suggestions-list">
-                  {ports.map(p => {
-                    const pCode = getPortCode(p);
-                    return (
-                      <option key={`pol-${p.id || pCode}`} value={`${pCode} - ${p.name}`} />
-                    );
-                  })}
-                </datalist>
-              </div>
-
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">Port of Discharge (POD) <span className="required">*</span></label>
-                <input
-                  type="text"
-                  required
-                  className="form-control"
-                  placeholder="e.g. STT - Port of Charlotte Amalie"
-                  value={formData.portOfDischarge}
-                  onChange={(e) => setFormData({ ...formData, portOfDischarge: e.target.value })}
-                  list="pod-suggestions-list"
-                />
-                <datalist id="pod-suggestions-list">
-                  {ports.map(p => {
-                    const pCode = getPortCode(p);
-                    return (
-                      <option key={`pod-${p.id || pCode}`} value={`${pCode} - ${p.name}`} />
-                    );
-                  })}
-                </datalist>
-              </div>
-            </div>
-
-            {/* Container & Seal */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.75rem' }}>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">Container Number</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="e.g. MSKU-829104-5"
-                  value={formData.containerNumber}
-                  onChange={(e) => setFormData({ ...formData, containerNumber: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">Bolt Seal Number</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="e.g. SEAL-VI-8821"
-                  value={formData.sealNumber}
-                  onChange={(e) => setFormData({ ...formData, sealNumber: e.target.value })}
-                />
-              </div>
-            </div>
-
-            {/* Cargo Description */}
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label className="form-label">Cargo Description <span className="required">*</span></label>
-              <textarea
-                required
-                className="form-control"
-                rows={2}
-                value={formData.cargoDescription}
-                onChange={(e) => setFormData({ ...formData, cargoDescription: e.target.value })}
-              />
-            </div>
-
-            {/* Package, Weight & Volume Totals */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">Total Packages</label>
-                <input
-                  type="number"
-                  min="0"
-                  className="form-control"
-                  value={formData.packageCount}
-                  onChange={(e) => setFormData({ ...formData, packageCount: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">Gross Weight (LBS)</label>
-                <input
-                  type="number"
-                  min="0"
-                  className="form-control"
-                  value={formData.grossWeightLbs}
-                  onChange={(e) => setFormData({ ...formData, grossWeightLbs: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">Volume (CBM)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  className="form-control"
-                  value={formData.cbm}
-                  onChange={(e) => setFormData({ ...formData, cbm: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">B/L Status</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Draft"
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  list="bl-status-suggestions-list"
-                />
-                <datalist id="bl-status-suggestions-list">
-                  <option value="Draft" />
-                  <option value="Released" />
-                  <option value="On Hold" />
-                  <option value="Cancelled" />
-                </datalist>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '0.5rem',
+                fontSize: '0.72rem',
+                color: '#64748B',
+                paddingTop: '0.4rem',
+                borderTop: '1px solid #E2E8F0'
+              }}>
+                <div>
+                  <span style={{ fontWeight: 600, color: '#334155' }}>Shipper (Forwarder):</span> VI Customs Brokers & Logistics (Miami)
+                </div>
+                <div>
+                  <span style={{ fontWeight: 600, color: '#334155' }}>Consignee:</span> To Order of Destination Agent ({formData.portOfDischarge || 'Caribbean'})
+                </div>
               </div>
             </div>
           </div>
