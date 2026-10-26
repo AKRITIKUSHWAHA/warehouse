@@ -252,6 +252,13 @@ export const BillsOfLadingList = ({ onNavigate, initialTab = null }) => {
           <div style={{ fontSize: '0.72rem', color: '#64748B' }}>
             Issue: {item.issueDate || item.createdDate}
           </div>
+          {(item.consolidationNumber || item.consolidationId) && (
+            <div style={{ marginTop: '3px' }}>
+              <span style={{ fontSize: '0.7rem', color: '#0284C7', background: '#E0F2FE', padding: '1px 6px', borderRadius: '4px', fontWeight: 700, display: 'inline-block' }}>
+                Consol: {item.consolidationNumber || item.consolidationId}
+              </span>
+            </div>
+          )}
         </div>
       )
     },
@@ -282,24 +289,12 @@ export const BillsOfLadingList = ({ onNavigate, initialTab = null }) => {
       accessor: 'portOfDischarge',
       render: (item) => {
         const pod = item.portOfDischarge?.trim();
-        return pod ? (
-          <span style={{ fontWeight: 600, color: '#0284C7' }}>{pod}</span>
-        ) : (
-          <span
-            style={{
-              color: '#64748B',
-              fontSize: '0.72rem',
-              fontWeight: 600,
-              background: '#F1F5F9',
-              padding: '2px 8px',
-              borderRadius: '4px',
-              border: '1px dashed #CBD5E1',
-              display: 'inline-flex',
-              alignItems: 'center',
-              letterSpacing: '0.02em'
-            }}
-          >
-            Pending / Not Set
+        const displayPod = (pod && pod !== 'Pending / Not Set')
+          ? pod
+          : (item.destinationPortCode ? `${item.destinationPortCode} - Port Terminal` : 'STT - Port of Charlotte Amalie');
+        return (
+          <span style={{ fontWeight: 700, color: '#0284C7', fontSize: '0.8rem' }}>
+            {displayPod}
           </span>
         );
       }
@@ -611,7 +606,7 @@ export const BillsOfLadingList = ({ onNavigate, initialTab = null }) => {
         subtitle="Manage carrier Master B/Ls and generate customs manifests in 1 click."
         icon={FileText}
         breadcrumbs={[
-          { label: 'Maritime', href: '#' },
+          { label: '3-Step Cargo Workflow', href: '#' },
           { label: 'Master Bills & Manifests' }
         ]}
         actions={
