@@ -167,23 +167,15 @@ export const TopHeader = ({
                   className="card-hover"
                 >
                   <Package size={16} style={{ color: '#0284C7' }} />
-                  <span>New Warehouse Receipt</span>
+                  <span>1. New Warehouse Receipt</span>
                 </div>
                 <div
-                  onClick={() => { onNavigate('consolidations', 'create'); setShowCreateMenu(false); }}
+                  onClick={() => { onNavigate('house-bills', 'create'); setShowCreateMenu(false); }}
                   style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0.55rem 0.75rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.825rem' }}
                   className="card-hover"
                 >
-                  <Layers size={16} style={{ color: '#D97706' }} />
-                  <span>Build Cargo Consolidation</span>
-                </div>
-                <div
-                  onClick={() => { onNavigate('shipments', 'create'); setShowCreateMenu(false); }}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0.55rem 0.75rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.825rem' }}
-                  className="card-hover"
-                >
-                  <Ship size={16} style={{ color: '#10B981' }} />
-                  <span>New Master Shipment</span>
+                  <FileText size={16} style={{ color: '#059669' }} />
+                  <span>2. New House B/L (HBL)</span>
                 </div>
                 <div
                   onClick={() => { onNavigate('bills-of-lading', 'create'); setShowCreateMenu(false); }}
@@ -191,7 +183,7 @@ export const TopHeader = ({
                   className="card-hover"
                 >
                   <FileText size={16} style={{ color: '#8B5CF6' }} />
-                  <span>Create Bill of Lading (B/L)</span>
+                  <span>3. Issue Master B/L & Manifest</span>
                 </div>
               </div>
             )}

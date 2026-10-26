@@ -8,10 +8,11 @@ export const HouseBillModal = ({
   hbl = null,
   onSave
 }) => {
-  const { customers = [] } = useAppData();
+  const { customers = [], consolidations = [], houseBills = [] } = useAppData();
   const hasInitializedRef = useRef(false);
   const [formData, setFormData] = useState({
     cargoDescription: '',
+    assignedConsolidationId: '',
     freightTerms: 'Freight Prepaid',
     status: 'Active',
     notes: '',
@@ -39,6 +40,7 @@ export const HouseBillModal = ({
     if (hbl) {
       setFormData({
         cargoDescription: hbl.cargoDescription || '',
+        assignedConsolidationId: hbl.assignedConsolidationId || '',
         freightTerms: hbl.freightTerms || 'Freight Prepaid',
         status: hbl.status || 'Active',
         notes: hbl.notes || '',
@@ -77,6 +79,18 @@ export const HouseBillModal = ({
   const customsFee = Number(formData.customsFee) || 0;
   const totalAmount = Number((oceanCharge + docFee + terminalFee + customsFee).toFixed(2));
 
+  const existingConsolidationNumbers = React.useMemo(() => {
+    const set = new Set();
+    consolidations.forEach(c => {
+      if (c.consolidationNumber) set.add(c.consolidationNumber);
+      if (c.containerNumber) set.add(c.containerNumber);
+    });
+    houseBills.forEach(h => {
+      if (h.assignedConsolidationId) set.add(h.assignedConsolidationId);
+    });
+    return Array.from(set).filter(Boolean);
+  }, [consolidations, houseBills]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -105,6 +119,7 @@ export const HouseBillModal = ({
     onSave({
       ...hbl,
       cargoDescription: formData.cargoDescription,
+      assignedConsolidationId: formData.assignedConsolidationId?.trim() || null,
       freightTerms: formData.freightTerms,
       status: formData.status,
       notes: formData.notes,
@@ -194,6 +209,28 @@ export const HouseBillModal = ({
                   onChange={(e) => setFormData({ ...formData, consigneeAddress: e.target.value, consigneeName: e.target.value.split('\n')[0] })}
                   required
                 />
+              </div>
+            </div>
+
+            <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', padding: '0.75rem' }}>
+              <label className="form-label" style={{ fontWeight: 700, color: '#1E40AF', marginBottom: '4px' }}>
+                Company Consolidation # (Step 2 Link)
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                list="modal-consolidation-options"
+                placeholder="e.g. CNS-2026-001 (links this HBL to a Master B/L)"
+                value={formData.assignedConsolidationId}
+                onChange={(e) => setFormData({ ...formData, assignedConsolidationId: e.target.value.toUpperCase() })}
+              />
+              <datalist id="modal-consolidation-options">
+                {existingConsolidationNumbers.map(cNum => (
+                  <option key={cNum} value={cNum} />
+                ))}
+              </datalist>
+              <div style={{ fontSize: '0.72rem', color: '#64748B', marginTop: '3px' }}>
+                All HBLs with this Consolidation Number will automatically gather into the Master Bill of Lading (Step 3).
               </div>
             </div>
 

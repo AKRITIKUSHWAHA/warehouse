@@ -54,37 +54,18 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
         items: [
           { id: 'house-bills', label: 'House Bills of Lading', icon: FileText, moduleId: 'house-bills' },
           {
-            id: 'consolidations',
-            label: (isAgent || roleKey === 'agent') ? 'Container Arrivals' : roleKey === 'warehouse' ? 'Container Packing' : 'Container Consolidation',
-            icon: Layers,
-            moduleId: 'consolidations'
-          },
-          {
-            id: (isAgent || roleKey === 'agent') ? 'agent-shipments' : 'shipments',
-            label: 'Ocean Shipments',
-            icon: Ship,
-            moduleId: 'shipments'
-          },
-          {
             id: 'bills-of-lading',
-            label: (isAgent || roleKey === 'agent') ? 'Port Manifests & Master B/Ls' : 'Master Bills & Manifests',
+            label: 'Master Bills & Manifests',
             icon: FileText,
             moduleId: 'bills-of-lading'
           },
-          { id: 'vessels', label: 'Fleet Directory', icon: Anchor, moduleId: 'vessels' },
-          {
-            id: (isAgent || roleKey === 'agent') ? 'agent-tracking' : 'tracking',
-            label: (isAgent || roleKey === 'agent') ? 'Port Tracking' : 'Cargo Tracking',
-            icon: Search,
-            moduleId: 'tracking'
-          }
+          { id: 'vessels', label: 'Fleet Directory', icon: Anchor, moduleId: 'vessels' }
         ]
       },
       {
         id: 'system-governance',
         title: 'SYSTEM & GOVERNANCE',
         items: [
-          { id: 'history', label: 'Shipment History', icon: History, moduleId: 'history' },
           { id: 'audit', label: 'Activity Logs', icon: Activity, moduleId: 'audit' },
           { id: 'users', label: 'Users & Roles', icon: ShieldCheck, moduleId: 'users' },
           { id: 'settings', label: 'System Settings', icon: Settings, moduleId: 'settings' }
@@ -263,24 +244,11 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.35rem' }}>
-            <button
-              onClick={async () => {
-                await switchUser('USR-004'); // Test agent portal
-                onSelectTab('agent-dashboard');
-              }}
-              className="btn btn-sm btn-outline"
-              style={{ flex: 1, fontSize: '0.7rem', color: '#D97706', borderColor: 'rgba(217, 119, 6, 0.4)', padding: '0.3rem', justifyContent: 'center' }}
-              title="Quick switch to Agent Portal view"
-            >
-              <ExternalLink size={12} />
-              <span>Agent Portal</span>
-            </button>
-
+          <div style={{ display: 'flex' }}>
             <button
               onClick={logout}
-              className="btn btn-sm btn-outline"
-              style={{ fontSize: '0.7rem', color: '#EF4444', borderColor: 'rgba(239, 68, 68, 0.4)', padding: '0.3rem 0.6rem', justifyContent: 'center' }}
+              className="btn btn-sm btn-outline w-full"
+              style={{ fontSize: '0.75rem', color: '#EF4444', borderColor: 'rgba(239, 68, 68, 0.4)', padding: '0.35rem 0.6rem', justifyContent: 'center' }}
               title="Sign Out to Login Page"
             >
               <LogOut size={13} />

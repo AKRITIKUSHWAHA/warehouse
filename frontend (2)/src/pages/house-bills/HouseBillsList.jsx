@@ -76,6 +76,11 @@ export const HouseBillsList = ({ onNavigate }) => {
           <div style={{ fontWeight: 800, color: '#0A192F', fontFamily: 'JetBrains Mono, monospace' }}>
             {item.hblNumber}
           </div>
+          {item.assignedConsolidationId && (
+            <div style={{ fontSize: '0.72rem', color: '#2563EB', fontWeight: 700 }}>
+              Consol: {item.assignedConsolidationId}
+            </div>
+          )}
           <div style={{ fontSize: '0.72rem', color: '#64748B' }}>
             Issued: {item.issueDate || item.createdDate}
           </div>

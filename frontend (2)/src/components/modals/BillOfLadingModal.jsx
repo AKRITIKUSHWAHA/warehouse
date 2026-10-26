@@ -73,12 +73,20 @@ export const BillOfLadingModal = ({
     }
 
     const trimmed = selectedConsolidationNumber.trim().toLowerCase();
+
+    // 1. Check direct HBL matches tagged with this company consolidation number
+    const directHbls = houseBills.filter(hb =>
+      hb.assignedConsolidationId && hb.assignedConsolidationId.trim().toLowerCase() === trimmed
+    );
+    if (directHbls.length > 0) {
+      return directHbls;
+    }
+
     const consol = consolidations.find(c =>
       (c.consolidationNumber && c.consolidationNumber.toLowerCase() === trimmed) ||
       (c.id && String(c.id).toLowerCase() === trimmed)
     );
     if (!consol) {
-      // If client typed custom consolidation # that doesn't match an existing consol record, show available HBLs
       return houseBills.filter(hb => {
         if (bl && (bl.houseBillIds?.includes(hb.hblNumber) || bl.houseBillIds?.includes(hb.id))) return true;
         return !hb.assignedMasterBLId || hb.assignedMasterBLId === bl?.blNumber;
@@ -101,6 +109,18 @@ export const BillOfLadingModal = ({
       return isUnassigned && matchPort;
     });
   }, [selectedConsolidationNumber, consolidations, houseBills, formData.portOfDischarge, bl]);
+
+  // Unified list of all Consolidation Numbers across both HBLs and Consolidations
+  const allConsolidationNumbers = useMemo(() => {
+    const set = new Set();
+    consolidations.forEach(c => {
+      if (c.consolidationNumber) set.add(c.consolidationNumber.trim());
+    });
+    houseBills.forEach(h => {
+      if (h.assignedConsolidationId) set.add(h.assignedConsolidationId.trim());
+    });
+    return Array.from(set);
+  }, [consolidations, houseBills]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -221,61 +241,78 @@ export const BillOfLadingModal = ({
     }
 
     const trimmed = consolNum.trim().toLowerCase();
+
+    // 1. Check direct HBL matches tagged with this company consolidation number
+    const directHbls = houseBills.filter(hb =>
+      hb.assignedConsolidationId && hb.assignedConsolidationId.trim().toLowerCase() === trimmed
+    );
+
+    // 2. Check consolidation record
     const selectedConsol = consolidations.find(c =>
       (c.consolidationNumber && c.consolidationNumber.toLowerCase() === trimmed) ||
       (c.id && String(c.id).toLowerCase() === trimmed)
     );
-    if (!selectedConsol) return;
 
-    // Load House B/Ls linked to this consolidation
-    const matchedHbls = houseBills.filter(hb =>
-      hb.assignedConsolidationId === selectedConsol.consolidationNumber ||
-      hb.assignedConsolidationId === selectedConsol.id ||
-      (Array.isArray(selectedConsol.houseBillIds) && (selectedConsol.houseBillIds.includes(hb.hblNumber) || selectedConsol.houseBillIds.includes(hb.id)))
-    );
+    let targetHbls = directHbls;
+    if (targetHbls.length === 0 && selectedConsol) {
+      const matchedHbls = houseBills.filter(hb =>
+        hb.assignedConsolidationId === selectedConsol.consolidationNumber ||
+        hb.assignedConsolidationId === selectedConsol.id ||
+        (Array.isArray(selectedConsol.houseBillIds) && (selectedConsol.houseBillIds.includes(hb.hblNumber) || selectedConsol.houseBillIds.includes(hb.id)))
+      );
+      targetHbls = matchedHbls.length > 0 ? matchedHbls : houseBills.filter(hb =>
+        !hb.assignedMasterBLId && selectedConsol.destinationCode && (hb.destinationCode === selectedConsol.destinationCode || hb.destinationPort?.includes(selectedConsol.destinationCode))
+      );
+    }
 
-    const targetHbls = matchedHbls.length > 0 ? matchedHbls : houseBills.filter(hb =>
-      !hb.assignedMasterBLId && selectedConsol.destinationCode && (hb.destinationCode === selectedConsol.destinationCode || hb.destinationPort?.includes(selectedConsol.destinationCode))
-    );
+    if (targetHbls.length > 0) {
+      const hblIds = targetHbls.map(h => h.hblNumber || h.id);
+      setSelectedHouseBillIds(hblIds);
 
-    const hblIds = targetHbls.map(h => h.hblNumber || h.id);
-    setSelectedHouseBillIds(hblIds);
+      let sumPkgs = 0;
+      let sumWeightLbs = 0;
+      let sumCbm = 0;
 
-    // Sum totals from candidate HBLs
-    let sumPkgs = 0;
-    let sumWeightLbs = 0;
-    let sumCbm = 0;
+      targetHbls.forEach(h => {
+        sumPkgs += Number(h.totalPackages || h.packageCount || 1);
+        sumWeightLbs += Number(h.totalWeightLbs || 0);
+        sumCbm += Number(h.totalCbm || 0);
+      });
 
-    targetHbls.forEach(h => {
-      sumPkgs += Number(h.totalPackages || h.packageCount || 1);
-      sumWeightLbs += Number(h.totalWeightLbs || 0);
-      sumCbm += Number(h.totalCbm || 0);
-    });
+      const firstHbl = targetHbls[0];
+      const destPortName = selectedConsol?.destinationPort || firstHbl?.destinationPort || formData.portOfDischarge;
 
-    if (sumPkgs === 0 && selectedConsol.totalPackages) sumPkgs = Number(selectedConsol.totalPackages);
-    if (sumWeightLbs === 0 && selectedConsol.totalWeightLbs) sumWeightLbs = Number(selectedConsol.totalWeightLbs);
-    if (sumCbm === 0 && selectedConsol.totalCbm) sumCbm = Number(selectedConsol.totalCbm);
-
-    const destPortName = selectedConsol.destinationPort || selectedConsol.dischargePort || formData.portOfDischarge;
-
-    setFormData(prev => ({
-      ...prev,
-      oceanVessel: selectedConsol.vesselName || prev.oceanVessel,
-      carrier: selectedConsol.carrier || prev.carrier,
-      portOfDischarge: destPortName,
-      consigneeName: prev.consigneeName || (selectedConsol.agentName ? `${selectedConsol.agentName} (Destination Agent)` : 'To Order of Destination Agent'),
-      consigneeAddress: prev.consigneeAddress || destPortName,
-      notifyPartyName: prev.notifyPartyName || selectedConsol.agentName || 'Same as Consignee',
-      notifyPartyAddress: prev.notifyPartyAddress || destPortName,
-      containerNumber: selectedConsol.containerNumber || prev.containerNumber,
-      sealNumber: selectedConsol.sealNumber || prev.sealNumber,
-      packageCount: sumPkgs,
-      grossWeightLbs: Math.round(sumWeightLbs),
-      cbm: Number(sumCbm.toFixed(2)),
-      cargoDescription: targetHbls.length > 0
-        ? `Consolidation of ${targetHbls.length} House B/Ls (${sumPkgs} Packages): Commercial goods and cargo consigned for ${destPortName}.`
-        : `Consolidation ${selectedConsol.consolidationNumber}: Commercial goods and ocean freight.`
-    }));
+      setFormData(prev => ({
+        ...prev,
+        oceanVessel: selectedConsol?.vesselName || prev.oceanVessel,
+        carrier: selectedConsol?.carrier || prev.carrier,
+        portOfDischarge: destPortName || prev.portOfDischarge,
+        consigneeName: prev.consigneeName || (selectedConsol?.agentName ? `${selectedConsol.agentName} (Destination Agent)` : 'To Order of Destination Agent'),
+        consigneeAddress: prev.consigneeAddress || destPortName,
+        notifyPartyName: prev.notifyPartyName || selectedConsol?.agentName || 'Same as Consignee',
+        notifyPartyAddress: prev.notifyPartyAddress || destPortName,
+        containerNumber: selectedConsol?.containerNumber || prev.containerNumber,
+        sealNumber: selectedConsol?.sealNumber || prev.sealNumber,
+        packageCount: sumPkgs,
+        grossWeightLbs: Math.round(sumWeightLbs),
+        cbm: Number(sumCbm.toFixed(2)),
+        cargoDescription: `Consolidation ${consolNum}: ${targetHbls.length} House B/Ls (${sumPkgs} Packages) consigned for ${destPortName || 'Destination'}.`
+      }));
+    } else if (selectedConsol) {
+      const destPortName = selectedConsol.destinationPort || selectedConsol.dischargePort || formData.portOfDischarge;
+      setFormData(prev => ({
+        ...prev,
+        oceanVessel: selectedConsol.vesselName || prev.oceanVessel,
+        carrier: selectedConsol.carrier || prev.carrier,
+        portOfDischarge: destPortName,
+        containerNumber: selectedConsol.containerNumber || prev.containerNumber,
+        sealNumber: selectedConsol.sealNumber || prev.sealNumber,
+        packageCount: Number(selectedConsol.totalPackages) || 0,
+        grossWeightLbs: Math.round(Number(selectedConsol.totalWeightLbs) || 0),
+        cbm: Number(Number(selectedConsol.totalCbm || 0).toFixed(2)),
+        cargoDescription: `Consolidation ${selectedConsol.consolidationNumber}: Commercial ocean freight.`
+      }));
+    }
   };
 
   // Toggle individual House B/L selection
@@ -548,9 +585,9 @@ export const BillOfLadingModal = ({
                     list="consolidation-numbers-list"
                   />
                   <datalist id="consolidation-numbers-list">
-                    {consolidations.map(c => (
-                      <option key={c.id || c.consolidationNumber} value={c.consolidationNumber}>
-                        {c.consolidationNumber} ({c.destinationPort || 'Consolidation'})
+                    {allConsolidationNumbers.map(cn => (
+                      <option key={cn} value={cn}>
+                        {cn}
                       </option>
                     ))}
                   </datalist>

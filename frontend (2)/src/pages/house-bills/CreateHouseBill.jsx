@@ -89,6 +89,7 @@ export const CreateHouseBill = ({ onNavigate }) => {
   // Form State for HBL & Freight Rates
   const [formData, setFormData] = useState({
     hblNumber: initialHblNumber,
+    consolidationNumber: '',
     freightTerms: 'Freight Prepaid',
     issueDate: new Date().toISOString().split('T')[0],
     notes: '',
@@ -246,6 +247,14 @@ export const CreateHouseBill = ({ onNavigate }) => {
     setSelectedWrIds(eligibleWrs.map(w => w.id));
   };
 
+  const existingConsolidationNumbers = useMemo(() => {
+    const list = new Set();
+    houseBills.forEach(h => {
+      if (h.assignedConsolidationId) list.add(h.assignedConsolidationId.trim());
+    });
+    return Array.from(list);
+  }, [houseBills]);
+
   const handleCreate = async () => {
     const firstWr = selectedWrs[0];
     const customerName = selectedCustomer?.name || selectedCustomer?.companyName || "Valued Customer";
@@ -322,6 +331,7 @@ export const CreateHouseBill = ({ onNavigate }) => {
         currency: 'USD'
       },
       issueDate: formData.issueDate,
+      assignedConsolidationId: formData.consolidationNumber?.trim() || null,
       status: "Active",
       notes: formData.notes || `Created linking ${selectedWrIds.length} Warehouse Receipt(s).`
     };
@@ -788,7 +798,7 @@ export const CreateHouseBill = ({ onNavigate }) => {
           </div>
 
           {/* Header Inputs */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-4 gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
             <div className="form-group">
               <label className="form-label">House B/L Number <span className="required">*</span></label>
               <input
@@ -798,6 +808,25 @@ export const CreateHouseBill = ({ onNavigate }) => {
                 onChange={(e) => setFormData({ ...formData, hblNumber: e.target.value })}
                 required
               />
+            </div>
+            <div className="form-group">
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span>Consolidation Number</span>
+                <span style={{ fontSize: '0.68rem', color: '#0284C7', fontWeight: 600 }}>For Master B/L</span>
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="e.g. CNS-2026-001"
+                value={formData.consolidationNumber}
+                onChange={(e) => setFormData({ ...formData, consolidationNumber: e.target.value })}
+                list="hbl-consolidation-numbers-list"
+              />
+              <datalist id="hbl-consolidation-numbers-list">
+                {existingConsolidationNumbers.map(cn => (
+                  <option key={cn} value={cn} />
+                ))}
+              </datalist>
             </div>
             <div className="form-group">
               <label className="form-label">Issue Date <span className="required">*</span></label>
