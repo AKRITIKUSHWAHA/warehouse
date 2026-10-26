@@ -3,114 +3,48 @@
  * Allows Super Admin to dynamically configure menu visibility and module access per role.
  */
 
-export const STORAGE_KEY_ROLE_PERMISSIONS = 'kers_role_permissions_map_v7';
+export const STORAGE_KEY_ROLE_PERMISSIONS = 'kers_role_permissions_map_v9';
 
 export const SYSTEM_MODULES = [
-  // 1. CARGO & INTAKE
+  // 1. 3-STEP CARGO WORKFLOW
   {
     id: 'dashboard',
     label: 'Overview Dashboard',
-    category: 'Cargo & Intake',
+    category: '3-Step Cargo Workflow',
     description: 'Operational summary metrics, quick actions, and throughput charts',
     icon: 'LayoutDashboard',
     tabs: ['dashboard', 'agent-dashboard']
   },
   {
-    id: 'customers',
-    label: 'Customers Directory',
-    category: 'Cargo & Intake',
-    description: 'Master customer directory (shippers & consignees), contact details and destination ports',
-    icon: 'Users',
-    tabs: ['customers']
-  },
-  {
     id: 'warehouse-receipts',
-    label: 'Warehouse Receipts (WR)',
-    category: 'Cargo & Intake',
+    label: '1. Warehouse Receipts (Step 1)',
+    category: '3-Step Cargo Workflow',
     description: 'Cargo intake, dimension calculations, barcode generation, intake receipts',
     icon: 'Package',
     tabs: ['warehouse-receipts']
   },
   {
-    id: 'documents',
-    label: 'Labels & Documents Center',
-    category: 'Cargo & Intake',
-    description: '4x6 thermal barcode labels, print layouts, uploaded paperwork',
-    icon: 'Tag',
-    tabs: ['documents', 'agent-documents']
-  },
-
-  // 2. LOGISTICS & OCEAN FREIGHT
-  {
     id: 'house-bills',
-    label: 'House Bills of Lading (HBL)',
-    category: 'Logistics & Ocean',
-    description: 'Generate, edit, print House B/Ls, attach freight charges & terms',
+    label: '2. House Bills of Lading (Step 2)',
+    category: '3-Step Cargo Workflow',
+    description: 'Generate, edit, print House B/Ls linked with company Consolidation #',
     icon: 'FileText',
     tabs: ['house-bills']
   },
   {
-    id: 'consolidations',
-    label: 'Container Consolidation',
-    category: 'Logistics & Ocean',
-    description: 'Multi-order container stuffing, CBM load balancing, sealing & arrivals',
-    icon: 'Layers',
-    tabs: ['consolidations']
-  },
-  {
-    id: 'shipments',
-    label: 'Ocean Shipments',
-    category: 'Logistics & Ocean',
-    description: 'Ocean freight shipments, container tracking, port-to-port manifests',
-    icon: 'Ship',
-    tabs: ['shipments', 'agent-shipments']
-  },
-  {
     id: 'bills-of-lading',
-    label: 'Master Bills & Manifests',
-    category: 'Logistics & Ocean',
-    description: 'Carrier master B/Ls, 1-click manifest generation, discharge clearance',
+    label: '3. Master Bills & Manifests (Step 3)',
+    category: '3-Step Cargo Workflow',
+    description: 'Carrier master B/Ls, auto-gather HBLs by Consolidation #, 1-click manifest generation',
     icon: 'FileSpreadsheet',
-    tabs: ['bills-of-lading', 'manifests', 'agent-bl-detail']
-  },
-  {
-    id: 'vessels',
-    label: 'Fleet Directory',
-    category: 'Logistics & Ocean',
-    description: 'Serviced vessel fleet directory, vessel specs and carrier details',
-    icon: 'Anchor',
-    tabs: ['vessels']
-  },
-  {
-    id: 'tracking',
-    label: 'Cargo Tracking Portal',
-    category: 'Logistics & Ocean',
-    description: 'Live milestone timeline, public search, agent tracking',
-    icon: 'Search',
-    tabs: ['tracking', 'agent-tracking']
+    tabs: ['bills-of-lading', 'manifests']
   },
 
-  // 3. SYSTEM & GOVERNANCE
-  {
-    id: 'history',
-    label: 'Shipment History',
-    category: 'System & Governance',
-    description: 'Historical shipment logs, delivered cargo lookup, archive records',
-    icon: 'History',
-    tabs: ['history']
-  },
-  {
-    id: 'audit',
-    label: 'Activity Logs / Audit Trail',
-    category: 'System & Governance',
-    description: 'Immutable transaction logs, IP recording, change history inspection',
-    icon: 'Activity',
-    tabs: ['audit']
-  },
+  // 2. SYSTEM & SETTINGS
   {
     id: 'users',
     label: 'Users & Roles Matrix',
-    category: 'System & Governance',
+    category: 'System & Settings',
     description: 'Manage staff accounts, credentials, role permissions & menu visibility matrix',
     icon: 'ShieldCheck',
     tabs: ['users']
@@ -118,44 +52,28 @@ export const SYSTEM_MODULES = [
   {
     id: 'settings',
     label: 'System Settings & Config',
-    category: 'System & Governance',
-    description: 'Global numbering rules, company profiles, currency & fee defaults',
+    category: 'System & Settings',
+    description: 'Global numbering rules, company profiles, and document prefixes',
     icon: 'Settings',
     tabs: ['settings']
-  },
-
-  // 4. SPECIAL OPERATIONAL PERMISSION
-  {
-    id: 'hold-authorization',
-    label: 'Place / Clear B/L Hold',
-    category: 'Operational Authorization',
-    description: 'Administrative hold override, financial lock releases, compliance authority',
-    icon: 'Shield',
-    tabs: []
   }
 ];
 
 export const DEFAULT_ROLE_PERMISSIONS_MAP = {
   super_admin: [
-    'dashboard', 'customers', 'warehouse-receipts', 'documents',
-    'house-bills', 'consolidations', 'shipments', 'bills-of-lading',
-    'vessels', 'tracking', 'history', 'audit', 'users', 'settings',
-    'hold-authorization'
+    'dashboard', 'warehouse-receipts', 'house-bills', 'bills-of-lading', 'users', 'settings'
   ],
   operations: [
-    'dashboard', 'customers', 'consolidations', 'bills-of-lading',
-    'vessels', 'shipments', 'tracking'
+    'dashboard', 'warehouse-receipts', 'house-bills', 'bills-of-lading'
   ],
   warehouse: [
-    'dashboard', 'customers', 'warehouse-receipts',
-    'documents', 'consolidations', 'shipments', 'tracking'
+    'dashboard', 'warehouse-receipts'
   ],
   documentation: [
-    'dashboard', 'customers', 'warehouse-receipts', 'house-bills',
-    'consolidations', 'shipments', 'bills-of-lading', 'tracking', 'hold-authorization'
+    'dashboard', 'warehouse-receipts', 'house-bills', 'bills-of-lading'
   ],
   agent: [
-    'dashboard', 'consolidations', 'shipments', 'bills-of-lading', 'tracking', 'documents'
+    'dashboard', 'bills-of-lading'
   ]
 };
 

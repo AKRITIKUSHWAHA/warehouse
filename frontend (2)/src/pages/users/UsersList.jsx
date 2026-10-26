@@ -96,41 +96,23 @@ const ROLE_DEFINITIONS = [
 ];
 
 const CATEGORY_META = {
-  'Cargo & Intake': {
-    title: 'Cargo & Intake Operations',
+  '3-Step Cargo Workflow': {
+    title: '3-Step Cargo Workflow',
     icon: Package,
     color: '#0284C7',
     bg: '#F8FAFC',
     badgeBg: '#E0F2FE',
     badgeColor: '#0284C7',
-    desc: 'Warehouse receipts, cargo staging, barcode scanning & customer directory'
+    desc: 'Warehouse Receipts (Step 1), House Bills of Lading (Step 2) & Master Bills with Manifests (Step 3)'
   },
-  'Logistics & Ocean': {
-    title: 'Logistics & Ocean Freight',
-    icon: Ship,
-    color: '#0D9488',
-    bg: '#F8FAFC',
-    badgeBg: '#CCFBF1',
-    badgeColor: '#0F766E',
-    desc: 'Consolidation stuffing, ocean shipments, carrier B/Ls, manifests & tracking'
-  },
-  'System & Governance': {
-    title: 'System & Governance',
+  'System & Settings': {
+    title: 'System & Settings',
     icon: ShieldCheck,
     color: '#4F46E5',
     bg: '#F8FAFC',
     badgeBg: '#EEF2FF',
     badgeColor: '#4338CA',
-    desc: 'Shipment history archives, activity audit trail logs, users & system config'
-  },
-  'Operational Authorization': {
-    title: 'Operational Authorizations',
-    icon: Shield,
-    color: '#D97706',
-    bg: '#FFFDF5',
-    badgeBg: '#FEF3C7',
-    badgeColor: '#B45309',
-    desc: 'Administrative authority to place or release B/L holds and clear releases'
+    desc: 'Staff account management and system company configurations'
   }
 };
 
@@ -144,22 +126,11 @@ const ROLE_NAME_MAP = {
 
 const MODULE_ICONS = {
   dashboard: LayoutDashboard,
-  customers: Users,
   'warehouse-receipts': Package,
-  cargo: Box,
-  documents: Tag,
   'house-bills': FileText,
-  consolidations: Layers,
-  shipments: Ship,
   'bills-of-lading': FileSpreadsheet,
   manifests: FileSpreadsheet,
-  vessels: Anchor,
-  tracking: Search,
-  'agent-portal': ExternalLink,
-  'hold-authorization': Shield,
   users: ShieldCheck,
-  audit: Activity,
-  history: History,
   settings: Settings
 };
 
@@ -601,10 +572,8 @@ export const UsersList = ({ onNavigate }) => {
                 ) : (
                   (() => {
                     const categoryOrder = [
-                      'Cargo & Intake',
-                      'Logistics & Ocean',
-                      'System & Governance',
-                      'Operational Authorization'
+                      '3-Step Cargo Workflow',
+                      'System & Settings'
                     ];
 
                     const renderRow = (mod, idx) => {
