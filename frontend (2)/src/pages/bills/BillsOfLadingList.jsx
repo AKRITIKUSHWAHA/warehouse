@@ -173,10 +173,10 @@ export const BillsOfLadingList = ({ onNavigate, initialTab = null }) => {
     return candidateShipmentsAndBoxes.filter(s => !getLinkedBL(s)).length;
   }, [candidateShipmentsAndBoxes, visibleBLs]);
 
-  // Default active tab
+  // Default active tab: Master Bills of Lading (MBL)
   const [activeTab, setActiveTab] = useState(() => {
     if (initialTab) return initialTab;
-    return readyShipmentsCount > 0 ? 'ready-shipments' : 'mbl';
+    return 'mbl';
   });
 
   useEffect(() => {
@@ -335,7 +335,7 @@ export const BillsOfLadingList = ({ onNavigate, initialTab = null }) => {
     {
       header: 'Actions',
       align: 'right',
-      width: '70px',
+      width: '185px',
       render: (item) => {
         const menuKey = item.id || item.blNumber;
         const isOpen = activeMenuId === menuKey;
@@ -343,16 +343,55 @@ export const BillsOfLadingList = ({ onNavigate, initialTab = null }) => {
         const isCancelled = item.status === 'Cancelled';
 
         return (
-          <div
-            style={{ position: 'relative', display: 'inline-block', textAlign: 'right' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setActiveMenuId(isOpen ? null : menuKey);
-              }}
+          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px' }} onClick={(e) => e.stopPropagation()}>
+            {!isAgent && !isCancelled && (
+              <button
+                type="button"
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  if (isOnHold) {
+                    const confirmHold = window.confirm(`Notice: Master B/L ${item.blNumber} is currently ON HOLD. Proceed with generating manifest?`);
+                    if (!confirmHold) return;
+                  }
+                  try {
+                    showToast(`Generating manifest from Master B/L ${item.blNumber}...`, 'info', '1-Click Manifest');
+                    const newManifest = await generateManifestFromMasterBL(item.id || item.blNumber);
+                    if (newManifest) {
+                      setActiveTab('manifests');
+                    }
+                  } catch (err) {
+                    showToast(err?.message || 'Failed to generate manifest', 'error', 'Error');
+                  }
+                }}
+                className="btn btn-outline btn-xs"
+                style={{
+                  color: '#0284C7',
+                  borderColor: '#BAE6FD',
+                  background: '#F0F9FF',
+                  fontWeight: 700,
+                  fontSize: '0.72rem',
+                  padding: '3px 8px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  whiteSpace: 'nowrap'
+                }}
+                title="Generate Customs Cargo Manifest in 1 click"
+              >
+                <FileSpreadsheet size={13} style={{ color: '#0284C7' }} />
+                <span>1-Click Manifest</span>
+              </button>
+            )}
+
+            <div
+              style={{ position: 'relative', display: 'inline-block', textAlign: 'right' }}
+            >
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveMenuId(isOpen ? null : menuKey);
+                }}
               className="btn btn-ghost btn-sm"
               style={{
                 width: '32px',
@@ -558,7 +597,8 @@ export const BillsOfLadingList = ({ onNavigate, initialTab = null }) => {
               </div>
             )}
           </div>
-        );
+        </div>
+      );
       }
     }
   ];
@@ -610,27 +650,6 @@ export const BillsOfLadingList = ({ onNavigate, initialTab = null }) => {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            onClick={() => setActiveTab('ready-shipments')}
-            className={`btn btn-sm ${activeTab === 'ready-shipments' ? 'btn-primary' : 'btn-ghost'}`}
-            style={{ fontWeight: 700, fontSize: '0.8rem', padding: '0.35rem 0.85rem', gap: '6px', display: 'flex', alignItems: 'center' }}
-          >
-            <Ship size={15} />
-            <span>Select Ready Shipments for Master B/L</span>
-            <span
-              style={{
-                background: activeTab === 'ready-shipments' ? 'rgba(255,255,255,0.25)' : '#EFF6FF',
-                color: activeTab === 'ready-shipments' ? '#FFFFFF' : '#2563EB',
-                padding: '1px 6px',
-                borderRadius: '10px',
-                fontSize: '0.7rem',
-                fontWeight: 700
-              }}
-            >
-              {candidateShipmentsAndBoxes.length}
-            </span>
-          </button>
 
           <button
             type="button"
@@ -678,234 +697,13 @@ export const BillsOfLadingList = ({ onNavigate, initialTab = null }) => {
         </div>
 
         <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
-          {activeTab === 'ready-shipments' ? (
-            <span>Select ocean shipments or container boxes below to auto-fill and issue carrier Master B/Ls.</span>
-          ) : activeTab === 'mbl' ? (
-            <span>Showing <strong>Carrier Master B/Ls</strong>. Generate a 1-click customs manifest from any B/L action menu.</span>
+          {activeTab === 'mbl' ? (
+            <span>Showing <strong>Carrier Master B/Ls</strong>. Link House Bills by Consolidation # and generate 1-click customs manifests.</span>
           ) : (
-            <span>Showing <strong>Customs Cargo Manifests</strong>. Created from Master B/Ls for customs clearance.</span>
+            <span>Showing <strong>Customs Cargo Manifests</strong> created from Master B/Ls for customs clearance.</span>
           )}
         </div>
       </div>
-
-      {/* VIEW 1: Ready Shipments / Boxes to Issue Master B/L */}
-      {activeTab === 'ready-shipments' && (
-        <div className="card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
-            <div>
-              <h3 style={{ fontSize: '0.98rem', fontWeight: 700, color: '#0A192F', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Ship size={17} style={{ color: '#0284C7' }} />
-                <span>Ocean Freight Shipments Ready for Master B/L</span>
-                {readyShipmentsCount > 0 && (
-                  <span style={{ fontSize: '0.72rem', fontWeight: 700, background: '#DCFCE7', color: '#166534', padding: '2px 8px', borderRadius: '12px' }}>
-                    {readyShipmentsCount} Ready to Issue
-                  </span>
-                )}
-              </h3>
-              <p style={{ fontSize: '0.76rem', color: '#64748B', margin: '2px 0 0 0' }}>
-                Select shipments or container boxes below. Clicking "Issue Master B/L" auto-fills container, vessel, and packages directly into the Master B/L form.
-              </p>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '0.35rem 0.65rem' }}>
-                <Search size={15} style={{ color: '#64748B' }} />
-                <input
-                  type="text"
-                  placeholder="Search Shipment #, container, vessel..."
-                  value={shipmentSearch}
-                  onChange={(e) => setShipmentSearch(e.target.value)}
-                  style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.8rem', width: '230px' }}
-                />
-                {shipmentSearch && (
-                  <button type="button" onClick={() => setShipmentSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', padding: 0 }}>
-                    <X size={13} />
-                  </button>
-                )}
-              </div>
-
-              {/* Bulk Issue CTA if any selected */}
-              {!isAgent && selectedShipmentIds.length > 0 && (
-                <button
-                  type="button"
-                  onClick={handleIssueBLForSelected}
-                  className="btn btn-primary btn-sm"
-                  style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700 }}
-                >
-                  <FileText size={14} />
-                  <span>Issue Master B/L for Selected ({selectedShipmentIds.length}) ➔</span>
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Table of Ready Shipments */}
-          <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '8px' }}>
-            <table className="table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ background: '#F8FAFC', borderBottom: '1.5px solid #E2E8F0', fontSize: '0.74rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  {!isAgent && (
-                    <th style={{ padding: '0.7rem 0.75rem', width: '36px', textAlign: 'center' }}>
-                      <input
-                        type="checkbox"
-                        checked={
-                          filteredCandidateShipments.filter(s => !getLinkedBL(s)).length > 0 &&
-                          filteredCandidateShipments.filter(s => !getLinkedBL(s)).every(s => selectedShipmentIds.includes(s.id || s.shipmentNumber))
-                        }
-                        onChange={handleToggleSelectAllShipments}
-                        style={{ cursor: 'pointer' }}
-                        title="Select all unissued shipments"
-                      />
-                    </th>
-                  )}
-                  <th style={{ padding: '0.7rem 0.85rem' }}>Shipment / Box #</th>
-                  <th style={{ padding: '0.7rem 0.85rem' }}>Container &amp; Seal</th>
-                  <th style={{ padding: '0.7rem 0.85rem' }}>Destination Port</th>
-                  <th style={{ padding: '0.7rem 0.85rem' }}>Cargo Load</th>
-                  <th style={{ padding: '0.7rem 0.85rem' }}>Vessel / Carrier</th>
-                  <th style={{ padding: '0.7rem 0.85rem' }}>Master B/L Status</th>
-                  <th style={{ padding: '0.7rem 0.85rem', textAlign: 'right' }}>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredCandidateShipments.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} style={{ textAlign: 'center', padding: '2.5rem', color: '#64748B', fontSize: '0.85rem' }}>
-                      <Ship size={28} style={{ color: '#94A3B8', margin: '0 auto 8px', display: 'block' }} />
-                      No ocean shipments or container boxes found.
-                      <div style={{ fontSize: '0.78rem', marginTop: '4px', color: '#94A3B8' }}>
-                        Create a shipment or consolidation in previous steps to issue Master B/Ls.
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  filteredCandidateShipments.map((item) => {
-                    const itemKey = item.id || item.shipmentNumber;
-                    const linkedBL = getLinkedBL(item);
-                    const isIssued = !!linkedBL;
-                    const isSelected = selectedShipmentIds.includes(itemKey);
-
-                    return (
-                      <tr
-                        key={`shp-row-${itemKey}`}
-                        style={{
-                          borderBottom: '1px solid #F1F5F9',
-                          background: isSelected ? '#F0F9FF' : '#FFFFFF',
-                          transition: 'background 0.15s ease'
-                        }}
-                      >
-                        {!isAgent && (
-                          <td style={{ padding: '0.75rem 0.75rem', textAlign: 'center' }}>
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              disabled={isIssued}
-                              onChange={() => handleToggleSelectShipment(itemKey)}
-                              style={{ cursor: isIssued ? 'not-allowed' : 'pointer' }}
-                              title={isIssued ? 'Master B/L already issued' : 'Select shipment'}
-                            />
-                          </td>
-                        )}
-
-                        <td style={{ padding: '0.75rem 0.85rem' }}>
-                          <div style={{ fontWeight: 700, color: '#0A192F', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.825rem' }}>
-                            {item.shipmentNumber}
-                          </div>
-                          <div style={{ fontSize: '0.71rem', color: '#64748B' }}>
-                            {item.bookingDate || item.etd ? `ETD: ${item.bookingDate || item.etd}` : 'Ocean Freight'}
-                          </div>
-                        </td>
-
-                        <td style={{ padding: '0.75rem 0.85rem' }}>
-                          <div style={{ fontWeight: 600, fontSize: '0.8rem', color: '#1E293B', fontFamily: 'JetBrains Mono, monospace' }}>
-                            {item.containerNumber || 'TBD'}
-                          </div>
-                          <div style={{ fontSize: '0.71rem', color: '#64748B' }}>
-                            Seal: <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{item.sealNumber || 'N/A'}</span>
-                          </div>
-                        </td>
-
-                        <td style={{ padding: '0.75rem 0.85rem' }}>
-                          <div style={{ fontWeight: 600, color: '#0284C7', fontSize: '0.8rem' }}>
-                            {item.destinationPort || item.destinationCode || 'Caribbean'}
-                          </div>
-                          <div style={{ fontSize: '0.71rem', color: '#64748B' }}>
-                            From {item.origin || 'Miami (USMIA)'}
-                          </div>
-                        </td>
-
-                        <td style={{ padding: '0.75rem 0.85rem' }}>
-                          <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#0A192F' }}>
-                            {item.totalPackages || 0} pkgs
-                          </div>
-                          <div style={{ fontSize: '0.71rem', color: '#64748B' }}>
-                            {Number(item.totalWeightLbs || 0).toLocaleString()} lbs • {item.totalCbm || 0} CBM
-                          </div>
-                        </td>
-
-                        <td style={{ padding: '0.75rem 0.85rem' }}>
-                          <div style={{ fontSize: '0.8rem', fontWeight: 500, color: '#1E293B' }}>
-                            {item.vesselName || 'Ocean Vessel'}
-                          </div>
-                          <div style={{ fontSize: '0.71rem', color: '#64748B' }}>
-                            {item.carrier || 'Tropical Shipping'}
-                          </div>
-                        </td>
-
-                        <td style={{ padding: '0.75rem 0.85rem' }}>
-                          {isIssued ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'flex-start' }}>
-                              <span style={{ fontSize: '0.7rem', fontWeight: 700, background: '#DCFCE7', color: '#166534', padding: '2px 7px', borderRadius: '10px' }}>
-                                ✓ B/L Issued
-                              </span>
-                              <span style={{ fontSize: '0.69rem', color: '#0284C7', fontWeight: 600, fontFamily: 'JetBrains Mono, monospace' }}>
-                                {linkedBL.blNumber}
-                              </span>
-                            </div>
-                          ) : (
-                            <span style={{ fontSize: '0.7rem', fontWeight: 700, background: '#E0F2FE', color: '#0369A1', padding: '2px 8px', borderRadius: '10px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                              <FileText size={11} />
-                              Ready for Master B/L
-                            </span>
-                          )}
-                        </td>
-
-                        <td style={{ padding: '0.75rem 0.85rem', textAlign: 'right' }}>
-                          {isIssued ? (
-                            <button
-                              type="button"
-                              className="btn btn-outline btn-xs"
-                              style={{ fontSize: '0.72rem', padding: '3px 8px', color: '#059669', borderColor: '#A7F3D0', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                              onClick={() => {
-                                onNavigate('bills-of-lading', linkedBL.id || linkedBL.blNumber);
-                              }}
-                              title="View Master Bill of Lading"
-                            >
-                              <Eye size={13} />
-                              <span>View B/L</span>
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              className="btn btn-primary btn-xs"
-                              style={{ fontSize: '0.72rem', padding: '3px 10px', display: 'inline-flex', alignItems: 'center', gap: '5px', fontWeight: 700 }}
-                              onClick={() => handleIssueBLForShipment(item)}
-                              title="Issue Master Bill of Lading for this shipment"
-                            >
-                              <FileText size={13} />
-                              <span>Issue Master B/L</span>
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
 
       {/* VIEW 2: Issued Master B/L Table */}
       {activeTab === 'mbl' && (

@@ -500,47 +500,6 @@ export const BillOfLadingModal = ({
         >
           <div className="modal-body custom-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', overflowY: 'auto', flex: 1, minHeight: 0, padding: '1rem 1.25rem' }}>
             
-            {/* Linked Shipment Banner */}
-            {initialShipment && (
-              <div
-                style={{
-                  background: '#F0FDF4',
-                  border: '1px solid #BBF7D0',
-                  borderRadius: '8px',
-                  padding: '8px 12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '8px'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '1.2rem' }}>🚢</span>
-                  <div>
-                    <div style={{ fontSize: '0.825rem', fontWeight: 700, color: '#166534' }}>
-                      Linked Ocean Shipment: {initialShipment.shipmentNumber}
-                    </div>
-                    <div style={{ fontSize: '0.72rem', color: '#15803D' }}>
-                      Container: {formData.containerNumber || initialShipment.containerNumber || 'TBD'} • Seal: {formData.sealNumber || initialShipment.sealNumber || 'N/A'} • {formData.packageCount} pkgs • {formData.grossWeightLbs} lbs
-                    </div>
-                  </div>
-                </div>
-                <span
-                  style={{
-                    fontSize: '0.7rem',
-                    fontWeight: 700,
-                    background: '#DCFCE7',
-                    color: '#166534',
-                    padding: '2px 8px',
-                    borderRadius: '12px',
-                    border: '1px solid #86EFAC'
-                  }}
-                >
-                  ✓ Auto-Filled
-                </span>
-              </div>
-            )}
-
             {/* STEP 1: Consolidation Link & Input */}
             <div style={{
               background: '#F0F9FF',
@@ -558,10 +517,10 @@ export const BillOfLadingModal = ({
                   </div>
                   <div>
                     <h4 style={{ margin: 0, fontSize: '0.9rem', color: '#0A192F', fontWeight: 700 }}>
-                      Consolidation Number
+                      Company Consolidation Number
                     </h4>
                     <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748B' }}>
-                      Type or paste any Consolidation #. If it matches an existing consolidation, container and vessel details will auto-fill.
+                      Select your company consolidation number to automatically gather and link all associated House Bills of Lading.
                     </p>
                   </div>
                 </div>
@@ -579,7 +538,7 @@ export const BillOfLadingModal = ({
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="Enter Consolidation # (e.g. CNS-2026-001) or leave empty"
+                    placeholder="Enter Consolidation # (e.g. CNS-2026-001)"
                     value={selectedConsolidationNumber}
                     onChange={(e) => handleConsolidationChange(e.target.value)}
                     list="consolidation-numbers-list"
@@ -603,7 +562,7 @@ export const BillOfLadingModal = ({
                     </div>
                   ) : (
                     <span style={{ color: '#64748B' }}>
-                      Client can type any Consolidation Number directly, or fill in vessel and container details manually below.
+                      Select your company consolidation number above, or adjust carrier and container details below.
                     </span>
                   )}
                 </div>
