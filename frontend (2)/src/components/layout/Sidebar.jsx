@@ -58,7 +58,6 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
         id: 'system-governance',
         title: 'SYSTEM & SETTINGS',
         items: [
-          { id: 'audit', label: 'Activity Logs', icon: Activity, moduleId: 'audit' },
           { id: 'users', label: 'Users & Roles', icon: ShieldCheck, moduleId: 'users' },
           { id: 'settings', label: 'System Settings', icon: Settings, moduleId: 'settings' }
         ]
