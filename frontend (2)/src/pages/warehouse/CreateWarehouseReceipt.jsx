@@ -481,7 +481,7 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
                         title="Add Customer"
                       >
                         <Plus size={13} />
-                        <span>+ Add</span>
+                        <span>Add</span>
                       </button>
                     </div>
                   </div>
@@ -537,7 +537,7 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
                         title="Add Consignee"
                       >
                         <Plus size={13} />
-                        <span>+ Add</span>
+                        <span>Add</span>
                       </button>
                     </div>
                   </div>
