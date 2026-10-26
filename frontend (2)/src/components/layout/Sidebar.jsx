@@ -36,7 +36,7 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
     const rawSections = [
       {
         id: 'cargo-intake',
-        title: (isAgent || roleKey === 'agent') ? 'AGENT PORT OPERATIONS' : 'CARGO & INTAKE',
+        title: (isAgent || roleKey === 'agent') ? 'AGENT PORT OPERATIONS' : '3-STEP CARGO WORKFLOW',
         items: [
           {
             id: (isAgent || roleKey === 'agent') ? 'agent-dashboard' : 'dashboard',
@@ -44,27 +44,19 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
             icon: LayoutDashboard,
             moduleId: 'dashboard'
           },
-          { id: 'customers', label: 'Customers', icon: Users, moduleId: 'customers' },
-          { id: 'warehouse-receipts', label: 'Warehouse Receipts', icon: Package, moduleId: 'warehouse-receipts' }
-        ]
-      },
-      {
-        id: 'logistics-ocean',
-        title: 'LOGISTICS & OCEAN FREIGHT',
-        items: [
-          { id: 'house-bills', label: 'House Bills of Lading', icon: FileText, moduleId: 'house-bills' },
+          { id: 'warehouse-receipts', label: '1. Warehouse Receipts', icon: Package, moduleId: 'warehouse-receipts' },
+          { id: 'house-bills', label: '2. House Bills of Lading', icon: FileText, moduleId: 'house-bills' },
           {
             id: 'bills-of-lading',
-            label: 'Master Bills & Manifests',
+            label: '3. Master Bills & Manifests',
             icon: FileText,
             moduleId: 'bills-of-lading'
-          },
-          { id: 'vessels', label: 'Fleet Directory', icon: Anchor, moduleId: 'vessels' }
+          }
         ]
       },
       {
         id: 'system-governance',
-        title: 'SYSTEM & GOVERNANCE',
+        title: 'SYSTEM & SETTINGS',
         items: [
           { id: 'audit', label: 'Activity Logs', icon: Activity, moduleId: 'audit' },
           { id: 'users', label: 'Users & Roles', icon: ShieldCheck, moduleId: 'users' },
