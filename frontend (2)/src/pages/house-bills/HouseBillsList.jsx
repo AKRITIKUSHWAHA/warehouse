@@ -367,7 +367,7 @@ export const HouseBillsList = ({ onNavigate }) => {
               style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
               <Plus size={16} />
-              <span>+ Create House Bill (Link WRs)</span>
+              <span>Create House Bill (Link WRs)</span>
             </button>
           )
         }
@@ -386,7 +386,7 @@ export const HouseBillsList = ({ onNavigate }) => {
         emptyTitle="No House Bills of Lading Found"
         emptyWhy="No customer House B/L records have been created yet."
         emptyNextStep="Create a House B/L by linking staged Warehouse Receipts with your company Consolidation Number."
-        emptyActionLabel="+ Create House Bill (Link WRs)"
+        emptyActionLabel="Create House Bill (Link WRs)"
         onEmptyAction={() => onNavigate('house-bills', 'create')}
         onRowClick={(item) => onNavigate('house-bills', item.id)}
       />
