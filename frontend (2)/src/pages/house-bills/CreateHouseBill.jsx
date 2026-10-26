@@ -2,18 +2,16 @@ import React, { useState, useMemo } from 'react';
 import { PageHeader } from '../../components/common/PageHeader';
 import {
   FileText,
-  Building2,
   Package,
   Check,
   ArrowLeft,
   DollarSign,
   Search,
-  CheckSquare,
-  Square,
   Sparkles,
   ChevronDown,
   ChevronUp,
-  Info
+  MapPin,
+  UserCheck
 } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
 import { useToast } from '../../context/ToastContext';
@@ -22,57 +20,8 @@ export const CreateHouseBill = ({ onNavigate }) => {
   const { customers = [], warehouseReceipts = [], houseBills = [], createHouseBill, settings } = useAppData();
   const { showToast } = useToast();
 
-  // Helper to match WR to a customer
-  const wrMatchesCustomer = (wr, cust) => {
-    if (!cust) return false;
-    const custId = wr.customerId || wr.customer_id;
-    if (custId && custId === cust.id) return true;
-
-    const custName = (cust.name || cust.companyName || '').trim().toLowerCase();
-    if (!custName) return false;
-
-    const wrCust = (wr.customer || wr.customerName || '').trim().toLowerCase();
-    const wrConsignee = (wr.consignee || '').trim().toLowerCase();
-
-    return wrCust === custName ||
-      (wrConsignee && wrConsignee.includes(custName)) ||
-      (custName.includes(wrConsignee.split('\n')[0].trim()));
-  };
-
-  // Find customers with staged receipts
-  const unassignedWrs = useMemo(() => {
-    return warehouseReceipts.filter(wr => {
-      const notAssigned = !wr.assignedHouseBillId || wr.assignedHouseBillId === '';
-      const notConsolidated = wr.status !== 'Consolidated' && wr.status !== 'Cancelled' && wr.status !== 'Delivered';
-      return notAssigned && notConsolidated;
-    });
-  }, [warehouseReceipts]);
-
-  // Count staged receipts per customer
-  const customerWrCounts = useMemo(() => {
-    const counts = {};
-    customers.forEach(c => {
-      counts[c.id] = unassignedWrs.filter(wr => wrMatchesCustomer(wr, c)).length;
-    });
-    return counts;
-  }, [customers, unassignedWrs]);
-
-  // Default customer selection
-  const [selectedCustomerId, setSelectedCustomerId] = useState(() => {
-    const saved = typeof window !== 'undefined' ? localStorage.getItem('vicustoms_selected_hbl_customer') : null;
-    if (saved && customers.some(c => c.id === saved)) {
-      return saved;
-    }
-    // Pick the first customer that actually has staged receipts, if available
-    const firstWithWrs = customers.find(c => {
-      return unassignedWrs.some(wr => wrMatchesCustomer(wr, c));
-    });
-    return firstWithWrs?.id || customers[0]?.id || '';
-  });
-
   const [selectedWrIds, setSelectedWrIds] = useState([]);
   const [wrSearch, setWrSearch] = useState('');
-  const [showAllAvailableWrs, setShowAllAvailableWrs] = useState(false);
   const [showAdditionalFees, setShowAdditionalFees] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -88,18 +37,12 @@ export const CreateHouseBill = ({ onNavigate }) => {
   const nextSeq = Math.max(houseBills.length + 1, maxHblSeq + 1);
   const initialHblNumber = `${prefix}${String(nextSeq).padStart(4, '0')}`;
 
-  const selectedCustomer = customers.find(c => c.id === selectedCustomerId) || null;
-
-  // Form State
+  // Form State - only what's necessary
   const [formData, setFormData] = useState({
     hblNumber: initialHblNumber,
     consolidationNumber: '',
-    freightTerms: 'Freight Prepaid',
     issueDate: new Date().toISOString().split('T')[0],
-    destinationPort: selectedCustomer?.destinationPort || 'STT - Port of Charlotte Amalie',
-    destinationCode: selectedCustomer?.destinationCode || 'STT',
-    cargoDescription: 'General Commercial Cargo & Package Goods',
-    notes: '',
+    freightTerms: 'Freight Prepaid',
     // Freight Rates
     rateBasis: 'cft',
     oceanFreightRate: 3.50,
@@ -108,49 +51,58 @@ export const CreateHouseBill = ({ onNavigate }) => {
     customsAdminFee: 25.00
   });
 
-  // When selected customer changes, update destination port
-  const handleCustomerChange = (custId) => {
-    setSelectedCustomerId(custId);
-    const cust = customers.find(c => c.id === custId);
-    if (cust) {
-      setFormData(prev => ({
-        ...prev,
-        destinationPort: cust.destinationPort || prev.destinationPort,
-        destinationCode: cust.destinationCode || prev.destinationCode
-      }));
-    }
-  };
+  // Active unassigned staged receipts in warehouse
+  const unassignedWrs = useMemo(() => {
+    return warehouseReceipts.filter(wr => {
+      const notAssigned = !wr.assignedHouseBillId || wr.assignedHouseBillId === '';
+      const notConsolidated = wr.status !== 'Consolidated' && wr.status !== 'Cancelled' && wr.status !== 'Delivered';
+      return notAssigned && notConsolidated;
+    });
+  }, [warehouseReceipts]);
 
-  // Eligible Warehouse Receipts matching current customer
-  const customerEligibleWrs = useMemo(() => {
-    if (!selectedCustomer) return [];
-    return unassignedWrs.filter(wr => wrMatchesCustomer(wr, selectedCustomer));
-  }, [unassignedWrs, selectedCustomer]);
-
-  // Receipts to display based on toggle & search
+  // Filtered displayed receipts based on search
   const displayedWrs = useMemo(() => {
-    let list = [];
-    if (showAllAvailableWrs || !selectedCustomerId) {
-      list = unassignedWrs;
-    } else {
-      list = customerEligibleWrs;
-    }
-
-    if (!wrSearch.trim()) return list;
+    if (!wrSearch.trim()) return unassignedWrs;
     const q = wrSearch.toLowerCase();
-    return list.filter(w =>
+    return unassignedWrs.filter(w =>
       (w.receiptNumber && w.receiptNumber.toLowerCase().includes(q)) ||
       (w.customer && w.customer.toLowerCase().includes(q)) ||
+      (w.customerName && w.customerName.toLowerCase().includes(q)) ||
       (w.consignee && w.consignee.toLowerCase().includes(q)) ||
       (w.shipper && w.shipper.toLowerCase().includes(q)) ||
+      (w.destinationPort && w.destinationPort.toLowerCase().includes(q)) ||
       (w.cargoDescription && w.cargoDescription.toLowerCase().includes(q))
     );
-  }, [showAllAvailableWrs, selectedCustomerId, customerEligibleWrs, unassignedWrs, wrSearch]);
+  }, [unassignedWrs, wrSearch]);
 
   // Selected WR items
   const selectedWrs = useMemo(() => {
     return warehouseReceipts.filter(wr => selectedWrIds.includes(wr.id) || selectedWrIds.includes(wr.receiptNumber));
   }, [warehouseReceipts, selectedWrIds]);
+
+  // Auto-derived Customer & Destination from selected WRs
+  const derivedDetails = useMemo(() => {
+    if (selectedWrs.length === 0) {
+      return {
+        customerName: 'None selected yet',
+        destinationPort: 'Will auto-populate from selected receipt',
+        destinationCode: 'STT',
+        shipper: 'CFS Terminal Miami, FL'
+      };
+    }
+    const first = selectedWrs[0];
+    const custName = first.customer || first.customerName || (first.consignee || '').split('\n')[0] || 'Valued Customer';
+    const destPort = first.destinationPort || first.dischargePort || 'Port of Charlotte Amalie';
+    const destCode = first.destinationCode || 'STT';
+    const shipperName = first.shipper ? first.shipper.split('\n')[0] : 'CFS Miami Terminal';
+
+    return {
+      customerName: custName,
+      destinationPort: destPort,
+      destinationCode: destCode,
+      shipper: shipperName
+    };
+  }, [selectedWrs]);
 
   // Combined totals from selected WRs
   const combinedTotals = useMemo(() => {
@@ -231,25 +183,10 @@ export const CreateHouseBill = ({ onNavigate }) => {
   }, [houseBills]);
 
   // Toggle selection of a WR
-  const toggleWr = (wrId, wrItem) => {
-    setSelectedWrIds(prev => {
-      const isCurrentlySelected = prev.includes(wrId);
-      const updated = isCurrentlySelected ? prev.filter(id => id !== wrId) : [...prev, wrId];
-
-      // If user selected a receipt and current customer wasn't set, auto-set customer from receipt
-      if (!isCurrentlySelected && wrItem) {
-        const wrCustName = wrItem.customer || wrItem.customerName || (wrItem.consignee || '').split('\n')[0];
-        const matchedCust = customers.find(c => wrMatchesCustomer(wrItem, c));
-        if (matchedCust && matchedCust.id !== selectedCustomerId) {
-          setSelectedCustomerId(matchedCust.id);
-          if (matchedCust.destinationPort) {
-            setFormData(f => ({ ...f, destinationPort: matchedCust.destinationPort }));
-          }
-        }
-      }
-
-      return updated;
-    });
+  const toggleWr = (wrId) => {
+    setSelectedWrIds(prev =>
+      prev.includes(wrId) ? prev.filter(id => id !== wrId) : [...prev, wrId]
+    );
   };
 
   const handleSelectAllWrs = () => {
@@ -270,31 +207,36 @@ export const CreateHouseBill = ({ onNavigate }) => {
     setIsSubmitting(true);
     try {
       const firstWr = selectedWrs[0];
-      const customerName = selectedCustomer?.name || selectedCustomer?.companyName || (firstWr?.consignee || '').split('\n')[0] || "Valued Customer";
+      const customerName = derivedDetails.customerName;
+
+      const matchedCustomer = customers.find(c => {
+        const cName = (c.name || c.companyName || '').toLowerCase().trim();
+        return cName && customerName.toLowerCase().includes(cName);
+      });
 
       const payload = {
         hblNumber: formData.hblNumber,
-        customerId: selectedCustomer?.id || firstWr?.customerId || null,
+        customerId: firstWr?.customerId || matchedCustomer?.id || null,
         customerName: customerName,
         shipper: {
-          name: firstWr?.shipper ? firstWr.shipper.split('\n')[0] : "Global Retail Suppliers Inc.",
+          name: derivedDetails.shipper,
           address: firstWr?.shipper || "CFS Cargo Terminal, Miami FL"
         },
         consignee: {
           name: customerName,
-          address: selectedCustomer?.address || firstWr?.consignee || formData.destinationPort || "Destination Port Terminal"
+          address: firstWr?.consignee || matchedCustomer?.address || derivedDetails.destinationPort
         },
         notifyParty: {
-          name: firstWr?.agentName || selectedCustomer?.agentName || "Direct Consignee Delivery",
-          address: "Destination Port Cargo Terminal"
+          name: firstWr?.agentName || matchedCustomer?.agentName || "Direct Consignee Delivery",
+          address: derivedDetails.destinationPort
         },
         agentId: firstWr?.agentId || null,
-        agentName: firstWr?.agentName || selectedCustomer?.agentName || "",
+        agentName: firstWr?.agentName || matchedCustomer?.agentName || "",
         originPort: "Port of Miami (USMIA), FL",
-        destinationPort: formData.destinationPort,
-        destinationCode: formData.destinationCode,
+        destinationPort: derivedDetails.destinationPort,
+        destinationCode: derivedDetails.destinationCode,
         warehouseReceiptIds: selectedWrs.length > 0 ? selectedWrs.map(w => w.receiptNumber || w.id) : selectedWrIds,
-        cargoDescription: combinedTotals.cargoDescriptions || formData.cargoDescription || "Commercial Cargo Goods",
+        cargoDescription: combinedTotals.cargoDescriptions || "Commercial Cargo Goods",
         packages: combinedTotals.packages,
         totalPackages: combinedTotals.totalPackages,
         totalPieces: combinedTotals.totalPieces,
@@ -302,7 +244,7 @@ export const CreateHouseBill = ({ onNavigate }) => {
         totalWeightKg: combinedTotals.totalWeightKg,
         totalCft: combinedTotals.totalCft,
         totalCbm: combinedTotals.totalCbm,
-        freightTerms: formData.freightTerms,
+        freightTerms: formData.freightTerms || "Freight Prepaid",
         freightCharges: {
           rateBasis: formData.rateBasis,
           rate: Number(formData.oceanFreightRate),
@@ -316,7 +258,7 @@ export const CreateHouseBill = ({ onNavigate }) => {
         issueDate: formData.issueDate,
         assignedConsolidationId: formData.consolidationNumber?.trim() || null,
         status: "Active",
-        notes: formData.notes || `Created linking ${selectedWrIds.length} Warehouse Receipt(s).`
+        notes: `Created linking ${selectedWrIds.length} Warehouse Receipt(s).`
       };
 
       await createHouseBill(payload);
@@ -354,19 +296,29 @@ export const CreateHouseBill = ({ onNavigate }) => {
       />
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-        {/* CARD 1: House B/L & Consolidation Details */}
+        {/* CARD 1: House B/L & Consolidation Details (Clean & Minimal) */}
         <div className="card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0', paddingBottom: '0.65rem' }}>
             <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0A192F', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
               <FileText size={17} style={{ color: '#0284C7' }} />
-              <span>House Bill &amp; Consolidation Information</span>
+              <span>House Bill &amp; Consolidation Details</span>
             </h3>
-            <span style={{ fontSize: '0.75rem', color: '#64748B' }}>
-              {selectedCustomer?.name || 'New Document'}
-            </span>
+            {selectedWrIds.length > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.78rem', color: '#0284C7', background: '#F0F9FF', padding: '3px 10px', borderRadius: '6px', border: '1px solid #BAE6FD' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: 700 }}>
+                  <UserCheck size={14} />
+                  {derivedDetails.customerName}
+                </span>
+                <span>•</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <MapPin size={13} />
+                  {derivedDetails.destinationPort}
+                </span>
+              </div>
+            )}
           </div>
 
-          {/* Row 1: HBL #, Issue Date, Company Consolidation # */}
+          {/* Clean 3-Column Header: HBL #, Issue Date, Company Consolidation # */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '1rem' }}>
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label" style={{ fontWeight: 700 }}>
@@ -417,54 +369,6 @@ export const CreateHouseBill = ({ onNavigate }) => {
               </datalist>
             </div>
           </div>
-
-          {/* Row 2: Customer, Destination Port, Freight Terms */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '1rem' }}>
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label className="form-label" style={{ fontWeight: 700 }}>
-                Customer / Consignee <span className="required">*</span>
-              </label>
-              <select
-                className="form-select"
-                value={selectedCustomerId}
-                onChange={(e) => handleCustomerChange(e.target.value)}
-                required
-              >
-                <option value="">-- Select Customer Account --</option>
-                {customers.map(c => {
-                  const count = customerWrCounts[c.id] || 0;
-                  return (
-                    <option key={c.id} value={c.id}>
-                      {c.name || c.companyName} {count > 0 ? `(${count} Staged WRs)` : ''}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label className="form-label" style={{ fontWeight: 700 }}>Destination Port</label>
-              <input
-                type="text"
-                className="form-control"
-                value={formData.destinationPort}
-                onChange={(e) => setFormData({ ...formData, destinationPort: e.target.value })}
-              />
-            </div>
-
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label className="form-label" style={{ fontWeight: 700 }}>Freight Payment Terms</label>
-              <select
-                className="form-select"
-                value={formData.freightTerms}
-                onChange={(e) => setFormData({ ...formData, freightTerms: e.target.value })}
-              >
-                <option value="Freight Prepaid">Freight Prepaid</option>
-                <option value="Freight Collect">Freight Collect</option>
-                <option value="Third Party Billing">Third Party Billing</option>
-              </select>
-            </div>
-          </div>
         </div>
 
         {/* CARD 2: SELECT WAREHOUSE RECEIPTS TO LINK */}
@@ -473,15 +377,13 @@ export const CreateHouseBill = ({ onNavigate }) => {
             <div>
               <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0A192F', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Package size={17} style={{ color: '#0284C7' }} />
-                <span>Warehouse Receipts to Link</span>
+                <span>Select Warehouse Receipts to Link</span>
                 <span style={{ fontSize: '0.72rem', background: selectedWrIds.length > 0 ? '#DCFCE7' : '#F1F5F9', color: selectedWrIds.length > 0 ? '#15803D' : '#64748B', padding: '2px 8px', borderRadius: '12px', fontWeight: 800 }}>
                   {selectedWrIds.length} Selected
                 </span>
               </h3>
               <p style={{ fontSize: '0.75rem', color: '#64748B', margin: '2px 0 0 0' }}>
-                {selectedCustomer && !showAllAvailableWrs
-                  ? `Showing staged cargo receipts for ${selectedCustomer.name}.`
-                  : 'Showing all available staged cargo receipts in warehouse.'}
+                Check the warehouse receipts below to attach to this House Bill. Consignee &amp; Port details auto-populate automatically.
               </p>
             </div>
 
@@ -490,23 +392,12 @@ export const CreateHouseBill = ({ onNavigate }) => {
                 <Search size={14} style={{ color: '#64748B' }} />
                 <input
                   type="text"
-                  placeholder="Filter receipts..."
+                  placeholder="Filter by customer, WR #, port..."
                   value={wrSearch}
                   onChange={(e) => setWrSearch(e.target.value)}
-                  style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.75rem', width: '130px' }}
+                  style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.75rem', width: '180px' }}
                 />
               </div>
-
-              {selectedCustomerId && (
-                <button
-                  type="button"
-                  onClick={() => setShowAllAvailableWrs(!showAllAvailableWrs)}
-                  className="btn btn-ghost btn-sm"
-                  style={{ fontSize: '0.75rem', color: '#0284C7', textDecoration: 'underline' }}
-                >
-                  {showAllAvailableWrs ? 'Filter by Selected Customer' : 'Show All Staged WRs'}
-                </button>
-              )}
 
               <button
                 type="button"
@@ -536,30 +427,21 @@ export const CreateHouseBill = ({ onNavigate }) => {
                   <th style={{ padding: '0.6rem 0.75rem' }}>Shipper</th>
                   <th style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>Pieces &amp; Weight</th>
                   <th style={{ padding: '0.6rem 0.75rem', textAlign: 'right' }}>Volume (CFT / CBM)</th>
+                  <th style={{ padding: '0.6rem 0.75rem' }}>Destination Port</th>
                   <th style={{ padding: '0.6rem 0.75rem' }}>Cargo Contents</th>
                 </tr>
               </thead>
               <tbody>
                 {displayedWrs.length === 0 ? (
                   <tr>
-                    <td colSpan={7} style={{ textAlign: 'center', padding: '2.5rem 1.5rem', color: '#64748B' }}>
+                    <td colSpan={8} style={{ textAlign: 'center', padding: '2.5rem 1.5rem', color: '#64748B' }}>
                       <Package size={28} style={{ color: '#94A3B8', margin: '0 auto 8px auto', display: 'block' }} />
                       <div style={{ fontWeight: 700, color: '#334155' }}>
-                        No staged receipts found {selectedCustomer ? `for ${selectedCustomer.name}` : ''}.
+                        No unassigned staged warehouse receipts found.
                       </div>
                       <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px' }}>
-                        Create a Warehouse Receipt first, or select all unassigned receipts across all customers.
+                        Please create a Warehouse Receipt first in Step 1.
                       </div>
-                      {!showAllAvailableWrs && (
-                        <button
-                          type="button"
-                          onClick={() => setShowAllAvailableWrs(true)}
-                          className="btn btn-outline btn-sm"
-                          style={{ marginTop: '0.75rem', fontSize: '0.75rem', color: '#0284C7' }}
-                        >
-                          View All Staged Warehouse Receipts ({unassignedWrs.length})
-                        </button>
-                      )}
                     </td>
                   </tr>
                 ) : (
@@ -570,7 +452,7 @@ export const CreateHouseBill = ({ onNavigate }) => {
                     return (
                       <tr
                         key={wrKey}
-                        onClick={() => toggleWr(wrKey, wr)}
+                        onClick={() => toggleWr(wrKey)}
                         style={{
                           background: isSelected ? '#EFF6FF' : 'transparent',
                           borderBottom: '1px solid #F1F5F9',
@@ -589,7 +471,7 @@ export const CreateHouseBill = ({ onNavigate }) => {
                         <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, fontFamily: 'JetBrains Mono, monospace', color: '#0A192F' }}>
                           {wr.receiptNumber || wr.id}
                         </td>
-                        <td style={{ padding: '0.6rem 0.75rem', fontWeight: 600 }}>
+                        <td style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: '#0A192F' }}>
                           {wr.customer || wr.customerName || (wr.consignee || '').split('\n')[0]}
                         </td>
                         <td style={{ padding: '0.6rem 0.75rem', color: '#64748B', fontSize: '0.75rem' }}>
@@ -603,7 +485,10 @@ export const CreateHouseBill = ({ onNavigate }) => {
                           <span style={{ fontWeight: 800, color: '#D97706' }}>{wr.totalCft || wr.cft || 0} CFT</span>
                           <span style={{ color: '#0284C7', fontSize: '0.72rem', marginLeft: '4px' }}>({wr.totalCbm || 0} CBM)</span>
                         </td>
-                        <td style={{ padding: '0.6rem 0.75rem', color: '#475569', fontSize: '0.75rem', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <td style={{ padding: '0.6rem 0.75rem', color: '#0284C7', fontWeight: 600, fontSize: '0.75rem' }}>
+                          {wr.destinationPort || wr.dischargePort || 'STT'}
+                        </td>
+                        <td style={{ padding: '0.6rem 0.75rem', color: '#475569', fontSize: '0.75rem', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {wr.cargoDescription || 'Commercial Cargo'}
                         </td>
                       </tr>
