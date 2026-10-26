@@ -456,20 +456,34 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
                     <label style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 600, display: 'block', marginBottom: '3px' }}>
                       Select Customer:
                     </label>
-                    <select
-                      className="form-select form-select-sm"
-                      value={formData.shipperId || ''}
-                      onChange={(e) => handleShipperSelect(e.target.value)}
-                      style={{ fontSize: '0.825rem', background: '#F8FAFC' }}
-                    >
-                      <option value="">-- Select Existing Customer (or type below) --</option>
-                      <option value="CREATE_NEW">+ Add New Customer</option>
-                      {customers.map(c => (
-                        <option key={c.id} value={c.id}>
-                          {c.name || c.companyName} {c.destinationPort ? `(${c.destinationPort.split(' - ')[0]})` : ''}
-                        </option>
-                      ))}
-                    </select>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <select
+                        className="form-select form-select-sm"
+                        value={formData.shipperId || ''}
+                        onChange={(e) => handleShipperSelect(e.target.value)}
+                        style={{ fontSize: '0.825rem', background: '#F8FAFC', flex: 1 }}
+                      >
+                        <option value="">-- Select Existing Customer (or type below) --</option>
+                        {customers.map(c => (
+                          <option key={c.id} value={c.id}>
+                            {c.name || c.companyName} {c.destinationPort ? `(${c.destinationPort.split(' - ')[0]})` : ''}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCustomerCreationTarget('shipper');
+                          setShowAddCustomerModal(true);
+                        }}
+                        className="btn btn-outline btn-sm"
+                        style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', color: '#0284C7', borderColor: '#0284C7', background: '#FFFFFF', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}
+                        title="Add Customer"
+                      >
+                        <Plus size={13} />
+                        <span>+ Add</span>
+                      </button>
+                    </div>
                   </div>
 
                   <textarea
@@ -494,9 +508,43 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
                     <span style={{ fontSize: '0.68rem', color: '#0284C7', background: '#E0F2FE', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>Destination</span>
                   </div>
 
+                  <div>
+                    <label style={{ fontSize: '0.72rem', color: '#0284C7', fontWeight: 600, display: 'block', marginBottom: '3px' }}>
+                      Select Consignee:
+                    </label>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <select
+                        className="form-select form-select-sm"
+                        style={{ fontSize: '0.825rem', padding: '0.4rem 0.55rem', flex: 1, borderColor: '#7DD3FC', background: '#FFFFFF' }}
+                        onChange={(e) => handleConsigneeSelect(e.target.value)}
+                        value={formData.consigneeId || ''}
+                      >
+                        <option value="">-- Select Existing Consignee (or type below) --</option>
+                        {customers.map(c => (
+                          <option key={c.id} value={c.id}>
+                            {c.name || c.companyName} {c.customerNumber ? `(${c.customerNumber})` : ''}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCustomerCreationTarget('consignee');
+                          setShowAddCustomerModal(true);
+                        }}
+                        className="btn btn-outline btn-sm"
+                        style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', color: '#0284C7', borderColor: '#0284C7', background: '#FFFFFF', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}
+                        title="Add Consignee"
+                      >
+                        <Plus size={13} />
+                        <span>+ Add</span>
+                      </button>
+                    </div>
+                  </div>
+
                   <textarea
                     className="form-textarea"
-                    rows={4}
+                    rows={3}
                     required
                     placeholder="Enter Receiver Name (Consignee), island address, contact person, phone..."
                     value={formData.consignee}
