@@ -13,8 +13,8 @@ export const BillOfLadingModal = ({
   initialShipment = null
 }) => {
   const { ports = [], consolidations = [], houseBills = [], vessels = [] } = useAppData();
-  const { currentUser, isAgent } = useAuth();
   const hasInitializedRef = useRef(false);
+  const modalBodyRef = useRef(null);
 
   const getPortCode = (p) => p?.portCode || p?.code || '';
 
@@ -190,6 +190,9 @@ export const BillOfLadingModal = ({
     if (!isOpen) {
       hasInitializedRef.current = false;
       return;
+    }
+    if (modalBodyRef.current) {
+      modalBodyRef.current.scrollTop = 0;
     }
     if (hasInitializedRef.current) return;
     hasInitializedRef.current = true;
@@ -593,9 +596,9 @@ export const BillOfLadingModal = ({
           }}
           style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}
         >
-          <div className="modal-body custom-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', overflowY: 'auto', flex: 1, minHeight: 0, padding: '1rem 1.25rem' }}>
+          <div ref={modalBodyRef} className="modal-body custom-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', overflowY: 'auto', flex: 1, minHeight: 0, padding: '1rem 1.25rem' }}>
             
-            {/* STEP 1: Consolidation Link & Input */}
+            {/* STEP 1: Consolidation Link & Live Cargo Summary */}
             <div style={{
               background: '#F0F9FF',
               border: '1.5px solid #0284C7',
@@ -615,7 +618,7 @@ export const BillOfLadingModal = ({
                       Company Consolidation Number
                     </h4>
                     <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748B' }}>
-                      Select your company consolidation number to automatically gather and link all associated House Bills of Lading.
+                      Select your company consolidation number to gather all associated House Bills into this container.
                     </p>
                   </div>
                 </div>
@@ -627,59 +630,86 @@ export const BillOfLadingModal = ({
                 )}
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '0.75rem', alignItems: 'center' }}>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label" style={{ fontWeight: 700 }}>
-                    Consolidation # <span className="required">*</span>
-                  </label>
-                  {consolidationOptions.length > 0 ? (
-                    <select
-                      className="form-select"
-                      style={{
-                        fontWeight: 600,
-                        color: '#0A192F',
-                        background: '#FFFFFF',
-                        border: '1.5px solid #0284C7'
-                      }}
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.8rem' }}>
+                  Consolidation # <span className="required">*</span>
+                </label>
+                {consolidationOptions.length > 0 ? (
+                  <select
+                    className="form-select"
+                    style={{
+                      fontWeight: 600,
+                      color: '#0A192F',
+                      background: '#FFFFFF',
+                      border: '1.5px solid #0284C7',
+                      fontSize: '0.9rem'
+                    }}
+                    value={selectedConsolidationNumber}
+                    onChange={(e) => handleConsolidationChange(e.target.value)}
+                  >
+                    <option value="">-- Select Company Consolidation Number --</option>
+                    {consolidationOptions.map(opt => (
+                      <option key={opt.num} value={opt.num}>
+                        {opt.num} • {opt.destinationPort || 'Caribbean'} ({opt.hblCount} House Bills • {opt.totalPackages} pkgs • {opt.totalWeightLbs} lbs)
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Enter Consolidation # (e.g. CNS-2026-001)"
                       value={selectedConsolidationNumber}
                       onChange={(e) => handleConsolidationChange(e.target.value)}
-                    >
-                      <option value="">-- Select Company Consolidation Number --</option>
-                      {consolidationOptions.map(opt => (
-                        <option key={opt.num} value={opt.num}>
-                          {opt.num} • {opt.destinationPort || 'Caribbean'} ({opt.hblCount} House Bills • {opt.totalPackages} pkgs • {opt.totalWeightLbs} lbs)
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Enter Consolidation # (e.g. CNS-2026-001)"
-                        value={selectedConsolidationNumber}
-                        onChange={(e) => handleConsolidationChange(e.target.value)}
-                      />
-                      <span style={{ fontSize: '0.72rem', color: '#64748B' }}>
-                        Create House Bills with your company consolidation number in Step 2 to populate this dropdown.
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                <div style={{ fontSize: '0.8rem', color: '#475569', background: '#FFFFFF', padding: '0.65rem 0.85rem', borderRadius: '6px', border: '1px solid #BAE6FD' }}>
-                  {selectedConsolObj ? (
-                    <div>
-                      <strong>{selectedConsolObj.vesselName || 'Ocean Vessel'}</strong> • Container: <strong>{selectedConsolObj.containerNumber || 'TBD'}</strong>
-                      <div style={{ fontSize: '0.72rem', color: '#0284C7', marginTop: '2px' }}>
-                        Discharge Port: {selectedConsolObj.destinationPort} • Seal: {selectedConsolObj.sealNumber || 'N/A'}
-                      </div>
-                    </div>
-                  ) : (
-                    <span style={{ color: '#64748B' }}>
-                      Select your company consolidation number above, or adjust carrier and container details below.
+                    />
+                    <span style={{ fontSize: '0.72rem', color: '#64748B' }}>
+                      Tip: Create House Bills in Step 2 under your Consolidation Number to automatically populate this dropdown.
                     </span>
-                  )}
+                  </div>
+                )}
+              </div>
+
+              {/* Connected Live Aggregated Cargo Summary */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(105px, 1fr))',
+                gap: '0.5rem',
+                background: '#FFFFFF',
+                border: '1px solid #BAE6FD',
+                borderRadius: '6px',
+                padding: '0.5rem 0.75rem',
+                marginTop: '2px'
+              }}>
+                <div>
+                  <div style={{ fontSize: '0.62rem', color: '#0369A1', fontWeight: 700, textTransform: 'uppercase' }}>Selected HBLs</div>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#0C4A6E' }}>
+                    {selectedHouseBillIds.length} House B/Ls
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.62rem', color: '#0369A1', fontWeight: 700, textTransform: 'uppercase' }}>Total Packages</div>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#0C4A6E' }}>
+                    {formData.packageCount} pkgs
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.62rem', color: '#0369A1', fontWeight: 700, textTransform: 'uppercase' }}>Gross Weight</div>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#0C4A6E' }}>
+                    {Number(formData.grossWeightLbs).toLocaleString()} lbs
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.62rem', color: '#0369A1', fontWeight: 700, textTransform: 'uppercase' }}>Volume</div>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#D97706' }}>
+                    {Number((formData.cbm * 35.3147).toFixed(1))} CFT <span style={{ fontSize: '0.68rem', color: '#0369A1' }}>({formData.cbm} CBM)</span>
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.62rem', color: '#0369A1', fontWeight: 700, textTransform: 'uppercase' }}>Discharge Port</div>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#0284C7', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {formData.portOfDischarge || 'Destination'}
+                  </div>
                 </div>
               </div>
             </div>
@@ -725,8 +755,11 @@ export const BillOfLadingModal = ({
               </div>
 
               {candidateHouseBills.length === 0 ? (
-                <div style={{ padding: '1rem', textAlign: 'center', background: '#F8FAFC', borderRadius: '6px', color: '#64748B', fontSize: '0.825rem' }}>
-                  No House B/Ls currently match this consolidation or port of discharge. You can enter cargo totals manually below or link House B/Ls later.
+                <div style={{ padding: '0.75rem 1rem', textAlign: 'center', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '6px', color: '#64748B', fontSize: '0.8rem' }}>
+                  📦 <strong>0 House Bills found for this consolidation.</strong>
+                  <div style={{ fontSize: '0.74rem', color: '#94A3B8', marginTop: '3px' }}>
+                    In Kedreana's 3-step workflow, first create House Bills in Step 2 with this Consolidation Number. They will automatically appear here.
+                  </div>
                 </div>
               ) : (
                 <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid #E2E8F0', borderRadius: '6px' }}>
@@ -791,47 +824,7 @@ export const BillOfLadingModal = ({
               )}
             </div>
 
-            {/* Live Aggregated Cargo Summary (Read-only, derived automatically from selected House Bills) */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
-              gap: '0.65rem',
-              background: '#F0F9FF',
-              border: '1.5px solid #BAE6FD',
-              borderRadius: '8px',
-              padding: '0.75rem 1rem'
-            }}>
-              <div>
-                <div style={{ fontSize: '0.68rem', color: '#0369A1', fontWeight: 700, textTransform: 'uppercase' }}>Selected HBLs</div>
-                <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0C4A6E' }}>
-                  {selectedHouseBillIds.length} House B/Ls
-                </div>
-              </div>
-              <div>
-                <div style={{ fontSize: '0.68rem', color: '#0369A1', fontWeight: 700, textTransform: 'uppercase' }}>Total Packages</div>
-                <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0C4A6E' }}>
-                  {formData.packageCount} pkgs
-                </div>
-              </div>
-              <div>
-                <div style={{ fontSize: '0.68rem', color: '#0369A1', fontWeight: 700, textTransform: 'uppercase' }}>Gross Weight</div>
-                <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0C4A6E' }}>
-                  {Number(formData.grossWeightLbs).toLocaleString()} lbs
-                </div>
-              </div>
-              <div>
-                <div style={{ fontSize: '0.68rem', color: '#0369A1', fontWeight: 700, textTransform: 'uppercase' }}>Volume</div>
-                <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#D97706' }}>
-                  {Number((formData.cbm * 35.3147).toFixed(1))} CFT <span style={{ fontSize: '0.72rem', color: '#0369A1' }}>({formData.cbm} CBM)</span>
-                </div>
-              </div>
-              <div>
-                <div style={{ fontSize: '0.68rem', color: '#0369A1', fontWeight: 700, textTransform: 'uppercase' }}>Discharge Port</div>
-                <div style={{ fontSize: '0.825rem', fontWeight: 800, color: '#0284C7', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {formData.portOfDischarge || 'Destination'}
-                </div>
-              </div>
-            </div>
+
 
             {/* STEP 3: Carrier & Leased Container (VOCC Ocean Equipment) */}
             <div style={{
