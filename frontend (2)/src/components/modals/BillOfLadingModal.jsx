@@ -13,6 +13,7 @@ export const BillOfLadingModal = ({
   initialShipment = null
 }) => {
   const { ports = [], consolidations = [], houseBills = [], vessels = [] } = useAppData();
+  const { isAgent, currentUser } = useAuth();
   const hasInitializedRef = useRef(false);
   const modalBodyRef = useRef(null);
 
