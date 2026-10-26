@@ -32,8 +32,10 @@ export const PageHeader = ({
   subtitle,
   icon: Icon,
   breadcrumbs = [],
-  actions
+  actions,
+  action
 }) => {
+  const headerActions = actions || action;
   return (
     <div className="page-header">
       <div className="page-header-title">
@@ -45,9 +47,9 @@ export const PageHeader = ({
         {subtitle && <div className="page-header-desc">{subtitle}</div>}
       </div>
 
-      {actions && (
+      {headerActions && (
         <div className="page-header-actions">
-          {actions}
+          {headerActions}
         </div>
       )}
     </div>

@@ -358,7 +358,7 @@ export const HouseBillsList = ({ onNavigate }) => {
           { label: 'Maritime Documentation', href: '#' },
           { label: 'House Bills of Lading' }
         ]}
-        action={
+        actions={
           !isAgent && (
             <button
               type="button"
