@@ -78,19 +78,23 @@ export const DEFAULT_ROLE_PERMISSIONS_MAP = {
 };
 
 export const getStoredPermissionsMap = () => {
+  const validIds = new Set(SYSTEM_MODULES.map(m => m.id));
   if (typeof window === 'undefined') return DEFAULT_ROLE_PERMISSIONS_MAP;
   try {
     const saved = localStorage.getItem(STORAGE_KEY_ROLE_PERMISSIONS);
     if (saved) {
       const parsed = JSON.parse(saved);
       if (parsed && typeof parsed === 'object' && parsed.super_admin) {
-        // Self-heal shipments for all roles if missing from legacy cache
-        ['super_admin', 'operations', 'documentation', 'warehouse', 'agent'].forEach(rk => {
-          if (Array.isArray(parsed[rk]) && !parsed[rk].includes('shipments')) {
-            parsed[rk].push('shipments');
+        const cleaned = {};
+        Object.keys(parsed).forEach(rk => {
+          if (Array.isArray(parsed[rk])) {
+            cleaned[rk] = parsed[rk].filter(id => validIds.has(id));
+          } else {
+            cleaned[rk] = DEFAULT_ROLE_PERMISSIONS_MAP[rk] || [];
           }
         });
-        return parsed;
+        cleaned.super_admin = Array.from(validIds);
+        return cleaned;
       }
     }
   } catch (e) {

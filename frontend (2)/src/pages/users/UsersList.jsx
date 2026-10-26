@@ -517,7 +517,8 @@ export const UsersList = ({ onNavigate }) => {
                   </th>
 
                   {ROLE_DEFINITIONS.map(r => {
-                    const activeCount = (rolePermissionsMap?.[r.roleKey] || []).length;
+                    const validModuleIds = new Set((systemModules || []).map(m => m.id));
+                    const activeCount = (rolePermissionsMap?.[r.roleKey] || []).filter(id => validModuleIds.has(id)).length;
                     return (
                       <th
                         key={r.roleKey}

@@ -228,13 +228,18 @@ export const AuthProvider = ({ children }) => {
         const res = await apiClient.get('settings/role_permissions');
         if (res && res.data && typeof res.data === 'object' && (res.data.value || res.data.super_admin)) {
           const remoteMap = res.data.value || res.data;
-          ['super_admin', 'operations', 'documentation'].forEach(rk => {
-            if (Array.isArray(remoteMap[rk]) && !remoteMap[rk].includes('shipments')) {
-              remoteMap[rk].push('shipments');
+          const validIds = new Set(SYSTEM_MODULES.map(m => m.id));
+          const cleaned = {};
+          Object.keys(remoteMap).forEach(rk => {
+            if (Array.isArray(remoteMap[rk])) {
+              cleaned[rk] = remoteMap[rk].filter(id => validIds.has(id));
+            } else {
+              cleaned[rk] = DEFAULT_ROLE_PERMISSIONS_MAP[rk] || [];
             }
           });
-          setRolePermissionsMap(remoteMap);
-          saveStoredPermissionsMap(remoteMap);
+          cleaned.super_admin = Array.from(validIds);
+          setRolePermissionsMap(cleaned);
+          saveStoredPermissionsMap(cleaned);
         }
       } catch {
         // Fallback to localStorage
