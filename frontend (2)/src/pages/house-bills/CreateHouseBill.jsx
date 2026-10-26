@@ -6,50 +6,35 @@ import {
   Building2,
   Package,
   Check,
-  ChevronRight,
-  ChevronLeft,
   ArrowLeft,
-  Calculator,
-  Box,
-  Layers,
-  Info,
   DollarSign,
   Search,
-  X
+  CheckSquare,
+  Square,
+  Sparkles,
+  Info
 } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
+import { useToast } from '../../context/ToastContext';
 
 export const CreateHouseBill = ({ onNavigate }) => {
-  const { customers, warehouseReceipts, houseBills, createHouseBill, settings } = useAppData();
+  const { customers = [], warehouseReceipts = [], houseBills = [], createHouseBill, settings } = useAppData();
+  const { showToast } = useToast();
 
   const [selectedCustomerId, setSelectedCustomerId] = useState(() => {
     const saved = typeof window !== 'undefined' ? localStorage.getItem('vicustoms_selected_hbl_customer') : null;
     if (saved && customers.some(c => c.id === saved)) {
       return saved;
     }
-    return customers[0]?.id || 'CUS-2026-0001';
+    return customers[0]?.id || '';
   });
-  const [currentStep, setCurrentStep] = useState(() => {
-    const saved = typeof window !== 'undefined' ? localStorage.getItem('vicustoms_selected_hbl_customer') : null;
-    if (saved && customers.some(c => c.id === saved)) {
-      return 2;
-    }
-    return 1;
-  });
+
   const [selectedWrIds, setSelectedWrIds] = useState([]);
-  const [customerSearch, setCustomerSearch] = useState('');
+  const [wrSearch, setWrSearch] = useState('');
+  const [showAllAvailableWrs, setShowAllAvailableWrs] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const filteredCustomers = useMemo(() => {
-    if (!customerSearch.trim()) return customers;
-    const q = customerSearch.toLowerCase();
-    return customers.filter(c =>
-      c.name?.toLowerCase().includes(q) ||
-      c.destinationPort?.toLowerCase().includes(q) ||
-      c.customerNumber?.toLowerCase().includes(q) ||
-      c.destinationCode?.toLowerCase().includes(q)
-    );
-  }, [customers, customerSearch]);
-
+  // Generate initial HBL number
   const configuredHblPrefix = settings?.numberingRules?.houseBillPrefix?.trim() || 'HBL-2026-';
   const prefix = configuredHblPrefix.endsWith('-') ? configuredHblPrefix : `${configuredHblPrefix}-`;
   const maxHblSeq = houseBills.reduce((max, h) => {
@@ -61,9 +46,40 @@ export const CreateHouseBill = ({ onNavigate }) => {
   const nextSeq = Math.max(houseBills.length + 1, maxHblSeq + 1);
   const initialHblNumber = `${prefix}${String(nextSeq).padStart(4, '0')}`;
 
-  const selectedCustomer = customers.find(c => c.id === selectedCustomerId) || customers[0];
+  const selectedCustomer = customers.find(c => c.id === selectedCustomerId) || customers[0] || null;
 
-  // Eligible Warehouse Receipts for the selected customer (strictly in stock / unassigned)
+  // Form State
+  const [formData, setFormData] = useState({
+    hblNumber: initialHblNumber,
+    consolidationNumber: '',
+    freightTerms: 'Freight Prepaid',
+    issueDate: new Date().toISOString().split('T')[0],
+    destinationPort: selectedCustomer?.destinationPort || 'STT - Port of Charlotte Amalie',
+    destinationCode: selectedCustomer?.destinationCode || 'STT',
+    cargoDescription: 'General Commercial Cargo & Package Goods',
+    notes: '',
+    // Freight Rates
+    rateBasis: 'cft',
+    oceanFreightRate: 3.50,
+    docFee: 50.00,
+    terminalHandlingFee: 35.00,
+    customsAdminFee: 25.00
+  });
+
+  // When selected customer changes, update destination port
+  const handleCustomerChange = (custId) => {
+    setSelectedCustomerId(custId);
+    const cust = customers.find(c => c.id === custId);
+    if (cust) {
+      setFormData(prev => ({
+        ...prev,
+        destinationPort: cust.destinationPort || prev.destinationPort,
+        destinationCode: cust.destinationCode || prev.destinationCode
+      }));
+    }
+  };
+
+  // Eligible Warehouse Receipts (unassigned to an HBL and active)
   const eligibleWrs = useMemo(() => {
     return warehouseReceipts.filter(wr => {
       const notAssigned = !wr.assignedHouseBillId || wr.assignedHouseBillId === '';
@@ -76,99 +92,39 @@ export const CreateHouseBill = ({ onNavigate }) => {
         wr.customerName?.trim().toLowerCase() === selectedCustomer?.name?.trim().toLowerCase() ||
         (wr.consignee && selectedCustomer?.name && wr.consignee.toLowerCase().includes(selectedCustomer.name.trim().toLowerCase())) ||
         (selectedCustomer?.name && wr.consignee && selectedCustomer.name.toLowerCase().includes(wr.consignee.split('\n')[0].trim().toLowerCase()));
-      
+
       return matchCustomer;
     });
   }, [warehouseReceipts, selectedCustomerId, selectedCustomer]);
+
+  // Receipts to display: customer-specific or all unassigned
+  const availableWrs = useMemo(() => {
+    let list = [];
+    if (showAllAvailableWrs || eligibleWrs.length === 0) {
+      list = warehouseReceipts.filter(wr => {
+        return (!wr.assignedHouseBillId || wr.assignedHouseBillId === '') && wr.status !== 'Consolidated' && wr.status !== 'Cancelled';
+      });
+    } else {
+      list = eligibleWrs;
+    }
+
+    if (!wrSearch.trim()) return list;
+    const q = wrSearch.toLowerCase();
+    return list.filter(w =>
+      (w.receiptNumber && w.receiptNumber.toLowerCase().includes(q)) ||
+      (w.customer && w.customer.toLowerCase().includes(q)) ||
+      (w.consignee && w.consignee.toLowerCase().includes(q)) ||
+      (w.shipper && w.shipper.toLowerCase().includes(q)) ||
+      (w.cargoDescription && w.cargoDescription.toLowerCase().includes(q))
+    );
+  }, [showAllAvailableWrs, eligibleWrs, warehouseReceipts, wrSearch]);
 
   // Selected WR items
   const selectedWrs = useMemo(() => {
     return warehouseReceipts.filter(wr => selectedWrIds.includes(wr.id) || selectedWrIds.includes(wr.receiptNumber));
   }, [warehouseReceipts, selectedWrIds]);
 
-  // Form State for HBL & Freight Rates
-  const [formData, setFormData] = useState({
-    hblNumber: initialHblNumber,
-    consolidationNumber: '',
-    freightTerms: 'Freight Prepaid',
-    issueDate: new Date().toISOString().split('T')[0],
-    notes: '',
-    // Freight Rates & Rating Inputs
-    rateBasis: 'cft', // 'cft' | 'cbm' | 'weight' | 'flat'
-    oceanFreightRate: 3.50, // $3.50 per CFT default
-    docFee: 50.00,
-    terminalHandlingFee: 35.00,
-    customsAdminFee: 0.00
-  });
-
-  // Parties state (Shipper Address & Delivery Address)
-  const [shipperParty, setShipperParty] = useState({
-    id: '',
-    name: '',
-    address: 'echMart Supply Hub, Medley, FL'
-  });
-
-  const [consigneeParty, setConsigneeParty] = useState({
-    id: '',
-    name: '',
-    address: '',
-    taxId: ''
-  });
-
-  // Auto-populate shipper address & delivery address from linked WR and selected customer
-  React.useEffect(() => {
-    if (selectedWrs.length > 0) {
-      const firstWr = selectedWrs[0];
-      if (firstWr?.shipper) {
-        setShipperParty(prev => {
-          if (!prev.address || prev.address === 'Miami CFS Cargo Hub, FL') {
-            return {
-              id: firstWr.shipperId || '',
-              name: (firstWr.shipper || '').split('\n')[0] || '',
-              address: firstWr.shipper || 'echMart Supply Hub, Medley, FL'
-            };
-          }
-          return prev;
-        });
-      }
-
-      setConsigneeParty(prev => {
-        if (!prev.address) {
-          const fullDelivery = [
-            firstWr?.consignee || selectedCustomer?.name,
-            selectedCustomer?.address || selectedCustomer?.destinationPort || firstWr?.destinationPort
-          ].filter(Boolean).join('\n');
-
-          return {
-            id: selectedCustomer?.id || firstWr?.customerId || '',
-            name: selectedCustomer?.name || (firstWr?.consignee || '').split('\n')[0] || '',
-            address: fullDelivery || 'Destination Port Area',
-            taxId: selectedCustomer?.taxId || ''
-          };
-        }
-        return prev;
-      });
-    } else if (selectedCustomer) {
-      setConsigneeParty(prev => {
-        if (!prev.address) {
-          const fullDelivery = [
-            selectedCustomer.name,
-            selectedCustomer.address || selectedCustomer.destinationPort
-          ].filter(Boolean).join('\n');
-
-          return {
-            id: selectedCustomer.id || '',
-            name: selectedCustomer.name || '',
-            address: fullDelivery || 'Destination Port Area',
-            taxId: selectedCustomer.taxId || ''
-          };
-        }
-        return prev;
-      });
-    }
-  }, [selectedWrs, selectedCustomer]);
-
-  // Calculate combined totals from selected WRs
+  // Combined totals from selected WRs
   const combinedTotals = useMemo(() => {
     let totalPieces = 0;
     let totalPackages = 0;
@@ -206,7 +162,7 @@ export const CreateHouseBill = ({ onNavigate }) => {
     };
   }, [selectedWrs]);
 
-  // Calculated Freight Charges Breakdown
+  // Calculated Freight Charges
   const rateBreakdown = useMemo(() => {
     const rate = Number(formData.oceanFreightRate) || 0;
     let oceanCharge = 0;
@@ -237,16 +193,7 @@ export const CreateHouseBill = ({ onNavigate }) => {
     };
   }, [formData, combinedTotals]);
 
-  const toggleWrSelect = (wrId) => {
-    setSelectedWrIds(prev =>
-      prev.includes(wrId) ? prev.filter(id => id !== wrId) : [...prev, wrId]
-    );
-  };
-
-  const selectAllEligibleWrs = () => {
-    setSelectedWrIds(eligibleWrs.map(w => w.id));
-  };
-
+  // Existing Consolidation numbers for datalist suggestions
   const existingConsolidationNumbers = useMemo(() => {
     const list = new Set();
     houseBills.forEach(h => {
@@ -255,581 +202,140 @@ export const CreateHouseBill = ({ onNavigate }) => {
     return Array.from(list);
   }, [houseBills]);
 
-  const handleCreate = async () => {
-    const firstWr = selectedWrs[0];
-    const customerName = selectedCustomer?.name || selectedCustomer?.companyName || "Valued Customer";
+  // Toggle selection of a WR
+  const toggleWr = (wrId) => {
+    setSelectedWrIds(prev =>
+      prev.includes(wrId) ? prev.filter(id => id !== wrId) : [...prev, wrId]
+    );
+  };
 
-    // Extract name & address parts cleanly
-    const sRaw = (shipperParty.address || '').trim();
-    const sLines = sRaw.split('\n');
-    let sName = sLines[0] || '';
-    let sAddr = sLines.slice(1).join(', ') || '';
-    if (!sAddr && sName.includes(',')) {
-      const parts = sName.split(',');
-      sName = parts[0].trim();
-      sAddr = parts.slice(1).join(',').trim();
+  const handleSelectAllWrs = () => {
+    if (selectedWrIds.length === availableWrs.length) {
+      setSelectedWrIds([]);
+    } else {
+      setSelectedWrIds(availableWrs.map(w => w.id || w.receiptNumber));
     }
-    if (!sName) sName = firstWr?.shipper || "Global Retail Suppliers Inc.";
-    if (!sAddr) sAddr = sRaw || "Miami CFS Cargo Hub, FL";
+  };
 
-    const cRaw = (consigneeParty.address || '').trim();
-    const cLines = cRaw.split('\n');
-    let dName = cLines[0] || '';
-    let dAddr = cLines.slice(1).join(', ') || '';
-    if (!dAddr && dName.includes(',')) {
-      const parts = dName.split(',');
-      dName = parts[0].trim();
-      dAddr = parts.slice(1).join(',').trim();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (selectedWrIds.length === 0) {
+      showToast('Please select at least 1 Warehouse Receipt to link to this House Bill.', 'warning', 'No Receipts Linked');
+      return;
     }
-    if (!dName) dName = customerName;
-    if (!dAddr) dAddr = cRaw || selectedCustomer?.address || firstWr?.destinationPort || "Destination Port Area";
 
-    const payload = {
-      hblNumber: formData.hblNumber,
-      customerId: selectedCustomer?.id || null,
-      customerName: dName || customerName,
-      shipperId: shipperParty.id || null,
-      consigneeId: consigneeParty.id || null,
-      shipper: {
-        id: shipperParty.id || null,
-        name: sName,
-        address: sRaw || sAddr
-      },
-      consignee: {
-        id: consigneeParty.id || null,
-        name: dName,
-        address: cRaw || dAddr,
-        taxId: consigneeParty.taxId || selectedCustomer?.taxId || ""
-      },
-      notifyParty: {
-        name: firstWr?.agentName || selectedCustomer?.agentName || "Direct Consignee Delivery",
-        address: "Destination Port Cargo Terminal"
-      },
-      agentId: firstWr?.agentId || null,
-      agentName: firstWr?.agentName || selectedCustomer?.agentName || "",
-      originPort: "Port of Miami (USMIA), FL",
-      destinationPort: selectedCustomer?.destinationPort || firstWr?.destinationPort || "",
-      destinationCode: selectedCustomer?.destinationCode || firstWr?.destinationCode || "",
-      warehouseReceiptIds: selectedWrs.length > 0 ? selectedWrs.map(w => w.receiptNumber || w.id) : selectedWrIds,
-      cargoDescription: combinedTotals.cargoDescriptions || "Commercial Cargo Goods",
-      packages: combinedTotals.packages,
-      totalPackages: combinedTotals.totalPackages,
-      totalPieces: combinedTotals.totalPieces,
-      totalWeightLbs: combinedTotals.totalWeightLbs,
-      totalWeightKg: combinedTotals.totalWeightKg,
-      totalCft: combinedTotals.totalCft,
-      totalCbm: combinedTotals.totalCbm,
-      freightTerms: formData.freightTerms,
-      freightCharges: {
-        rateBasis: formData.rateBasis,
-        rate: Number(formData.oceanFreightRate),
-        oceanFreightAmount: rateBreakdown.oceanCharge,
-        documentationFee: rateBreakdown.docFee,
-        terminalHandlingFee: rateBreakdown.terminalFee,
-        customsFee: rateBreakdown.customsFee,
-        totalAmount: rateBreakdown.totalCharges,
-        currency: 'USD'
-      },
-      issueDate: formData.issueDate,
-      assignedConsolidationId: formData.consolidationNumber?.trim() || null,
-      status: "Active",
-      notes: formData.notes || `Created linking ${selectedWrIds.length} Warehouse Receipt(s).`
-    };
+    setIsSubmitting(true);
+    try {
+      const firstWr = selectedWrs[0];
+      const customerName = selectedCustomer?.name || selectedCustomer?.companyName || (firstWr?.consignee || '').split('\n')[0] || "Valued Customer";
 
-    const created = await createHouseBill(payload);
-    try { localStorage.removeItem('vicustoms_selected_hbl_customer'); } catch (e) {}
-    onNavigate('house-bills');
+      const payload = {
+        hblNumber: formData.hblNumber,
+        customerId: selectedCustomer?.id || firstWr?.customerId || null,
+        customerName: customerName,
+        shipper: {
+          name: firstWr?.shipper ? firstWr.shipper.split('\n')[0] : "Global Retail Suppliers Inc.",
+          address: firstWr?.shipper || "CFS Cargo Terminal, Miami FL"
+        },
+        consignee: {
+          name: customerName,
+          address: selectedCustomer?.address || firstWr?.consignee || formData.destinationPort || "Destination Port Terminal"
+        },
+        notifyParty: {
+          name: firstWr?.agentName || selectedCustomer?.agentName || "Direct Consignee Delivery",
+          address: "Destination Port Cargo Terminal"
+        },
+        agentId: firstWr?.agentId || null,
+        agentName: firstWr?.agentName || selectedCustomer?.agentName || "",
+        originPort: "Port of Miami (USMIA), FL",
+        destinationPort: formData.destinationPort,
+        destinationCode: formData.destinationCode,
+        warehouseReceiptIds: selectedWrs.length > 0 ? selectedWrs.map(w => w.receiptNumber || w.id) : selectedWrIds,
+        cargoDescription: combinedTotals.cargoDescriptions || formData.cargoDescription || "Commercial Cargo Goods",
+        packages: combinedTotals.packages,
+        totalPackages: combinedTotals.totalPackages,
+        totalPieces: combinedTotals.totalPieces,
+        totalWeightLbs: combinedTotals.totalWeightLbs,
+        totalWeightKg: combinedTotals.totalWeightKg,
+        totalCft: combinedTotals.totalCft,
+        totalCbm: combinedTotals.totalCbm,
+        freightTerms: formData.freightTerms,
+        freightCharges: {
+          rateBasis: formData.rateBasis,
+          rate: Number(formData.oceanFreightRate),
+          oceanFreightAmount: rateBreakdown.oceanCharge,
+          documentationFee: rateBreakdown.docFee,
+          terminalHandlingFee: rateBreakdown.terminalFee,
+          customsFee: rateBreakdown.customsFee,
+          totalAmount: rateBreakdown.totalCharges,
+          currency: 'USD'
+        },
+        issueDate: formData.issueDate,
+        assignedConsolidationId: formData.consolidationNumber?.trim() || null,
+        status: "Active",
+        notes: formData.notes || `Created linking ${selectedWrIds.length} Warehouse Receipt(s).`
+      };
+
+      await createHouseBill(payload);
+      showToast(`House Bill ${formData.hblNumber} created successfully!`, 'success', 'House B/L Issued');
+      try { localStorage.removeItem('vicustoms_selected_hbl_customer'); } catch (e) {}
+      onNavigate('house-bills');
+    } catch (err) {
+      showToast(err.message || 'Failed to issue House Bill', 'error', 'Error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '1200px', margin: '0 auto' }}>
       <PageHeader
         title="Create House Bill of Lading (HBL)"
-        subtitle="Group staged Warehouse Receipts into a formal House transport document with rating & freight charges."
+        subtitle="Step 2: Link staged warehouse receipts into an official House Bill with your company Consolidation Number."
         icon={FileText}
         breadcrumbs={[
-          { label: 'House Bills of Lading', href: '#' },
+          { label: 'House Bills of Lading', href: '#', onClick: () => onNavigate('house-bills') },
           { label: 'Create New' }
         ]}
         actions={
           <button
-            onClick={() => {
-              try { localStorage.removeItem('vicustoms_selected_hbl_customer'); } catch (e) {}
-              onNavigate('house-bills');
-            }}
+            type="button"
+            onClick={() => onNavigate('house-bills')}
             className="btn btn-outline btn-sm"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}
           >
             <ArrowLeft size={15} />
-            <span>Cancel</span>
+            <span>Back to House Bills</span>
           </button>
         }
       />
 
-      {/* Step Indicator Bar */}
-      <div className="card" style={{ padding: '0.85rem 1.25rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
-          {[
-            { num: 1, label: '1. Select Customer' },
-            { num: 2, label: '2. Link Staged WRs' },
-            { num: 3, label: '3. Cargo Totals' },
-            { num: 4, label: '4. Freight Rates & Issue' }
-          ].map(step => (
-            <div
-              key={step.num}
-              onClick={() => {
-                if (step.num < currentStep || (step.num === 2 && selectedCustomerId) || (step.num === 3 && selectedWrIds.length > 0)) {
-                  setCurrentStep(step.num);
-                }
-              }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                cursor: step.num <= currentStep ? 'pointer' : 'default',
-                opacity: step.num > currentStep ? 0.5 : 1
-              }}
-            >
-              <div
-                style={{
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '50%',
-                  background: currentStep === step.num ? '#0A192F' : currentStep > step.num ? '#10B981' : '#E2E8F0',
-                  color: currentStep >= step.num ? '#FFFFFF' : '#64748B',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 700,
-                  fontSize: '0.8rem'
-                }}
-              >
-                {currentStep > step.num ? <Check size={16} /> : step.num}
-              </div>
-              <span style={{ fontWeight: currentStep === step.num ? 700 : 500, fontSize: '0.85rem', color: currentStep === step.num ? '#0A192F' : '#64748B' }}>
-                {step.label}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* STEP 1: Select Customer */}
-      {currentStep === 1 && (
-        <div className="card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
-            <div>
-              <h3 style={{ fontSize: '1.1rem', color: '#0A192F', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Building2 size={18} style={{ color: '#0284C7' }} />
-                <span>Step 1: Select Customer Account Profile</span>
-              </h3>
-              <p style={{ fontSize: '0.8rem', color: '#64748B', margin: 0 }}>
-                Select the consignee account to load available Warehouse Receipts staged at CFS Miami.
-              </p>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '0.35rem 0.65rem' }}>
-              <Search size={15} style={{ color: '#64748B' }} />
-              <input
-                type="text"
-                placeholder="Search customers..."
-                value={customerSearch}
-                onChange={(e) => setCustomerSearch(e.target.value)}
-                style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.8rem', width: '200px' }}
-              />
-              {customerSearch && (
-                <button type="button" onClick={() => setCustomerSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', padding: 0 }}>
-                  <X size={13} />
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '8px' }}>
-            <table className="table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ background: '#F8FAFC', borderBottom: '1.5px solid #E2E8F0', fontSize: '0.75rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  <th style={{ padding: '0.75rem 1rem', width: '50px', textAlign: 'center' }}>Select</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Customer / Consignee</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Destination Port</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Contact &amp; Telephone</th>
-                  <th style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>Staged WRs</th>
-                  <th style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredCustomers.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: '#64748B', fontSize: '0.85rem' }}>
-                      No customer account profiles match your search "{customerSearch}".
-                    </td>
-                  </tr>
-                ) : (
-                  filteredCustomers.map(c => {
-                    const isSelected = selectedCustomerId === c.id;
-                    const stagedWrCount = warehouseReceipts.filter(w => {
-                      const cId = w.customerId || w.customer_id;
-                      const match = cId === c.id ||
-                        w.customer?.trim().toLowerCase() === c.name?.trim().toLowerCase() ||
-                        w.customerName?.trim().toLowerCase() === c.name?.trim().toLowerCase() ||
-                        (w.consignee && w.consignee.toLowerCase().includes(c.name?.trim().toLowerCase()));
-                      return match && !w.assignedHouseBillId && w.status !== 'Consolidated' && w.status !== 'Cancelled';
-                    }).length;
-
-                    return (
-                      <tr
-                        key={c.id}
-                        onClick={() => setSelectedCustomerId(c.id)}
-                        style={{
-                          background: isSelected ? '#F0F9FF' : '#FFFFFF',
-                          borderBottom: '1px solid #E2E8F0',
-                          cursor: 'pointer',
-                          transition: 'background-color 150ms ease'
-                        }}
-                        onMouseEnter={(e) => {
-                          if (!isSelected) e.currentTarget.style.background = '#F8FAFC';
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isSelected) e.currentTarget.style.background = '#FFFFFF';
-                        }}
-                      >
-                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
-                          <input
-                            type="radio"
-                            name="selectedCustomer"
-                            checked={isSelected}
-                            onChange={() => setSelectedCustomerId(c.id)}
-                            style={{ cursor: 'pointer', accentColor: '#0284C7', width: '16px', height: '16px' }}
-                          />
-                        </td>
-                        <td style={{ padding: '0.75rem 1rem' }}>
-                          <div style={{ fontWeight: 700, color: '#0A192F', fontSize: '0.9rem' }}>
-                            {c.name}
-                          </div>
-                          {c.customerNumber && (
-                            <div style={{ fontSize: '0.7rem', color: '#64748B', fontFamily: 'JetBrains Mono, monospace' }}>
-                              {c.customerNumber}
-                            </div>
-                          )}
-                        </td>
-                        <td style={{ padding: '0.75rem 1rem' }}>
-                          <span style={{ fontWeight: 600, color: '#0284C7', fontSize: '0.85rem' }}>
-                            {c.destinationPort || 'CFS Cargo Hub'}
-                          </span>
-                        </td>
-                        <td style={{ padding: '0.75rem 1rem', fontSize: '0.8rem', color: '#334155' }}>
-                          <div>{c.contactPerson || '—'}</div>
-                          <div style={{ fontSize: '0.72rem', color: '#64748B' }}>
-                            {c.telephone || c.phone || '—'}
-                          </div>
-                        </td>
-                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
-                          <span
-                            style={{
-                              display: 'inline-block',
-                              padding: '2px 8px',
-                              borderRadius: '12px',
-                              fontSize: '0.75rem',
-                              fontWeight: 700,
-                              background: stagedWrCount > 0 ? '#DCFCE7' : '#F1F5F9',
-                              color: stagedWrCount > 0 ? '#15803D' : '#64748B'
-                            }}
-                          >
-                            {stagedWrCount} Available WR(s)
-                          </span>
-                        </td>
-                        <td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedCustomerId(c.id);
-                              setCurrentStep(2);
-                            }}
-                            className={`btn btn-sm ${isSelected ? 'btn-primary' : 'btn-outline'}`}
-                            style={{
-                              padding: '0.3rem 0.65rem',
-                              fontSize: '0.75rem',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}
-                          >
-                            <span>Create HBL</span>
-                            <ChevronRight size={13} />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: '1px solid #E2E8F0' }}>
-            <button
-              onClick={() => setCurrentStep(2)}
-              className="btn btn-primary"
-            >
-              <span>Proceed to Link Warehouse Receipts</span>
-              <ChevronRight size={16} />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* STEP 2: Select Warehouse Receipts */}
-      {currentStep === 2 && (
-        <div className="card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
-            <div>
-              <h3 style={{ fontSize: '1.1rem', color: '#0A192F', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Package size={18} style={{ color: '#D97706' }} />
-                <span>Step 2: Link Warehouse Receipts for {selectedCustomer?.name}</span>
-              </h3>
-              <p style={{ fontSize: '0.8rem', color: '#64748B', margin: 0 }}>
-                Select staged receipts in warehouse stock destined for <strong>{selectedCustomer?.destinationPort || eligibleWrs[0]?.destinationPort || 'Eastern Caribbean Ports'}</strong>.
-              </p>
-            </div>
-
-            {eligibleWrs.length > 0 && (
-              <button
-                type="button"
-                onClick={selectAllEligibleWrs}
-                className="btn btn-sm btn-outline"
-                style={{ fontSize: '0.75rem' }}
-              >
-                Select All ({eligibleWrs.length} Available WRs)
-              </button>
-            )}
-          </div>
-
-          {(() => {
-            const displayWrs = eligibleWrs.length > 0 ? eligibleWrs : warehouseReceipts.filter(w => !w.assignedHouseBillId && w.status !== 'Consolidated' && w.status !== 'Cancelled');
-            if (displayWrs.length === 0) {
-              return (
-                <div style={{ textAlign: 'center', padding: '3rem 1rem', background: '#F8FAFC', borderRadius: '8px', border: '1px dashed #CBD5E1' }}>
-                  <Package size={32} style={{ color: '#94A3B8', margin: '0 auto 0.5rem' }} />
-                  <div style={{ fontWeight: 600, color: '#334155' }}>No Unlinked Staged Warehouse Receipts Found</div>
-                  <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '4px' }}>
-                    There are no unassigned warehouse receipts in inventory for {selectedCustomer?.name}.
-                  </div>
-                  <button
-                    onClick={() => onNavigate('warehouse-receipts', 'create')}
-                    className="btn btn-primary btn-sm mt-3"
-                  >
-                    + Intake New Warehouse Receipt
-                  </button>
-                </div>
-              );
-            }
-            return (
-              <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '8px' }}>
-                {eligibleWrs.length === 0 && (
-                  <div style={{ padding: '0.6rem 1rem', background: '#EFF6FF', borderBottom: '1px solid #BFDBFE', fontSize: '0.8rem', color: '#1E40AF', fontWeight: 600 }}>
-                    Showing staged receipts available for linking into this House Bill:
-                  </div>
-                )}
-                <table className="data-table" style={{ fontSize: '0.8rem' }}>
-                  <thead>
-                    <tr style={{ background: '#0A192F', color: '#FFFFFF' }}>
-                      <th style={{ width: '40px' }}>Select</th>
-                      <th>WR Number</th>
-                      <th>Intake Date</th>
-                      <th>Cargo Description</th>
-                      <th>Package Lines</th>
-                      <th>Pieces</th>
-                      <th>Gross Weight</th>
-                      <th style={{ color: '#FBBF24' }}>CFT (Primary)</th>
-                      <th style={{ color: '#38BDF8' }}>CBM</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {displayWrs.map(wr => {
-                      const isSelected = selectedWrIds.includes(wr.id) || selectedWrIds.includes(wr.receiptNumber);
-                      return (
-                        <tr
-                          key={wr.id}
-                          onClick={() => toggleWrSelect(wr.id)}
-                          style={{
-                            cursor: 'pointer',
-                            background: isSelected ? '#EFF6FF' : '#FFFFFF'
-                          }}
-                        >
-                          <td>
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={() => {}}
-                              style={{ cursor: 'pointer' }}
-                            />
-                          </td>
-                          <td style={{ fontWeight: 800, color: '#D97706', fontFamily: 'JetBrains Mono, monospace' }}>
-                            {wr.receiptNumber}
-                          </td>
-                          <td>{wr.date}</td>
-                          <td style={{ fontSize: '0.8rem', color: '#334155' }}>{wr.cargoDescription}</td>
-                          <td>{wr.packages?.length || wr.packageCount} lines</td>
-                          <td style={{ fontWeight: 700 }}>{wr.totalPieces || wr.total_pieces || wr.packageCount} pcs</td>
-                          <td>{(Number(wr.weightLbs || wr.weight_lbs || 0)).toLocaleString()} lbs</td>
-                          <td style={{ fontWeight: 800, color: '#D97706' }}>{Number(wr.totalCft || wr.total_cft || wr.cft || 0)} CFT</td>
-                          <td style={{ fontWeight: 700, color: '#0284C7' }}>{Number(wr.totalCbm || wr.total_cbm || wr.cbm || 0)} CBM</td>
-                          <td><StatusBadge status={wr.status} size="sm" /></td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            );
-          })()}
-
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '1rem', borderTop: '1px solid #E2E8F0' }}>
-            <button onClick={() => setCurrentStep(1)} className="btn btn-outline">
-              <ChevronLeft size={16} />
-              <span>Back</span>
-            </button>
-            <div style={{ fontSize: '0.85rem', color: '#334155' }}>
-              Selected: <strong style={{ color: '#2563EB' }}>{selectedWrIds.length}</strong> WR(s) ({combinedTotals.totalPieces} pieces • {combinedTotals.totalCft} CFT / {combinedTotals.totalCbm} CBM)
-            </div>
-            <button
-              onClick={() => setCurrentStep(3)}
-              disabled={selectedWrIds.length === 0}
-              className="btn btn-primary"
-            >
-              <span>Proceed to Cargo Review</span>
-              <ChevronRight size={16} />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* STEP 3: Review Combined Cargo */}
-      {currentStep === 3 && (
-        <div className="card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div>
-            <h3 style={{ fontSize: '1.1rem', color: '#0A192F', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Calculator size={18} style={{ color: '#0284C7' }} />
-              <span>Step 3: Review Aggregated Cargo Totals</span>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        {/* CARD 1: Core Identifiers & Company Consolidation Number */}
+        <div className="card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0', paddingBottom: '0.65rem' }}>
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0A192F', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <FileText size={17} style={{ color: '#0284C7' }} />
+              <span>1. House B/L &amp; Consolidation Details</span>
             </h3>
-            <p style={{ fontSize: '0.8rem', color: '#64748B', margin: 0 }}>
-              All information from the {selectedWrs.length} linked Warehouse Receipt(s) has been calculated.
-            </p>
+            <span style={{ fontSize: '0.75rem', color: '#64748B' }}>Client Step 2 Flow</span>
           </div>
 
-          {/* 4 Combined Totals Cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }} className="grid-cols-4-mobile">
-            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B' }}>LINKED WAREHOUSE RECEIPTS</div>
-              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#D97706', marginTop: '4px' }}>
-                {selectedWrs.length}
-              </div>
-              <div style={{ fontSize: '0.72rem', color: '#64748B' }}>{selectedWrIds.join(', ')}</div>
-            </div>
-
-            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B' }}>TOTAL PIECES</div>
-              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0A192F', marginTop: '4px' }}>
-                {combinedTotals.totalPieces} <span style={{ fontSize: '0.9rem' }}>Pieces</span>
-              </div>
-              <div style={{ fontSize: '0.72rem', color: '#64748B' }}>Across {combinedTotals.totalPackages} package lines</div>
-            </div>
-
-            <div style={{ background: '#FEF3C7', border: '1px solid #FDE68A', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#92400E' }}>TOTAL CFT (PRIMARY)</div>
-              <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#92400E', marginTop: '4px' }}>
-                {combinedTotals.totalCft.toLocaleString()} <span style={{ fontSize: '0.9rem' }}>CFT</span>
-              </div>
-              <div style={{ fontSize: '0.75rem', color: '#B45309', fontWeight: 600 }}>({combinedTotals.totalCbm} CBM)</div>
-            </div>
-
-            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B' }}>GROSS WEIGHT</div>
-              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0A192F', marginTop: '4px' }}>
-                {combinedTotals.totalWeightLbs.toLocaleString()} <span style={{ fontSize: '0.9rem' }}>lbs</span>
-              </div>
-              <div style={{ fontSize: '0.72rem', color: '#64748B' }}>({combinedTotals.totalWeightKg.toLocaleString()} kg)</div>
-            </div>
-          </div>
-
-          {/* Linked Receipts Summary List */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <h4 style={{ fontSize: '0.85rem', color: '#64748B', textTransform: 'uppercase', margin: 0 }}>Linked Warehouse Receipts in this House B/L:</h4>
-            {selectedWrs.map(wr => (
-              <div key={wr.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', background: '#F8FAFC', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
-                <div>
-                  <strong style={{ color: '#D97706', fontFamily: 'JetBrains Mono, monospace' }}>{wr.receiptNumber || wr.receipt_number}</strong> • {wr.customer || wr.customerName || wr.customer_name || wr.consignee}
-                  <div style={{ fontSize: '0.75rem', color: '#64748B' }}>{wr.cargoDescription || wr.cargo_description}</div>
-                </div>
-                <div style={{ textAlign: 'right', fontSize: '0.8rem' }}>
-                  <strong>{wr.totalPieces || wr.total_pieces || wr.packageCount} pieces</strong> • <span style={{ color: '#D97706', fontWeight: 700 }}>{Number(wr.totalCft || wr.total_cft || wr.cft || 0)} CFT</span> ({Number(wr.totalCbm || wr.total_cbm || wr.cbm || 0)} CBM)
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '1rem', borderTop: '1px solid #E2E8F0' }}>
-            <button onClick={() => setCurrentStep(2)} className="btn btn-outline">
-              <ChevronLeft size={16} />
-              <span>Back</span>
-            </button>
-            <button onClick={() => setCurrentStep(4)} className="btn btn-primary">
-              <span>Proceed to Input Rates &amp; Issue</span>
-              <ChevronRight size={16} />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* STEP 4: Freight Rates Input & Issue House B/L */}
-      {currentStep === 4 && (
-        <div className="card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0', paddingBottom: '1rem' }}>
-            <div>
-              <h3 style={{ fontSize: '1.15rem', color: '#0A192F' }}>Step 4: Freight Rating &amp; Issuance Parameters</h3>
-              <p style={{ fontSize: '0.8rem', color: '#64748B', margin: 0 }}>
-                Input freight rate per CFT/CBM, handling fees, and payment terms to generate the House Bill of Lading.
-              </p>
-            </div>
-            <span style={{ fontSize: '0.75rem', background: '#EFF6FF', color: '#1E40AF', border: '1px solid #BFDBFE', padding: '0.3rem 0.75rem', borderRadius: '4px', fontWeight: 700 }}>
-              Ready to Rate &amp; Issue
-            </span>
-          </div>
-
-          {/* Header Inputs */}
-          <div className="grid grid-cols-4 gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
-            <div className="form-group">
-              <label className="form-label">House B/L Number <span className="required">*</span></label>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label" style={{ fontWeight: 700 }}>House B/L Number <span className="required">*</span></label>
               <input
                 type="text"
                 className="form-control"
+                style={{ fontWeight: 800, fontFamily: 'JetBrains Mono, monospace' }}
                 value={formData.hblNumber}
-                onChange={(e) => setFormData({ ...formData, hblNumber: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, hblNumber: e.target.value.toUpperCase() })}
                 required
               />
             </div>
-            <div className="form-group">
-              <label className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span>Consolidation Number</span>
-                <span style={{ fontSize: '0.68rem', color: '#0284C7', fontWeight: 600 }}>For Master B/L</span>
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="e.g. CNS-2026-001"
-                value={formData.consolidationNumber}
-                onChange={(e) => setFormData({ ...formData, consolidationNumber: e.target.value })}
-                list="hbl-consolidation-numbers-list"
-              />
-              <datalist id="hbl-consolidation-numbers-list">
-                {existingConsolidationNumbers.map(cn => (
-                  <option key={cn} value={cn} />
-                ))}
-              </datalist>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Issue Date <span className="required">*</span></label>
+
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label" style={{ fontWeight: 700 }}>Issue Date <span className="required">*</span></label>
               <input
                 type="date"
                 className="form-control"
@@ -838,8 +344,63 @@ export const CreateHouseBill = ({ onNavigate }) => {
                 required
               />
             </div>
-            <div className="form-group">
-              <label className="form-label">Freight Payment Terms</label>
+
+            {/* HIGH-PRIORITY FIELD: Company Consolidation Number */}
+            <div style={{ background: '#EFF6FF', border: '1.5px solid #3B82F6', borderRadius: '6px', padding: '0.6rem 0.75rem' }}>
+              <label className="form-label" style={{ fontWeight: 800, color: '#1D4ED8', display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '4px' }}>
+                <Sparkles size={14} style={{ color: '#2563EB' }} />
+                <span>Company Consolidation # (Step 2 Link)</span>
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                list="existing-consol-options"
+                placeholder="e.g. CNS-2026-001"
+                style={{ fontWeight: 800, fontFamily: 'JetBrains Mono, monospace', background: '#FFFFFF' }}
+                value={formData.consolidationNumber}
+                onChange={(e) => setFormData({ ...formData, consolidationNumber: e.target.value.toUpperCase() })}
+              />
+              <datalist id="existing-consol-options">
+                {existingConsolidationNumbers.map(num => (
+                  <option key={num} value={num} />
+                ))}
+              </datalist>
+              <div style={{ fontSize: '0.68rem', color: '#2563EB', marginTop: '3px', fontWeight: 600 }}>
+                Links to Step 3 Master B/L &amp; Manifest
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label" style={{ fontWeight: 700 }}>Customer / Consignee <span className="required">*</span></label>
+              <select
+                className="form-select"
+                value={selectedCustomerId}
+                onChange={(e) => handleCustomerChange(e.target.value)}
+                required
+              >
+                <option value="">-- Select Customer Account --</option>
+                {customers.map(c => (
+                  <option key={c.id} value={c.id}>
+                    {c.name || c.companyName} {c.customerNumber ? `(${c.customerNumber})` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label" style={{ fontWeight: 700 }}>Destination Port</label>
+              <input
+                type="text"
+                className="form-control"
+                value={formData.destinationPort}
+                onChange={(e) => setFormData({ ...formData, destinationPort: e.target.value })}
+              />
+            </div>
+
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label" style={{ fontWeight: 700 }}>Freight Payment Terms</label>
               <select
                 className="form-select"
                 value={formData.freightTerms}
@@ -851,163 +412,262 @@ export const CreateHouseBill = ({ onNavigate }) => {
               </select>
             </div>
           </div>
+        </div>
 
-          {/* Transport Parties: Full Shipper Address & Full Delivery Address */}
-          <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '1.25rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-              <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0A192F', margin: 0 }}>
-                Transport Parties (Shipper Address &amp; Delivery Address)
-              </h4>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div style={{ background: '#FFFFFF', padding: '0.85rem', borderRadius: '6px', border: '1px solid #CBD5E1' }}>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label" style={{ fontWeight: 700, marginBottom: '0.4rem', display: 'block' }}>
-                    Shipper Address
-                  </label>
-                  <textarea
-                    rows={3}
-                    className="form-control"
-                    style={{ width: '100%', resize: 'vertical' }}
-                    placeholder="Enter full Shipper / Supplier address (e.g. echMart Supply Hub, Medley, FL)"
-                    value={shipperParty.address}
-                    onChange={(e) => setShipperParty(prev => ({ ...prev, address: e.target.value }))}
-                  />
-                </div>
-              </div>
-
-              <div style={{ background: '#FFFFFF', padding: '0.85rem', borderRadius: '6px', border: '1px solid #CBD5E1' }}>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label" style={{ fontWeight: 700, marginBottom: '0.4rem', display: 'block' }}>
-                    Delivery Address <span className="required">*</span>
-                  </label>
-                  <textarea
-                    rows={3}
-                    className="form-control"
-                    style={{ width: '100%', resize: 'vertical' }}
-                    placeholder="Enter full Consignee delivery address (e.g. Sharma Traders, Shop No. 5, Main Market, MG Road, Indore, MP 452001)"
-                    value={consigneeParty.address}
-                    onChange={(e) => setConsigneeParty(prev => ({ ...prev, address: e.target.value }))}
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ⭐ FREIGHT RATES & CHARGES ENTRY CARD ⭐ */}
-          <div style={{ background: '#F0FDF4', border: '2px solid #86EFAC', borderRadius: '8px', padding: '1.25rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <DollarSign size={20} style={{ color: '#16A34A' }} />
-                <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#166534', margin: 0 }}>
-                  Freight Rating &amp; Charges Calculator
-                </h4>
-              </div>
-              <div style={{ fontSize: '0.75rem', color: '#166534', fontWeight: 600 }}>
-                Volume for Rating: <strong>{combinedTotals.totalCft} CFT</strong> ({combinedTotals.totalCbm} CBM)
-              </div>
-            </div>
-
-            <div className="grid grid-cols-4 gap-4" style={{ marginBottom: '1rem' }}>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">Rate Basis</label>
-                <select
-                  className="form-select"
-                  value={formData.rateBasis}
-                  onChange={(e) => setFormData({ ...formData, rateBasis: e.target.value })}
-                >
-                  <option value="cft">Per Cubic Foot ($/CFT)</option>
-                  <option value="cbm">Per Cubic Meter ($/CBM)</option>
-                  <option value="weight">Per 100 LBS ($/cwt)</option>
-                  <option value="flat">Flat Rate ($)</option>
-                </select>
-              </div>
-
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">Ocean Rate ($ / unit)</label>
-                <input
-                  type="number"
-                  step="0.05"
-                  min="0"
-                  className="form-control"
-                  style={{ fontWeight: 700 }}
-                  value={formData.oceanFreightRate}
-                  onChange={(e) => setFormData({ ...formData, oceanFreightRate: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">Terminal / CFS Fee ($)</label>
-                <input
-                  type="number"
-                  step="1"
-                  min="0"
-                  className="form-control"
-                  value={formData.terminalHandlingFee}
-                  onChange={(e) => setFormData({ ...formData, terminalHandlingFee: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">Documentation Fee ($)</label>
-                <input
-                  type="number"
-                  step="1"
-                  min="0"
-                  className="form-control"
-                  value={formData.docFee}
-                  onChange={(e) => setFormData({ ...formData, docFee: e.target.value })}
-                />
-              </div>
-            </div>
-
-            {/* Live Charges Breakdown Bar */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #BBF7D0', borderRadius: '6px', padding: '0.85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
-              <div style={{ fontSize: '0.8rem', color: '#334155' }}>
-                Ocean Freight: <strong>${rateBreakdown.oceanCharge.toFixed(2)}</strong> + Handling: <strong>${rateBreakdown.terminalFee.toFixed(2)}</strong> + Docs: <strong>${rateBreakdown.docFee.toFixed(2)}</strong>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '0.85rem', color: '#166534', fontWeight: 700 }}>Total B/L Charges:</span>
-                <span style={{ fontSize: '1.4rem', fontWeight: 900, color: '#16A34A', fontFamily: 'JetBrains Mono, monospace' }}>
-                  ${rateBreakdown.totalCharges.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
+        {/* CARD 2: LINK WAREHOUSE RECEIPTS (The Main Action) */}
+        <div className="card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', borderBottom: '1px solid #E2E8F0', paddingBottom: '0.65rem' }}>
+            <div>
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0A192F', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Package size={17} style={{ color: '#16A34A' }} />
+                <span>2. Select Warehouse Receipts to Link</span>
+                <span style={{ fontSize: '0.72rem', background: '#DCFCE7', color: '#15803D', padding: '2px 8px', borderRadius: '12px', fontWeight: 800 }}>
+                  {selectedWrIds.length} Linked
                 </span>
+              </h3>
+              <p style={{ fontSize: '0.75rem', color: '#64748B', margin: '2px 0 0 0' }}>
+                Check the boxes next to the receipts you want to include in this House Bill.
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '0.25rem 0.5rem' }}>
+                <Search size={14} style={{ color: '#64748B' }} />
+                <input
+                  type="text"
+                  placeholder="Filter WRs..."
+                  value={wrSearch}
+                  onChange={(e) => setWrSearch(e.target.value)}
+                  style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.75rem', width: '130px' }}
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowAllAvailableWrs(!showAllAvailableWrs)}
+                className="btn btn-ghost btn-sm"
+                style={{ fontSize: '0.75rem', color: '#0284C7' }}
+              >
+                {showAllAvailableWrs ? 'Show Customer Only' : 'Show All Staged WRs'}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSelectAllWrs}
+                className="btn btn-outline btn-sm"
+                style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem' }}
+              >
+                {selectedWrIds.length === availableWrs.length && availableWrs.length > 0 ? 'Deselect All' : 'Select All'}
+              </button>
+            </div>
+          </div>
+
+          {/* Receipts Table */}
+          <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '6px' }}>
+            <table className="table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.82rem' }}>
+              <thead>
+                <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  <th style={{ width: '40px', padding: '0.6rem 0.75rem', textAlign: 'center' }}>
+                    <input
+                      type="checkbox"
+                      checked={availableWrs.length > 0 && selectedWrIds.length === availableWrs.length}
+                      onChange={handleSelectAllWrs}
+                    />
+                  </th>
+                  <th style={{ padding: '0.6rem 0.75rem' }}>WR Number</th>
+                  <th style={{ padding: '0.6rem 0.75rem' }}>Customer / Consignee</th>
+                  <th style={{ padding: '0.6rem 0.75rem' }}>Shipper</th>
+                  <th style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>Pieces &amp; Weight</th>
+                  <th style={{ padding: '0.6rem 0.75rem', textAlign: 'right' }}>Volume (CFT / CBM)</th>
+                  <th style={{ padding: '0.6rem 0.75rem' }}>Cargo Contents</th>
+                </tr>
+              </thead>
+              <tbody>
+                {availableWrs.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: '#64748B' }}>
+                      <div style={{ fontWeight: 600 }}>No unassigned Warehouse Receipts found for this selection.</div>
+                      <button
+                        type="button"
+                        onClick={() => setShowAllAvailableWrs(true)}
+                        className="btn btn-link btn-sm"
+                        style={{ color: '#0284C7', marginTop: '4px' }}
+                      >
+                        Click to view all unassigned warehouse receipts
+                      </button>
+                    </td>
+                  </tr>
+                ) : (
+                  availableWrs.map(wr => {
+                    const isSelected = selectedWrIds.includes(wr.id) || selectedWrIds.includes(wr.receiptNumber);
+                    return (
+                      <tr
+                        key={wr.id || wr.receiptNumber}
+                        onClick={() => toggleWr(wr.id || wr.receiptNumber)}
+                        style={{
+                          borderBottom: '1px solid #F1F5F9',
+                          background: isSelected ? '#F0FDF4' : '#FFFFFF',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <td style={{ textAlign: 'center', padding: '0.6rem 0.75rem' }}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => {}}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </td>
+                        <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, fontFamily: 'JetBrains Mono, monospace', color: '#0A192F' }}>
+                          {wr.receiptNumber || wr.id}
+                        </td>
+                        <td style={{ padding: '0.6rem 0.75rem', fontWeight: 600 }}>
+                          {wr.customer || wr.customerName || (wr.consignee || '').split('\n')[0]}
+                        </td>
+                        <td style={{ padding: '0.6rem 0.75rem', color: '#64748B', fontSize: '0.75rem' }}>
+                          {(wr.shipper || '').split('\n')[0] || 'Supplier'}
+                        </td>
+                        <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>
+                          <span style={{ fontWeight: 700 }}>{wr.totalPieces || wr.packageCount || 1} pcs</span>
+                          <span style={{ color: '#64748B', fontSize: '0.72rem', marginLeft: '4px' }}>({wr.weightLbs || 0} lbs)</span>
+                        </td>
+                        <td style={{ padding: '0.6rem 0.75rem', textAlign: 'right' }}>
+                          <span style={{ fontWeight: 800, color: '#D97706' }}>{wr.totalCft || wr.cft || 0} CFT</span>
+                          <span style={{ color: '#0284C7', fontSize: '0.72rem', marginLeft: '4px' }}>({wr.totalCbm || 0} CBM)</span>
+                        </td>
+                        <td style={{ padding: '0.6rem 0.75rem', color: '#475569', fontSize: '0.75rem', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {wr.cargoDescription || 'Commercial Cargo'}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Combined Totals Bar */}
+          <div style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+              <div>
+                <span style={{ fontSize: '0.7rem', color: '#64748B', textTransform: 'uppercase', display: 'block' }}>Total Pieces</span>
+                <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0A192F' }}>{combinedTotals.totalPieces} pcs</span>
+              </div>
+              <div>
+                <span style={{ fontSize: '0.7rem', color: '#64748B', textTransform: 'uppercase', display: 'block' }}>Total Weight</span>
+                <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0A192F' }}>{combinedTotals.totalWeightLbs.toLocaleString()} lbs ({combinedTotals.totalWeightKg} kg)</span>
+              </div>
+              <div>
+                <span style={{ fontSize: '0.7rem', color: '#64748B', textTransform: 'uppercase', display: 'block' }}>Total Volume</span>
+                <span style={{ fontSize: '0.95rem', fontWeight: 900, color: '#D97706' }}>{combinedTotals.totalCft} CFT <span style={{ color: '#0284C7' }}>({combinedTotals.totalCbm} CBM)</span></span>
               </div>
             </div>
-          </div>
 
-          {/* Party & Cargo Summary Box */}
-          <div className="grid grid-cols-2 gap-4" style={{ fontSize: '0.85rem' }}>
-            <div style={{ background: '#F8FAFC', padding: '1rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-              <h4 style={{ fontSize: '0.85rem', color: '#0A192F', marginBottom: '0.5rem' }}>Party Information</h4>
-              <div><strong>Customer Profile:</strong> {selectedCustomer?.name}</div>
-              <div style={{ marginTop: '3px' }}><strong>Shipper Address:</strong> <span style={{ color: '#334155' }}>{shipperParty.address || '—'}</span></div>
-              <div style={{ marginTop: '3px' }}><strong>Delivery Address:</strong> <span style={{ color: '#334155' }}>{consigneeParty.address || '—'}</span></div>
-              <div style={{ marginTop: '3px' }}><strong>Destination Port:</strong> {selectedCustomer?.destinationPort || selectedWrs[0]?.destinationPort || 'STT - Port of Charlotte Amalie, St. Thomas'}</div>
-              <div style={{ marginTop: '3px' }}><strong>Terms:</strong> <span style={{ color: '#0284C7', fontWeight: 700 }}>{formData.freightTerms}</span></div>
+            <div style={{ textAlign: 'right' }}>
+              <span style={{ fontSize: '0.7rem', color: '#64748B', textTransform: 'uppercase', display: 'block' }}>Calculated Freight Total</span>
+              <span style={{ fontSize: '1.1rem', fontWeight: 900, color: '#16A34A', fontFamily: 'JetBrains Mono, monospace' }}>
+                ${rateBreakdown.totalCharges.toFixed(2)} USD
+              </span>
             </div>
-
-            <div style={{ background: '#F8FAFC', padding: '1rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-              <h4 style={{ fontSize: '0.85rem', color: '#0A192F', marginBottom: '0.5rem' }}>Cargo &amp; Rating Summary</h4>
-              <div><strong>Linked WRs:</strong> {selectedWrs.length} Warehouse Receipts</div>
-              <div><strong>Total Pieces:</strong> {combinedTotals.totalPieces} Pieces ({combinedTotals.totalWeightLbs.toLocaleString()} lbs)</div>
-              <div><strong>Total Volume:</strong> <strong style={{ color: '#D97706' }}>{combinedTotals.totalCft} CFT</strong> ({combinedTotals.totalCbm} CBM)</div>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '1rem', borderTop: '1px solid #E2E8F0' }}>
-            <button onClick={() => setCurrentStep(3)} className="btn btn-outline">
-              <ChevronLeft size={16} />
-              <span>Back</span>
-            </button>
-            <button onClick={handleCreate} className="btn btn-primary btn-lg">
-              <Check size={18} />
-              <span>Issue House Bill of Lading ({formData.hblNumber})</span>
-            </button>
           </div>
         </div>
-      )}
+
+        {/* CARD 3: Compact Rating & Charges */}
+        <div className="card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0', paddingBottom: '0.65rem' }}>
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0A192F', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <DollarSign size={17} style={{ color: '#16A34A' }} />
+              <span>3. Freight Rating &amp; Charges Breakdown</span>
+            </h3>
+            <span style={{ fontSize: '0.75rem', color: '#64748B' }}>Auto-calculated live</span>
+          </div>
+
+          <div className="grid grid-cols-5 gap-3">
+            <div>
+              <label style={{ fontSize: '0.72rem', color: '#64748B', display: 'block', marginBottom: '3px' }}>Rate Basis</label>
+              <select
+                className="form-select form-select-sm"
+                value={formData.rateBasis}
+                onChange={(e) => setFormData({ ...formData, rateBasis: e.target.value })}
+              >
+                <option value="cft">Per CFT ($/CFT)</option>
+                <option value="cbm">Per CBM ($/CBM)</option>
+                <option value="weight">Per 100 LBS</option>
+                <option value="flat">Flat Ocean Rate</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={{ fontSize: '0.72rem', color: '#64748B', display: 'block', marginBottom: '3px' }}>Ocean Rate ($)</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                className="form-control form-control-sm"
+                value={formData.oceanFreightRate}
+                onChange={(e) => setFormData({ ...formData, oceanFreightRate: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <label style={{ fontSize: '0.72rem', color: '#64748B', display: 'block', marginBottom: '3px' }}>Doc Fee ($)</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                className="form-control form-control-sm"
+                value={formData.docFee}
+                onChange={(e) => setFormData({ ...formData, docFee: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <label style={{ fontSize: '0.72rem', color: '#64748B', display: 'block', marginBottom: '3px' }}>Terminal Fee ($)</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                className="form-control form-control-sm"
+                value={formData.terminalHandlingFee}
+                onChange={(e) => setFormData({ ...formData, terminalHandlingFee: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <label style={{ fontSize: '0.72rem', color: '#64748B', display: 'block', marginBottom: '3px' }}>Customs Fee ($)</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                className="form-control form-control-sm"
+                value={formData.customsAdminFee}
+                onChange={(e) => setFormData({ ...formData, customsAdminFee: e.target.value })}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* BOTTOM SUBMIT BAR */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }}>
+          <button
+            type="button"
+            onClick={() => onNavigate('house-bills')}
+            className="btn btn-outline"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            disabled={isSubmitting || selectedWrIds.length === 0}
+            className="btn btn-primary"
+            style={{ padding: '0.65rem 1.75rem', fontSize: '0.95rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+          >
+            <Check size={18} />
+            <span>{isSubmitting ? 'Issuing House Bill...' : `Issue House Bill (${selectedWrIds.length} Linked WRs)`}</span>
+          </button>
+        </div>
+      </form>
     </div>
   );
 };
