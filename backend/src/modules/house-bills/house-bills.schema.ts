@@ -69,18 +69,18 @@ export const createHouseBillSchema = z.object({
   status: z.string().optional().default('Active'),
   issueDate: z.string().optional(),
   createdDate: z.string().optional(),
-  assignedConsolidationId: z.string().optional(),
-  assignedMasterBLId: z.string().optional(),
-  assignedShipmentId: z.string().optional(),
+  assignedConsolidationId: z.string().nullish(),
+  assignedMasterBLId: z.string().nullish(),
+  assignedShipmentId: z.string().nullish(),
   freightCharges: z.any().optional(),
   notes: z.string().optional(),
 });
 
 export const updateHouseBillSchema = createHouseBillSchema.partial().extend({
   status: z.string().optional(),
-  assignedConsolidationId: z.string().optional(),
-  assignedMasterBLId: z.string().optional(),
-  assignedShipmentId: z.string().optional(),
+  assignedConsolidationId: z.string().nullish(),
+  assignedMasterBLId: z.string().nullish(),
+  assignedShipmentId: z.string().nullish(),
 });
 
 export const houseBillHoldSchema = z.object({

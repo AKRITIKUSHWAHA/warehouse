@@ -216,6 +216,17 @@ export const BillOfLadingModal = ({
     return consolidationOptions.map(c => c.num);
   }, [consolidationOptions]);
 
+  // Auto-sync consolidation number from selected house bills if empty
+  useEffect(() => {
+    if (!selectedConsolidationNumber && selectedHouseBillIds.length > 0) {
+      const activeHbl = houseBills.find(h => selectedHouseBillIds.includes(h.hblNumber || h.id));
+      const consol = activeHbl?.assignedConsolidationId || activeHbl?.consolidationNumber;
+      if (consol) {
+        setSelectedConsolidationNumber(String(consol).trim());
+      }
+    }
+  }, [selectedHouseBillIds, houseBills, selectedConsolidationNumber]);
+
   useEffect(() => {
     if (!isOpen) {
       hasInitializedRef.current = false;
@@ -262,8 +273,13 @@ export const BillOfLadingModal = ({
       });
     } else {
       let initConsolNum = String(initialShipment?.consolidationId || initialShipment?.consolidationNumber || initialConsolidationNumber || '').trim();
-      if (!initConsolNum && consolidationOptions.length > 0) {
-        initConsolNum = String(consolidationOptions[0].num || '').trim();
+      if (!initConsolNum) {
+        const foundHb = houseBills.find(h => !h.assignedMasterBLId && (h.assignedConsolidationId || h.consolidationNumber));
+        if (foundHb) {
+          initConsolNum = String(foundHb.assignedConsolidationId || foundHb.consolidationNumber || '').trim();
+        } else if (consolidationOptions.length > 0) {
+          initConsolNum = String(consolidationOptions[0].num || '').trim();
+        }
       }
       setSelectedConsolidationNumber(initConsolNum);
 
@@ -369,7 +385,6 @@ export const BillOfLadingModal = ({
     setSelectedConsolidationNumber(rawVal);
 
     if (!rawVal.trim()) {
-      setSelectedHouseBillIds([]);
       return;
     }
 
@@ -455,6 +470,15 @@ export const BillOfLadingModal = ({
     setSelectedHouseBillIds(prev => {
       const isSelected = prev.includes(hblNumber);
       const updated = isSelected ? prev.filter(id => id !== hblNumber) : [...prev, hblNumber];
+
+      // Auto-populate consolidation number from the selected HBL
+      const targetHb = houseBills.find(h => (h.hblNumber === hblNumber || h.id === hblNumber));
+      if (!isSelected && targetHb) {
+        const consolNum = targetHb.assignedConsolidationId || targetHb.consolidationNumber;
+        if (consolNum) {
+          setSelectedConsolidationNumber(consolNum);
+        }
+      }
 
       // Recalculate totals based on updated selection
       const activeHbls = candidateHouseBills.filter(h => updated.includes(h.hblNumber || h.id));
@@ -677,41 +701,105 @@ export const BillOfLadingModal = ({
               </div>
 
               <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.8rem' }}>
-                  Consolidation # <span className="required">*</span>
-                </label>
-                {consolidationOptions.length > 0 ? (
-                  <select
-                    className="form-select"
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <label className="form-label" style={{ fontWeight: 700, fontSize: '0.8rem', margin: 0 }}>
+                    Consolidation # <span className="required">*</span>
+                  </label>
+                  {selectedConsolidationNumber && (
+                    <button
+                      type="button"
+                      onClick={() => handleConsolidationChange('')}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#EF4444',
+                        fontSize: '0.72rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        padding: 0
+                      }}
+                    >
+                      Clear / Change
+                    </button>
+                  )}
+                </div>
+
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <input
+                    type="text"
+                    className="form-control"
+                    list="master-consol-list"
+                    placeholder="Enter or select Consolidation # (e.g. CNS-2026-001)"
                     style={{
-                      fontWeight: 600,
+                      fontWeight: 700,
                       color: '#0A192F',
                       background: '#FFFFFF',
                       border: '1.5px solid #0284C7',
-                      fontSize: '0.9rem'
+                      fontSize: '0.9rem',
+                      fontFamily: 'JetBrains Mono, monospace',
+                      paddingRight: selectedConsolidationNumber ? '2.5rem' : '0.75rem'
                     }}
                     value={selectedConsolidationNumber}
-                    onChange={(e) => handleConsolidationChange(e.target.value)}
-                  >
-                    <option value="">-- Select Company Consolidation Number --</option>
+                    onChange={(e) => handleConsolidationChange(e.target.value.toUpperCase())}
+                    required
+                  />
+                  {selectedConsolidationNumber && (
+                    <button
+                      type="button"
+                      onClick={() => handleConsolidationChange('')}
+                      style={{
+                        position: 'absolute',
+                        right: '8px',
+                        background: '#E2E8F0',
+                        border: 'none',
+                        borderRadius: '50%',
+                        width: '20px',
+                        height: '20px',
+                        cursor: 'pointer',
+                        color: '#64748B',
+                        fontSize: '0.75rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        lineHeight: 1
+                      }}
+                      title="Clear Consolidation #"
+                    >
+                      ✕
+                    </button>
+                  )}
+                  <datalist id="master-consol-list">
                     {consolidationOptions.map(opt => (
                       <option key={opt.num} value={opt.num}>
-                        {opt.num} • {safeString(opt.destinationPort, 'Caribbean')} ({opt.hblCount} House Bills • {opt.totalPackages} pkgs • {opt.totalWeightLbs} lbs)
+                        {opt.num} • {safeString(opt.destinationPort, 'Caribbean')} ({opt.hblCount} House Bills)
                       </option>
                     ))}
-                  </select>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Enter Consolidation # (e.g. CNS-2026-001)"
-                      value={selectedConsolidationNumber}
-                      onChange={(e) => handleConsolidationChange(e.target.value)}
-                    />
-                    <span style={{ fontSize: '0.72rem', color: '#64748B' }}>
-                      Tip: Create House Bills in Step 2 under your Consolidation Number to automatically populate this dropdown.
-                    </span>
+                  </datalist>
+                </div>
+
+                {consolidationOptions.length > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
+                    <span style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 600 }}>Available:</span>
+                    {consolidationOptions.map(opt => (
+                      <button
+                        key={opt.num}
+                        type="button"
+                        onClick={() => handleConsolidationChange(opt.num)}
+                        style={{
+                          background: selectedConsolidationNumber === opt.num ? '#0284C7' : '#E0F2FE',
+                          color: selectedConsolidationNumber === opt.num ? '#FFFFFF' : '#0369A1',
+                          border: 'none',
+                          borderRadius: '4px',
+                          padding: '2px 8px',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          fontFamily: 'JetBrains Mono, monospace'
+                        }}
+                      >
+                        {opt.num}
+                      </button>
+                    ))}
                   </div>
                 )}
               </div>
