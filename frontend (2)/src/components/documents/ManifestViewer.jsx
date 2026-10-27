@@ -219,14 +219,6 @@ export const ManifestViewer = ({ manifest }) => {
 
         {/* Action Buttons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <button className="btn btn-outline btn-sm" onClick={handleExportCsv} title="Export Manifest to CSV file">
-            <FileSpreadsheet size={15} style={{ color: '#059669' }} />
-            <span>Export CSV</span>
-          </button>
-          <button className="btn btn-outline btn-sm" onClick={handleExportXml} title="Export Manifest to Customs XML file">
-            <FileCode size={15} style={{ color: '#0284C7' }} />
-            <span>Export XML</span>
-          </button>
           <button className="btn btn-outline btn-sm" onClick={handlePrint}>
             <Printer size={15} />
             <span>Print Manifest</span>
