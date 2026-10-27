@@ -107,6 +107,68 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
 
   const [showAddCustomerModal, setShowAddCustomerModal] = useState(false);
   const [customerCreationTarget, setCustomerCreationTarget] = useState(null);
+  const [isAddingShipper, setIsAddingShipper] = useState(false);
+  const [quickShipperName, setQuickShipperName] = useState('');
+  const [isAddingConsignee, setIsAddingConsignee] = useState(false);
+  const [quickConsigneeName, setQuickConsigneeName] = useState('');
+
+  const handleQuickAddShipper = async () => {
+    const trimmed = quickShipperName.trim();
+    if (!trimmed) {
+      setIsAddingShipper(false);
+      return;
+    }
+    try {
+      const created = await createCustomer({ name: trimmed });
+      if (created && created.id) {
+        setFormData(prev => ({
+          ...prev,
+          shipperId: created.id,
+          customerId: prev.customerId || created.id,
+          customer: prev.customer || created.name,
+          customerName: prev.customerName || created.name,
+          shipper: created.name
+        }));
+      }
+    } catch {
+      setFormData(prev => ({
+        ...prev,
+        customer: prev.customer || trimmed,
+        customerName: prev.customerName || trimmed,
+        shipper: trimmed
+      }));
+    }
+    setQuickShipperName('');
+    setIsAddingShipper(false);
+  };
+
+  const handleQuickAddConsignee = async () => {
+    const trimmed = quickConsigneeName.trim();
+    if (!trimmed) {
+      setIsAddingConsignee(false);
+      return;
+    }
+    try {
+      const created = await createCustomer({ name: trimmed });
+      if (created && created.id) {
+        setFormData(prev => ({
+          ...prev,
+          consigneeId: created.id,
+          customerId: prev.customerId || created.id,
+          customer: prev.customer || created.name,
+          customerName: prev.customerName || created.name,
+          consignee: created.name
+        }));
+      }
+    } catch {
+      setFormData(prev => ({
+        ...prev,
+        consignee: trimmed
+      }));
+    }
+    setQuickConsigneeName('');
+    setIsAddingConsignee(false);
+  };
 
   // Handle Customer Selection -> Auto-populate customer profile and destination ONLY (Independent: does NOT affect Consignee or Shipper)
   const handleCustomerSelect = (custId) => {
@@ -140,8 +202,7 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
       return;
     }
     if (custId === 'CREATE_NEW') {
-      setCustomerCreationTarget('consignee');
-      setShowAddCustomerModal(true);
+      setIsAddingConsignee(true);
       return;
     }
     const selected = customers.find(c => c.id === custId);
@@ -180,8 +241,7 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
       return;
     }
     if (custId === 'CREATE_NEW') {
-      setCustomerCreationTarget('shipper');
-      setShowAddCustomerModal(true);
+      setIsAddingShipper(true);
       return;
     }
     const selected = customers.find(c => c.id === custId);
@@ -456,34 +516,70 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
                     <label style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 600, display: 'block', marginBottom: '3px' }}>
                       Select Customer:
                     </label>
-                    <div style={{ display: 'flex', gap: '6px' }}>
-                      <select
-                        className="form-select form-select-sm"
-                        value={formData.shipperId || ''}
-                        onChange={(e) => handleShipperSelect(e.target.value)}
-                        style={{ fontSize: '0.825rem', background: '#F8FAFC', flex: 1 }}
-                      >
-                        <option value="">-- Select Existing Customer (or type below) --</option>
-                        {customers.map(c => (
-                          <option key={c.id} value={c.id}>
-                            {c.name || c.companyName} {c.destinationPort ? `(${c.destinationPort.split(' - ')[0]})` : ''}
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCustomerCreationTarget('shipper');
-                          setShowAddCustomerModal(true);
-                        }}
-                        className="btn btn-outline btn-sm"
-                        style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', color: '#0284C7', borderColor: '#0284C7', background: '#FFFFFF', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}
-                        title="Add Customer"
-                      >
-                        <Plus size={13} />
-                        <span>Add</span>
-                      </button>
-                    </div>
+                    {isAddingShipper ? (
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <input
+                          type="text"
+                          className="form-input form-input-sm"
+                          style={{ flex: 1, fontSize: '0.825rem', background: '#FFFFFF' }}
+                          placeholder="Type customer name..."
+                          value={quickShipperName}
+                          onChange={(e) => setQuickShipperName(e.target.value)}
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleQuickAddShipper();
+                            } else if (e.key === 'Escape') {
+                              setIsAddingShipper(false);
+                              setQuickShipperName('');
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          className="btn btn-primary btn-sm"
+                          style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', whiteSpace: 'nowrap' }}
+                          onClick={handleQuickAddShipper}
+                        >
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm"
+                          style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem' }}
+                          onClick={() => { setIsAddingShipper(false); setQuickShipperName(''); }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <select
+                          className="form-select form-select-sm"
+                          value={formData.shipperId || ''}
+                          onChange={(e) => handleShipperSelect(e.target.value)}
+                          style={{ fontSize: '0.825rem', background: '#F8FAFC', flex: 1 }}
+                        >
+                          <option value="">-- Select Existing Customer (or type below) --</option>
+                          {customers.map(c => (
+                            <option key={c.id} value={c.id}>
+                              {c.name || c.companyName} {c.destinationPort ? `(${c.destinationPort.split(' - ')[0]})` : ''}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => setIsAddingShipper(true)}
+                          className="btn btn-outline btn-sm"
+                          style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', color: '#0284C7', borderColor: '#0284C7', background: '#FFFFFF', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}
+                          title="Type New Customer Name"
+                        >
+                          <Plus size={13} />
+                          <span>Add</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   <textarea
@@ -512,34 +608,70 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
                     <label style={{ fontSize: '0.72rem', color: '#0284C7', fontWeight: 600, display: 'block', marginBottom: '3px' }}>
                       Select Consignee:
                     </label>
-                    <div style={{ display: 'flex', gap: '6px' }}>
-                      <select
-                        className="form-select form-select-sm"
-                        style={{ fontSize: '0.825rem', padding: '0.4rem 0.55rem', flex: 1, borderColor: '#7DD3FC', background: '#FFFFFF' }}
-                        onChange={(e) => handleConsigneeSelect(e.target.value)}
-                        value={formData.consigneeId || ''}
-                      >
-                        <option value="">-- Select Existing Consignee (or type below) --</option>
-                        {customers.map(c => (
-                          <option key={c.id} value={c.id}>
-                            {c.name || c.companyName} {c.customerNumber ? `(${c.customerNumber})` : ''}
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCustomerCreationTarget('consignee');
-                          setShowAddCustomerModal(true);
-                        }}
-                        className="btn btn-outline btn-sm"
-                        style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', color: '#0284C7', borderColor: '#0284C7', background: '#FFFFFF', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}
-                        title="Add Consignee"
-                      >
-                        <Plus size={13} />
-                        <span>Add</span>
-                      </button>
-                    </div>
+                    {isAddingConsignee ? (
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <input
+                          type="text"
+                          className="form-input form-input-sm"
+                          style={{ flex: 1, fontSize: '0.825rem', background: '#FFFFFF', borderColor: '#7DD3FC' }}
+                          placeholder="Type consignee name..."
+                          value={quickConsigneeName}
+                          onChange={(e) => setQuickConsigneeName(e.target.value)}
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleQuickAddConsignee();
+                            } else if (e.key === 'Escape') {
+                              setIsAddingConsignee(false);
+                              setQuickConsigneeName('');
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          className="btn btn-primary btn-sm"
+                          style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', whiteSpace: 'nowrap' }}
+                          onClick={handleQuickAddConsignee}
+                        >
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm"
+                          style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem' }}
+                          onClick={() => { setIsAddingConsignee(false); setQuickConsigneeName(''); }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <select
+                          className="form-select form-select-sm"
+                          style={{ fontSize: '0.825rem', padding: '0.4rem 0.55rem', flex: 1, borderColor: '#7DD3FC', background: '#FFFFFF' }}
+                          onChange={(e) => handleConsigneeSelect(e.target.value)}
+                          value={formData.consigneeId || ''}
+                        >
+                          <option value="">-- Select Existing Consignee (or type below) --</option>
+                          {customers.map(c => (
+                            <option key={c.id} value={c.id}>
+                              {c.name || c.companyName} {c.customerNumber ? `(${c.customerNumber})` : ''}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => setIsAddingConsignee(true)}
+                          className="btn btn-outline btn-sm"
+                          style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', color: '#0284C7', borderColor: '#0284C7', background: '#FFFFFF', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}
+                          title="Type New Consignee Name"
+                        >
+                          <Plus size={13} />
+                          <span>Add</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   <textarea
@@ -905,7 +1037,8 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
         </div>
       </form>
 
-      {/* Customer Modal for Quick Creation */}
+      {/*
+      Legacy Customer Modal commented out per client feedback:
       <CustomerModal
         isOpen={showAddCustomerModal}
         isEdit={false}
@@ -920,6 +1053,7 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
           }
         }}
       />
+      */}
     </div>
   );
 };
