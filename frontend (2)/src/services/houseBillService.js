@@ -102,6 +102,8 @@ export const houseBillService = {
         freightTerms: data.freightTerms || 'Freight Prepaid',
         freightCharges: data.freightCharges || data.charges || undefined,
         status: data.status || 'Active',
+        issueDate: data.issueDate || undefined,
+        assignedConsolidationId: data.assignedConsolidationId || undefined,
         notes: data.notes || '',
       };
       const res = await apiClient.post('/house-bills', payload);

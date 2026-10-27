@@ -40,7 +40,7 @@ export const CreateHouseBill = ({ onNavigate }) => {
   // Form State - only what's necessary
   const [formData, setFormData] = useState({
     hblNumber: initialHblNumber,
-    consolidationNumber: 'CNS-2026-001',
+    consolidationNumber: '',
     issueDate: new Date().toISOString().split('T')[0],
     freightTerms: 'Freight Prepaid',
     // Freight Rates
