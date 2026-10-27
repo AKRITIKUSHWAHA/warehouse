@@ -125,9 +125,17 @@ export const hasModulePermission = (roleKey, tab) => {
     return true;
   }
 
-  // Agent always has access to core agent portal tabs
+  // Agent always has access to core agent portal tabs and master bills
   if (roleKey === 'agent') {
-    if (tab === 'agent-dashboard' || tab === 'dashboard') {
+    if (
+      tab === 'agent-dashboard' ||
+      tab === 'dashboard' ||
+      tab === 'agent-shipments' ||
+      tab === 'agent-documents' ||
+      tab === 'agent-bl-detail' ||
+      tab === 'bills-of-lading' ||
+      tab === 'manifests'
+    ) {
       return true;
     }
   }

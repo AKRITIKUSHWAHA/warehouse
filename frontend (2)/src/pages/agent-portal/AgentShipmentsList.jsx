@@ -80,7 +80,7 @@ export const AgentShipmentsList = ({ onNavigate }) => {
         <div>
           <strong>{item.totalCbm} CBM</strong>
           <div style={{ fontSize: '0.72rem', color: '#64748B' }}>
-            {item.totalPackages} pkgs ({Number(item.totalWeightLbs || 0).toLocaleString()} lbs)
+            {item.totalPackages} pkgs ({Number(item.totalWeightLbs || 0).toLocaleString()} lbs{item.totalCft ? ` • ${item.totalCft} CFT` : ''})
           </div>
         </div>
       )

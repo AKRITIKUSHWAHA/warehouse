@@ -39,7 +39,7 @@ export const agentPortalService = {
       return existingToken;
     }
 
-    const targetEmail = currentUser?.email || 'david.h@vicustoms.com';
+    const targetEmail = currentUser?.email || (typeof localStorage !== 'undefined' ? (JSON.parse(localStorage.getItem('kers_active_user') || '{}')?.email || JSON.parse(localStorage.getItem('currentUser') || '{}')?.email) : null) || 'agent@vicustoms.com';
     if (targetEmail) {
       try {
         const res = await apiFetch('/auth/login', {
@@ -60,7 +60,7 @@ export const agentPortalService = {
 
   /**
    * Fetch assigned shipments for Agent Portal
-   * GET /api/v1/shipments
+   * GET /api/v1/shipments, with fallback to live Master Bills if shipments is empty
    */
   async getShipments(params = {}) {
     await this.ensureAuthenticated();
@@ -77,10 +77,54 @@ export const agentPortalService = {
 
     const qs = query.toString();
     const endpoint = `/shipments${qs ? `?${qs}` : ''}`;
-    const res = await apiFetch(endpoint);
-    const pagination = res?.pagination || res?.meta || { total: (res?.data || []).length, page: 1, limit: 50 };
+    let shipmentsList = [];
+    try {
+      const res = await apiFetch(endpoint);
+      shipmentsList = res?.data || [];
+    } catch (e) {
+      console.warn('Direct shipments fetch failed, falling back to bills of lading:', e);
+    }
+
+    // When legacy shipments table is empty in DB, construct live consignment records from Master Bills of Lading
+    if (shipmentsList.length === 0) {
+      try {
+        const blRes = await this.getBillsOfLading(params);
+        const bls = blRes.data || [];
+        shipmentsList = bls.map((b) => {
+          const cbmVal = Number(b.cbm) || (Number(b.cft) ? Number(b.cft) / 35.3147 : 0);
+          const cftVal = Number(b.cft) || (Number(b.cbm) ? Number(b.cbm) * 35.3147 : 0);
+          const pkgs = Number(b.packageCount) || Number(b.totalPieces) || 0;
+          const weightLbs = Number(b.grossWeightLbs) || (Number(b.grossWeightKg) ? Number(b.grossWeightKg) * 2.20462 : 0);
+          return {
+            id: b.id,
+            shipmentNumber: b.blNumber,
+            trackingNumber: b.containerNumber || b.blNumber,
+            vesselName: b.oceanVessel || 'M/V Caribbean Carrier',
+            carrier: b.carrier || 'Tropical Shipping',
+            containerNumber: b.containerNumber || 'N/A',
+            sealNumber: b.sealNumber || 'N/A',
+            totalCbm: cbmVal > 0 ? cbmVal.toFixed(2) : '0.00',
+            totalCft: cftVal > 0 ? cftVal.toFixed(2) : '0.00',
+            totalPackages: pkgs,
+            totalWeightLbs: weightLbs > 0 ? weightLbs.toFixed(2) : '0.00',
+            eta: b.eta || b.issueDate || b.createdDate || 'Scheduled',
+            status: b.status === 'Released' ? 'Arrived' : 'In Transit',
+            blStatus: (b.holdDetails?.isOnHold || b.status === 'On Hold') ? 'On Hold' : 'Released',
+            billOfLadingNumber: b.blNumber,
+            billOfLadingId: b.id,
+            originPort: b.portOfLoading || 'MIA - Port of Miami',
+            destinationPort: b.portOfDischarge || 'AXA - Road Bay Port',
+            consignee: typeof b.consignee === 'object' ? b.consignee?.name : b.consignee,
+          };
+        });
+      } catch (e) {
+        console.warn('Failed to derive shipments from bills of lading:', e);
+      }
+    }
+
+    const pagination = { total: shipmentsList.length, page: 1, limit: 50 };
     return {
-      data: res?.data || [],
+      data: shipmentsList,
       pagination,
       meta: pagination,
     };
@@ -92,8 +136,46 @@ export const agentPortalService = {
    */
   async getShipmentById(idOrNumber) {
     await this.ensureAuthenticated();
-    const res = await apiFetch(`/shipments/${encodeURIComponent(idOrNumber)}`);
-    return res?.data || null;
+    try {
+      const res = await apiFetch(`/shipments/${encodeURIComponent(idOrNumber)}`);
+      if (res?.data) return res.data;
+    } catch (e) {
+      // ignore
+    }
+
+    // Fallback to getBillOfLadingById
+    try {
+      const bl = await this.getBillOfLadingById(idOrNumber);
+      if (bl) {
+        const cbmVal = Number(bl.cbm) || (Number(bl.cft) ? Number(bl.cft) / 35.3147 : 0);
+        const cftVal = Number(bl.cft) || (Number(bl.cbm) ? Number(bl.cbm) * 35.3147 : 0);
+        const pkgs = Number(bl.packageCount) || Number(bl.totalPieces) || 0;
+        const weightLbs = Number(bl.grossWeightLbs) || (Number(bl.grossWeightKg) ? Number(bl.grossWeightKg) * 2.20462 : 0);
+        return {
+          id: bl.id,
+          shipmentNumber: bl.blNumber,
+          trackingNumber: bl.containerNumber || bl.blNumber,
+          vesselName: bl.oceanVessel || 'M/V Caribbean Carrier',
+          carrier: bl.carrier || 'Tropical Shipping',
+          containerNumber: bl.containerNumber || 'N/A',
+          sealNumber: bl.sealNumber || 'N/A',
+          totalCbm: cbmVal > 0 ? cbmVal.toFixed(2) : '0.00',
+          totalCft: cftVal > 0 ? cftVal.toFixed(2) : '0.00',
+          totalPackages: pkgs,
+          totalWeightLbs: weightLbs > 0 ? weightLbs.toFixed(2) : '0.00',
+          eta: bl.eta || bl.issueDate || bl.createdDate || 'Scheduled',
+          status: bl.status === 'Released' ? 'Arrived' : 'In Transit',
+          blStatus: (bl.holdDetails?.isOnHold || bl.status === 'On Hold') ? 'On Hold' : 'Released',
+          billOfLadingNumber: bl.blNumber,
+          billOfLadingId: bl.id,
+          originPort: bl.portOfLoading || 'MIA - Port of Miami',
+          destinationPort: bl.portOfDischarge || 'AXA - Road Bay Port',
+        };
+      }
+    } catch (e) {
+      // ignore
+    }
+    return null;
   },
 
   /**
@@ -227,14 +309,30 @@ export const agentPortalService = {
       (b) => b.status === 'On Hold' || b.holdDetails?.isOnHold
     );
 
-    const totalCbm = shipments.reduce(
-      (sum, s) => sum + (Number(s.totalCbm) || 0),
-      0
-    );
-    const totalPackages = shipments.reduce(
-      (sum, s) => sum + (Number(s.totalPackages) || 0),
-      0
-    );
+    // Calculate volume & package count from live Master Bills & Consignments
+    let totalCbmVal = 0;
+    let totalCftVal = 0;
+    let totalPackagesVal = 0;
+
+    if (billsOfLading.length > 0) {
+      for (const b of billsOfLading) {
+        const cbm = Number(b.cbm) || (Number(b.cft) ? Number(b.cft) / 35.3147 : 0);
+        const cft = Number(b.cft) || (Number(b.cbm) ? Number(b.cbm) * 35.3147 : 0);
+        const pkgs = Number(b.packageCount) || Number(b.totalPieces) || 0;
+        totalCbmVal += cbm;
+        totalCftVal += cft;
+        totalPackagesVal += pkgs;
+      }
+    } else if (shipments.length > 0) {
+      for (const s of shipments) {
+        totalCbmVal += Number(s.totalCbm) || 0;
+        totalCftVal += Number(s.totalCft) || (Number(s.totalCbm) ? Number(s.totalCbm) * 35.3147 : 0);
+        totalPackagesVal += Number(s.totalPackages) || 0;
+      }
+    }
+
+    const formattedCbm = totalCbmVal > 0 ? totalCbmVal.toFixed(2) : '0.00';
+    const formattedCft = totalCftVal > 0 ? totalCftVal.toFixed(2) : '0.00';
 
     return {
       shipments,
@@ -242,11 +340,12 @@ export const agentPortalService = {
       manifests,
       holdBLs,
       stats: {
-        assignedCount: shipments.length,
+        assignedCount: shipments.length || billsOfLading.length,
         holdCount: holdBLs.length,
         documentsCount: billsOfLading.length + manifests.length,
-        totalCbm: totalCbm.toFixed(1),
-        totalPackages,
+        totalCbm: formattedCbm,
+        totalCft: formattedCft,
+        totalPackages: totalPackagesVal,
       },
     };
   },

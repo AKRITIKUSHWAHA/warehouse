@@ -22,14 +22,14 @@ export const AppDataProvider = ({ children }) => {
   const { currentUser, currentRole, syncUsers } = useAuth();
   const { showToast } = useToast();
 
-  const [customers, setCustomers] = useState([]);
-  const [warehouseReceipts, setWarehouseReceipts] = useState([]);
-  const [cargoItems, setCargoItems] = useState([]);
-  const [houseBills, setHouseBills] = useState([]);
-  const [consolidations, setConsolidations] = useState([]);
-  const [shipments, setShipments] = useState([]);
+  const [customers, setCustomers] = useState(() => getStored(KEYS.CUSTOMERS, []));
+  const [warehouseReceipts, setWarehouseReceipts] = useState(() => getStored(KEYS.WAREHOUSE_RECEIPTS, []));
+  const [cargoItems, setCargoItems] = useState(() => getStored(KEYS.CARGO, []));
+  const [houseBills, setHouseBills] = useState(() => getStored(KEYS.HOUSE_BILLS, []));
+  const [consolidations, setConsolidations] = useState(() => getStored(KEYS.CONSOLIDATIONS, []));
+  const [shipments, setShipments] = useState(() => getStored(KEYS.SHIPMENTS, []));
   const [billsOfLading, setBillsOfLading] = useState(() => getStored(KEYS.BILLS_OF_LADING, []));
-  const [manifests, setManifests] = useState([]);
+  const [manifests, setManifests] = useState(() => getStored(KEYS.MANIFESTS, []));
   const [vessels, setVessels] = useState([]);
   const [agents, setAgents] = useState([]);
   const [ports, setPorts] = useState([]);
@@ -72,16 +72,36 @@ export const AppDataProvider = ({ children }) => {
     try {
       switch (tabName) {
         case 'dashboard': {
-          if (currentRole === 'warehouse') {
-            await apiClient.get('/cfs-dashboard').catch(() => {});
-          } else if (currentRole === 'operations') {
-            await apiClient.get('/ops-dashboard').catch(() => {});
-          } else if (currentRole === 'documentation') {
-            await apiClient.get('/docs-dashboard').catch(() => {});
-          } else if (currentRole === 'agent') {
-            await apiClient.get('/agent-dashboard').catch(() => {});
-          } else {
-            await apiClient.get('/admin-dashboard').catch(() => {});
+          try {
+            const [wrRes, hbRes, blRes, mnfRes] = await Promise.all([
+              apiClient.get('/warehouse-receipts').catch(() => null),
+              apiClient.get('/house-bills').catch(() => null),
+              apiClient.get('/bills-of-lading').catch(() => null),
+              apiClient.get('/manifests').catch(() => null)
+            ]);
+
+            const wrList = extractListFromRes(wrRes);
+            if (wrList !== null) {
+              setWarehouseReceipts(wrList);
+              setStored(KEYS.WAREHOUSE_RECEIPTS, wrList);
+            }
+            const hbList = extractListFromRes(hbRes);
+            if (hbList !== null) {
+              setHouseBills(hbList);
+              setStored(KEYS.HOUSE_BILLS, hbList);
+            }
+            const blList = extractListFromRes(blRes);
+            if (blList !== null) {
+              setBillsOfLading(blList);
+              setStored(KEYS.BILLS_OF_LADING, blList);
+            }
+            const mnfList = extractListFromRes(mnfRes);
+            if (mnfList !== null) {
+              setManifests(mnfList);
+              setStored(KEYS.MANIFESTS, mnfList);
+            }
+          } catch (e) {
+            console.warn('[fetchMenuApi:dashboard] Failed live 3-step fetch:', e);
           }
           break;
         }

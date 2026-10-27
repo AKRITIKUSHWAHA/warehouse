@@ -38,7 +38,8 @@ export const AgentDashboard = ({ onNavigate }) => {
     assignedCount: 0,
     holdCount: 0,
     documentsCount: 0,
-    totalCbm: '0.0',
+    totalCbm: '0.00',
+    totalCft: '0.00',
     totalPackages: 0,
   });
 
@@ -169,12 +170,20 @@ export const AgentDashboard = ({ onNavigate }) => {
         />
         <StatCard
           title="Cargo Volume"
-          value={`${stats.totalCbm} CBM`}
-          subtitle={`${stats.totalPackages} packages scheduled`}
+          value={
+            Number(stats.totalCbm) > 0
+              ? `${stats.totalCbm} CBM`
+              : (Number(stats.totalCft) > 0 ? `${stats.totalCft} CFT` : '0.00 CBM')
+          }
+          subtitle={
+            stats.totalPackages > 0
+              ? `${stats.totalPackages} packages (${stats.totalCft || '0.00'} CFT)`
+              : '0 packages scheduled'
+          }
           icon={Package}
           accent="gold"
           trend={stats.assignedCount > 0 ? "Active Inbound" : "No Cargo"}
-          trendType="neutral"
+          trendType={stats.assignedCount > 0 ? "up" : "neutral"}
           onClick={() => onNavigate('agent-shipments')}
         />
       </div>
@@ -232,7 +241,9 @@ export const AgentDashboard = ({ onNavigate }) => {
                           </td>
                           <td>
                             <strong>{s.totalCbm} CBM</strong>
-                            <div style={{ fontSize: '0.72rem', color: '#64748B' }}>{s.totalPackages} pkgs ({Number(s.totalWeightLbs || 0).toLocaleString()} lbs)</div>
+                            <div style={{ fontSize: '0.72rem', color: '#64748B' }}>
+                              {s.totalPackages} pkgs ({Number(s.totalWeightLbs || 0).toLocaleString()} lbs{s.totalCft ? ` / ${s.totalCft} CFT` : ''})
+                            </div>
                           </td>
                           <td>
                             <strong style={{ color: '#0284C7' }}>{s.eta}</strong>
