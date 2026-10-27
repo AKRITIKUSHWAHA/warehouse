@@ -48,7 +48,7 @@ export const Sidebar = ({ activeTab, onSelectTab, isOpen, onClose, isCollapsed =
           { id: 'house-bills', label: '2. House Bills of Lading', icon: FileText, moduleId: 'house-bills' },
           {
             id: 'bills-of-lading',
-            label: (isAgent || roleKey === 'agent') ? 'Inbound Master B/Ls & Manifests' : '3. Master Bills & Manifests',
+            label: '3. Master Bills & Manifests',
             icon: FileText,
             moduleId: 'bills-of-lading'
           }

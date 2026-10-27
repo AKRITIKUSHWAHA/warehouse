@@ -57,7 +57,7 @@ export const LoginPage = ({ onLoginSuccess }) => {
     'USR-003': {
       roleKey: 'warehouse',
       title: 'Warehouse & Logistics Staff',
-      shortLabel: 'Miami Staff',
+      shortLabel: 'Warehouse Staff',
       category: 'Cargo Intake & B/Ls',
       badgeColor: '#D97706',
       icon: Package,
@@ -66,7 +66,7 @@ export const LoginPage = ({ onLoginSuccess }) => {
     'USR-004': {
       roleKey: 'agent',
       title: 'Destination Agent',
-      shortLabel: 'Agent',
+      shortLabel: 'Destination Agent',
       category: 'Port Clearance',
       badgeColor: '#EF4444',
       icon: Shield,
@@ -226,8 +226,8 @@ export const LoginPage = ({ onLoginSuccess }) => {
                         title={`Sign in as ${u.name} (${details.title})`}
                       >
                         <div style={{
-                          width: '28px',
-                          height: '28px',
+                          width: '30px',
+                          height: '30px',
                           borderRadius: '50%',
                           backgroundColor: details.badgeColor,
                           color: '#FFFFFF',
@@ -238,13 +238,23 @@ export const LoginPage = ({ onLoginSuccess }) => {
                           boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                           flexShrink: 0
                         }}>
-                          <Icon size={14} />
+                          <Icon size={16} />
                         </div>
                         <span className="role-icon-label">
                           {details.shortLabel === 'Super Admin' ? (
                             <>
                               <span className="role-icon-label-line">Super</span>
                               <span className="role-icon-label-line">Admin</span>
+                            </>
+                          ) : details.shortLabel === 'Warehouse Staff' ? (
+                            <>
+                              <span className="role-icon-label-line">Warehouse</span>
+                              <span className="role-icon-label-line">Staff</span>
+                            </>
+                          ) : details.shortLabel === 'Destination Agent' ? (
+                            <>
+                              <span className="role-icon-label-line">Destination</span>
+                              <span className="role-icon-label-line">Agent</span>
                             </>
                           ) : (
                             <span className="role-icon-label-line">{details.shortLabel}</span>
@@ -371,8 +381,8 @@ export const LoginPage = ({ onLoginSuccess }) => {
               Choose a role below to access their specific workspace and primary actions:
             </p>
 
-            {/* 5 Persona Cards */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+            {/* 3 Persona Cards - elegantly proportioned to fill available space */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
               {sortedUsers.map((u) => {
                 const details = u.details || roleDetails[u.userCode] || roleDetails[u.id] || roleDetails['USR-001'];
                 const Icon = details.icon;
@@ -383,60 +393,58 @@ export const LoginPage = ({ onLoginSuccess }) => {
                     key={u.personaKey}
                     onClick={() => handleSelectPersona(u)}
                     style={{
-                      padding: '0.5rem 0.75rem',
-                      borderRadius: '8px',
+                      padding: '0.9rem 1.1rem',
+                      borderRadius: '10px',
                       backgroundColor: '#FFFFFF',
                       border: isCurrent ? `2px solid ${details.badgeColor}` : '1px solid #E2E8F0',
-                      boxShadow: isCurrent ? '0 3px 8px rgba(0,0,0,0.06)' : 'none',
+                      boxShadow: isCurrent ? '0 4px 14px rgba(0,0,0,0.08)' : '0 1px 3px rgba(0,0,0,0.03)',
                       cursor: 'pointer',
-                      transition: 'all 150ms ease',
+                      transition: 'all 160ms ease',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      gap: '0.5rem'
+                      gap: '0.75rem'
                     }}
                     className="card-hover"
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flex: 1, minWidth: 0 }}>
                       <div style={{
-                        width: '30px',
-                        height: '30px',
-                        borderRadius: '7px',
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '10px',
                         backgroundColor: details.badgeColor,
                         color: '#FFFFFF',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         fontWeight: 800,
-                        fontSize: '0.8rem',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
                         flexShrink: 0
                       }}>
-                        <Icon size={15} />
+                        <Icon size={19} />
                       </div>
 
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap' }}>
-                          <span style={{ fontWeight: 800, color: '#0A192F', fontSize: '0.82rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                          <span style={{ fontWeight: 800, color: '#0A192F', fontSize: '0.9rem' }}>
                             {details.title}
                           </span>
                           <span style={{
-                            fontSize: '0.65rem',
+                            fontSize: '0.68rem',
                             fontWeight: 600,
                             color: '#475569',
                             background: '#F1F5F9',
-                            padding: '1px 5px',
+                            padding: '2px 7px',
                             borderRadius: '4px'
                           }}>
                             {u.name}
                           </span>
                         </div>
                         <div style={{
-                          fontSize: '0.72rem',
+                          fontSize: '0.75rem',
                           color: '#64748B',
-                          marginTop: '1px',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis'
+                          marginTop: '2px',
+                          lineHeight: 1.35
                         }}>
                           {details.summary}
                         </div>
@@ -451,18 +459,22 @@ export const LoginPage = ({ onLoginSuccess }) => {
                       }}
                       className="btn btn-sm btn-outline"
                       style={{
-                        padding: '0.25rem 0.55rem',
-                        fontSize: '0.72rem',
+                        padding: '0.35rem 0.8rem',
+                        fontSize: '0.78rem',
                         fontWeight: 700,
                         color: details.badgeColor,
                         borderColor: details.badgeColor,
                         whiteSpace: 'nowrap',
                         marginLeft: 'auto',
-                        flexShrink: 0
+                        flexShrink: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        borderRadius: '6px'
                       }}
                     >
                       <span>Sign In</span>
-                      <ArrowRight size={11} />
+                      <ArrowRight size={13} />
                     </button>
                   </div>
                 );
@@ -470,8 +482,8 @@ export const LoginPage = ({ onLoginSuccess }) => {
             </div>
           </div>
 
-          <div style={{ marginTop: '0.65rem', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '0.45rem 0.75rem', borderRadius: '8px', fontSize: '0.72rem', color: '#475569', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <CheckCircle2 size={15} style={{ color: '#059669', flexShrink: 0 }} />
+          <div style={{ marginTop: '0.85rem', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '0.65rem 0.95rem', borderRadius: '8px', fontSize: '0.75rem', color: '#475569', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <CheckCircle2 size={16} style={{ color: '#059669', flexShrink: 0 }} />
             <span>
               <strong>Simplified &amp; Role-Focused:</strong> Irrelevant menus are hidden so each user sees only what they need to do their job.
             </span>
