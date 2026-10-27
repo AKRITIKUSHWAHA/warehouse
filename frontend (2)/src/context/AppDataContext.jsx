@@ -685,9 +685,12 @@ export const AppDataProvider = ({ children }) => {
 
   const deleteBillOfLading = async (id) => {
     setBillsOfLading(prev => prev.filter(b => b.id !== id && b.blNumber !== id));
+    setShipments(prev => (prev || []).filter(s => s.billOfLadingId !== id && s.billOfLadingNumber !== id && s.masterBlId !== id && s.masterBlNumber !== id));
     const success = await billOfLadingService.deleteBillOfLading(id, currentUser?.name || "Documentation Staff");
     if (success) {
       await fetchMenuApi('bills-of-lading');
+      await fetchMenuApi('shipments');
+      if (typeof fetchMenuApi === 'function') await fetchMenuApi('dashboard');
       showToast(`Master B/L ${id} deleted.`, 'info', 'Master B/L Deleted');
     }
     return success;

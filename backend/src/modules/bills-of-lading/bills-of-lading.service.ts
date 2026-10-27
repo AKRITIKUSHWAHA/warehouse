@@ -5,7 +5,7 @@ import { BadRequestError } from '../../common/errors/bad-request-error.js';
 import { BL_STATUSES } from '../../common/constants/statuses.js';
 import { convertLbsToKg } from '../../common/utils/calculations.js';
 import { db } from '../../db/index.js';
-import { consolidations, houseBills } from '../../db/schema/index.js';
+import { consolidations, houseBills, shipments } from '../../db/schema/index.js';
 import { eq, or, inArray } from 'drizzle-orm';
 
 const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
@@ -206,6 +206,28 @@ export class BillsOfLadingService {
 
   async deleteBill(idOrNumber: string) {
     const existing = await this.getBill(idOrNumber);
+
+    // Clean up any linked shipments and unlink from consolidation
+    const shipmentConditions = [
+      eq(shipments.billOfLadingId, existing.id),
+      eq(shipments.billOfLadingNumber, existing.blNumber),
+    ];
+    if (existing.shipmentId) shipmentConditions.push(eq(shipments.id, existing.shipmentId));
+    if (existing.shipmentNumber) shipmentConditions.push(eq(shipments.shipmentNumber, existing.shipmentNumber));
+
+    await db.delete(shipments).where(or(...shipmentConditions)).catch(() => {});
+
+    await db
+      .update(consolidations)
+      .set({ assignedMasterBLId: null })
+      .where(
+        or(
+          eq(consolidations.assignedMasterBLId, existing.blNumber),
+          eq(consolidations.assignedMasterBLId, existing.id)
+        )
+      )
+      .catch(() => {});
+
     return this.repo.delete(existing.id);
   }
 

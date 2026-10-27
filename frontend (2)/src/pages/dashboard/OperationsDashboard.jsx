@@ -603,6 +603,11 @@ export const OperationsDashboard = ({ onNavigate }) => {
                   data={shipments}
                   searchable={false}
                   pageSize={4}
+                  emptyTitle="No Active Ocean Shipments"
+                  emptyWhy="All carrier shipments and master bills have been cleared or dispatched."
+                  emptyNextStep="Create a Master B/L in Step 3 to schedule a new ocean departure."
+                  emptyActionLabel="View Master Bills & Manifests"
+                  onEmptyAction={() => onNavigate('bills-of-lading')}
                   onRowClick={(item) => onNavigate('shipments', item.id)}
                 />
               </div>
