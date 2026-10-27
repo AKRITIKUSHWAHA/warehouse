@@ -191,6 +191,63 @@ const getUrlForRoute = (tab, recordIdOrAction, roleKey = 'super_admin') => {
   }
   return `/${prefix}/${cleanTab}`;
 };
+// Global Page Error Boundary to prevent blank white screens (defined at module level to preserve component state across re-renders)
+class PageErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('PageErrorBoundary caught error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          padding: '2.5rem',
+          maxWidth: '600px',
+          margin: '2rem auto',
+          background: '#FFFFFF',
+          borderRadius: '10px',
+          border: '1px solid #E2E8F0',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+          textAlign: 'center'
+        }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⚠️</div>
+          <h3 style={{ color: '#0A192F', fontWeight: 800, marginBottom: '0.5rem' }}>View Encountered a Display Notice</h3>
+          <p style={{ color: '#64748B', fontSize: '0.88rem', marginBottom: '1.5rem', lineHeight: 1.5 }}>
+            {this.state.error?.message || 'A data display error occurred while rendering this view.'}
+          </p>
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+            <button
+              type="button"
+              onClick={() => this.setState({ hasError: false, error: null })}
+              className="btn btn-primary btn-sm"
+              style={{ fontWeight: 600 }}
+            >
+              Try Again
+            </button>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="btn btn-outline btn-sm"
+              style={{ fontWeight: 600 }}
+            >
+              Reload Page
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const MainAppRouter = () => {
   const { isAuthenticated, isAgent, currentUser } = useAuth();
@@ -427,63 +484,7 @@ const MainAppRouter = () => {
   // Everyone uses AppLayout, Sidebar internal logic handles menu filtering
 
 
-// Global Page Error Boundary to prevent blank white screens
-class PageErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
 
-  static getDerivedStateFromError(error) {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error, errorInfo) {
-    console.error('PageErrorBoundary caught error:', error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div style={{
-          padding: '2.5rem',
-          maxWidth: '600px',
-          margin: '2rem auto',
-          background: '#FFFFFF',
-          borderRadius: '10px',
-          border: '1px solid #E2E8F0',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
-          textAlign: 'center'
-        }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⚠️</div>
-          <h3 style={{ color: '#0A192F', fontWeight: 800, marginBottom: '0.5rem' }}>View Encountered a Display Notice</h3>
-          <p style={{ color: '#64748B', fontSize: '0.88rem', marginBottom: '1.5rem', lineHeight: 1.5 }}>
-            {this.state.error?.message || 'A data display error occurred while rendering this view.'}
-          </p>
-          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
-            <button
-              type="button"
-              onClick={() => this.setState({ hasError: false, error: null })}
-              className="btn btn-primary btn-sm"
-              style={{ fontWeight: 600 }}
-            >
-              Try Again
-            </button>
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="btn btn-outline btn-sm"
-              style={{ fontWeight: 600 }}
-            >
-              Reload Page
-            </button>
-          </div>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
 
   return (
     <AppLayout
