@@ -71,64 +71,13 @@ export const BillOfLadingModal = ({
 
   // Calculate candidate house bills based on entered consolidation or destination
   const candidateHouseBills = useMemo(() => {
-    if (!selectedConsolidationNumber) {
-      // If no consolidation is entered, show unassigned house bills matching destination
-      const rawPod = typeof formData.portOfDischarge === 'object' ? formData.portOfDischarge?.name : formData.portOfDischarge;
-      const pod = String(rawPod || '').toLowerCase();
-      return houseBills.filter(hb => {
-        if (!hb) return false;
-        if (bl && (bl.houseBillIds?.includes(hb.hblNumber) || bl.houseBillIds?.includes(hb.id))) return true;
-        if (hb.assignedMasterBLId && hb.assignedMasterBLId !== bl?.blNumber && hb.assignedMasterBLId !== bl?.id) return false;
-        if (!pod) return true;
-        const rawHbDest = typeof hb.destinationPort === 'object' ? hb.destinationPort?.name : hb.destinationPort;
-        const hbDest = String(rawHbDest || '').toLowerCase();
-        return hbDest.includes(pod.split(' - ')[0]) || hbDest.includes(pod.split(' - ')[1] || pod);
-      });
-    }
-
-    const trimmed = String(selectedConsolidationNumber || '').trim().toLowerCase();
-
-    // 1. Check direct HBL matches tagged with this company consolidation number
-    const directHbls = houseBills.filter(hb =>
-      hb && hb.assignedConsolidationId && String(hb.assignedConsolidationId).trim().toLowerCase() === trimmed
-    );
-    if (directHbls.length > 0) {
-      return directHbls;
-    }
-
-    const consol = consolidations.find(c =>
-      c && (
-        (c.consolidationNumber && String(c.consolidationNumber).trim().toLowerCase() === trimmed) ||
-        (c.id && String(c.id).trim().toLowerCase() === trimmed)
-      )
-    );
-    if (!consol) {
-      return houseBills.filter(hb => {
-        if (!hb) return false;
-        if (bl && (bl.houseBillIds?.includes(hb.hblNumber) || bl.houseBillIds?.includes(hb.id))) return true;
-        return !hb.assignedMasterBLId || hb.assignedMasterBLId === bl?.blNumber;
-      });
-    }
-
     return houseBills.filter(hb => {
       if (!hb) return false;
-      // 1. Explicitly assigned to this consolidation
-      const matchConsol = String(hb.assignedConsolidationId || '') === String(consol.consolidationNumber || '') ||
-        String(hb.assignedConsolidationId || '') === String(consol.id || '') ||
-        (Array.isArray(consol.houseBillIds) && (consol.houseBillIds.includes(hb.hblNumber) || consol.houseBillIds.includes(hb.id)));
-      if (matchConsol) return true;
-
-      // 2. Already linked to this Master B/L
       if (bl && (bl.houseBillIds?.includes(hb.hblNumber) || bl.houseBillIds?.includes(hb.id))) return true;
-
-      // 3. Or unassigned House Bills with matching destination
-      const isUnassigned = !hb.assignedMasterBLId || hb.assignedMasterBLId === bl?.blNumber || hb.assignedMasterBLId === bl?.id;
-      const consolDest = typeof consol.destinationCode === 'string' ? consol.destinationCode : '';
-      const hbDestStr = typeof hb.destinationPort === 'object' ? (hb.destinationPort?.name || '') : String(hb.destinationPort || '');
-      const matchPort = consolDest && (hb.destinationCode === consolDest || hbDestStr.includes(consolDest));
-      return isUnassigned && matchPort;
+      if (hb.assignedMasterBLId && hb.assignedMasterBLId !== bl?.blNumber && hb.assignedMasterBLId !== bl?.id) return false;
+      return true;
     });
-  }, [selectedConsolidationNumber, consolidations, houseBills, formData.portOfDischarge, bl]);
+  }, [houseBills, bl]);
 
   // Unified list of all Consolidation Numbers with aggregate stats across HBLs and Consolidations
   const consolidationOptions = useMemo(() => {
@@ -759,7 +708,12 @@ export const BillOfLadingModal = ({
                               />
                             </td>
                             <td style={{ padding: '0.45rem 0.75rem', fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: '#0A192F' }}>
-                              {h.hblNumber}
+                              <div>{h.hblNumber}</div>
+                              {h.assignedConsolidationId && (
+                                <div style={{ fontSize: '0.68rem', color: '#2563EB', fontWeight: 600 }}>
+                                  Consol: {h.assignedConsolidationId}
+                                </div>
+                              )}
                             </td>
                             <td style={{ padding: '0.45rem 0.75rem', color: '#1E293B' }}>
                               {safeString(h.consignee, 'Consignee')}
