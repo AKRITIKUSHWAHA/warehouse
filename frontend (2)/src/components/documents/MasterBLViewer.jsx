@@ -78,7 +78,7 @@ export const MasterBLViewer = ({ bl, linkedHbls = [], onNavigate }) => {
   };
 
   return (
-    <div className="master-bl-viewer-wrapper" style={{ maxWidth: '900px', margin: '0 auto' }}>
+    <div className="master-bl-viewer-wrapper" style={{ width: '100%', maxWidth: '100%', margin: '0 auto' }}>
       {/* Dynamic Print Styles for Master B/L to ensure single sheet A4 & zero blank pages */}
       <style>{`
         @media print {

@@ -92,7 +92,7 @@ export const HouseBLViewer = ({ hbl, onNavigate }) => {
     : (hbl.totalCft ? (Number(oceanCharge) + Number(terminalFee) + Number(docFee)).toFixed(2) : '235.00');
 
   return (
-    <div className="house-bl-viewer-wrapper" style={{ maxWidth: '900px', margin: '0 auto' }}>
+    <div className="house-bl-viewer-wrapper" style={{ width: '100%', maxWidth: '100%', margin: '0 auto' }}>
       {/* Dynamic Print Styles for House B/L to ensure single sheet A4 & zero blank pages */}
       <style>{`
         @media print {
