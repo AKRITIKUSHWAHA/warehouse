@@ -53,11 +53,54 @@ export const WarehouseReceiptsList = ({ onNavigate }) => {
     {
       header: 'Customer',
       accessor: 'customer',
-      render: (item) => (
-        <div style={{ fontWeight: 600, color: '#0A192F' }}>
-          {item.customer || item.customerName || (typeof item.shipper === 'object' ? item.shipper?.name : item.shipper) || 'Valued Customer'}
-        </div>
-      )
+      render: (item) => {
+        const rawCustomer = item.customer || item.customerName || '';
+        const rawShipper = typeof item.shipper === 'object' ? item.shipper?.name : (item.shipper || '');
+        
+        let name = rawCustomer || (rawShipper ? rawShipper.split('\n')[0] : 'Valued Customer');
+        let address = item.customerAddress || item.shipperAddress || '';
+        if (!address && typeof rawShipper === 'string' && rawShipper.includes('\n')) {
+          address = rawShipper.split('\n').slice(1).join(', ');
+        }
+
+        return (
+          <div>
+            <div style={{ fontWeight: 600, color: '#0A192F', fontSize: '0.875rem' }}>
+              {name}
+            </div>
+            {address && (
+              <div style={{ fontSize: '0.72rem', color: '#64748B', marginTop: '2px', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {address}
+              </div>
+            )}
+          </div>
+        );
+      }
+    },
+    {
+      header: 'Receiver',
+      accessor: 'consignee',
+      render: (item) => {
+        const rawConsignee = typeof item.consignee === 'object' ? (item.consignee?.name || '') : (item.consignee || '');
+        let name = item.consigneeName || (rawConsignee ? rawConsignee.split('\n')[0] : '—');
+        let address = item.consigneeAddress || '';
+        if (!address && typeof rawConsignee === 'string' && rawConsignee.includes('\n')) {
+          address = rawConsignee.split('\n').slice(1).join(', ');
+        }
+
+        return (
+          <div>
+            <div style={{ fontWeight: 600, color: '#0A192F', fontSize: '0.875rem' }}>
+              {name}
+            </div>
+            {address && (
+              <div style={{ fontSize: '0.72rem', color: '#64748B', marginTop: '2px', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {address}
+              </div>
+            )}
+          </div>
+        );
+      }
     },
     {
       header: 'Packages & Cargo',

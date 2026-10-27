@@ -62,10 +62,14 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
     customerId: '',
     customer: '',
     customerName: '',
+    customerAddress: '',
     shipperId: '',
     shipper: '',
+    shipperAddress: '',
     consigneeId: '',
     consignee: '',
+    consigneeName: '',
+    consigneeAddress: '',
     agentId: initialAgent?.id || null,
     agentName: initialAgentName,
     destinationPort: defaultPort,
@@ -198,15 +202,19 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
   // Quick fill Consignee / Receiver from unified Customers list
   const handleConsigneeSelect = (custId) => {
     if (!custId) {
-      setFormData(prev => ({ ...prev, consigneeId: '', consignee: '' }));
-      return;
-    }
-    if (custId === 'CREATE_NEW') {
-      setIsAddingConsignee(true);
+      setFormData(prev => ({
+        ...prev,
+        consigneeId: '',
+        consigneeName: '',
+        consigneeAddress: '',
+        consignee: ''
+      }));
       return;
     }
     const selected = customers.find(c => c.id === custId);
     if (selected) {
+      const name = selected.name || selected.companyName || '';
+      const addr = selected.address || '';
       let destPort = selected.destinationPort || '';
       let destCode = selected.destinationCode || '';
       if (destPort) {
@@ -224,12 +232,11 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
       setFormData(prev => ({
         ...prev,
         consigneeId: selected.id,
-        customerId: prev.customerId || selected.id,
-        customer: prev.customer || selected.name,
-        customerName: prev.customerName || selected.name,
+        consigneeName: name,
+        consigneeAddress: addr,
         destinationPort: destPort || prev.destinationPort,
         destinationCode: destCode || prev.destinationCode,
-        consignee: `${selected.name}\n${selected.address || ''}\nAttn: ${selected.contactPerson || ''} (${selected.telephone || selected.phone || ''})`.trim()
+        consignee: addr ? `${name}\n${addr}` : name
       }));
     }
   };
@@ -237,22 +244,30 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
   // Quick fill Customer / Shipper from unified Customers list
   const handleShipperSelect = (custId) => {
     if (!custId) {
-      setFormData(prev => ({ ...prev, shipperId: '', shipper: '' }));
-      return;
-    }
-    if (custId === 'CREATE_NEW') {
-      setIsAddingShipper(true);
+      setFormData(prev => ({
+        ...prev,
+        shipperId: '',
+        customerName: '',
+        customer: '',
+        customerAddress: '',
+        shipperAddress: '',
+        shipper: ''
+      }));
       return;
     }
     const selected = customers.find(c => c.id === custId);
     if (selected) {
+      const name = selected.name || selected.companyName || '';
+      const addr = selected.address || '';
       setFormData(prev => ({
         ...prev,
         shipperId: selected.id,
         customerId: selected.id,
-        customer: selected.name,
-        customerName: selected.name,
-        shipper: `${selected.name}\n${selected.address || ''}\nPhone: ${selected.telephone || selected.phone || ''}`.trim()
+        customer: name,
+        customerName: name,
+        customerAddress: addr,
+        shipperAddress: addr,
+        shipper: addr ? `${name}\n${addr}` : name
       }));
     }
   };
@@ -366,15 +381,30 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
       .map(p => `${p.pieces}x ${p.packageType} (${p.description})`)
       .join(', ');
 
+    const custName = formData.customerName || formData.customer || (formData.shipper ? formData.shipper.split('\n')[0] : '') || 'Valued Customer';
+    const custAddress = formData.customerAddress || formData.shipperAddress || (formData.shipper && formData.shipper.includes('\n') ? formData.shipper.split('\n').slice(1).join(', ') : '') || '';
+
+    const recName = formData.consigneeName || (formData.consignee ? formData.consignee.split('\n')[0] : '') || '';
+    const recAddress = formData.consigneeAddress || (formData.consignee && formData.consignee.includes('\n') ? formData.consignee.split('\n').slice(1).join(', ') : '') || '';
+
+    const fullShipper = custAddress ? `${custName}\n${custAddress}` : custName;
+    const fullConsignee = recAddress ? `${recName}\n${recAddress}` : recName;
+
     const payload = {
       ...formData,
       receivedBy: currentUser?.name ? `${currentUser.name} (${currentUser.role || 'Super Administrator'})` : 'CFS Receiving Operations',
       receivedByRole: currentUser?.role || 'Receiving Officer',
-      customerId: formData.customerId || formData.shipperId || formData.consigneeId || null,
+      customerId: formData.customerId || formData.shipperId || null,
       shipperId: formData.shipperId || null,
       consigneeId: formData.consigneeId || null,
-      customer: formData.customer || formData.customerName || (formData.customerId ? customers.find(c => c.id === formData.customerId)?.name : '') || (formData.shipper ? formData.shipper.split('\n')[0] : '') || (formData.consignee ? formData.consignee.split('\n')[0] : '') || 'General Cargo',
-      customerName: formData.customerName || formData.customer || (formData.customerId ? customers.find(c => c.id === formData.customerId)?.name : '') || (formData.shipper ? formData.shipper.split('\n')[0] : '') || (formData.consignee ? formData.consignee.split('\n')[0] : '') || 'General Cargo',
+      customer: custName,
+      customerName: custName,
+      customerAddress: custAddress,
+      shipper: fullShipper,
+      shipperAddress: custAddress,
+      consignee: fullConsignee,
+      consigneeName: recName,
+      consigneeAddress: recAddress,
       packages,
       packageCount: packages.length,
       totalPieces: totals.totalPieces || 1,
@@ -507,89 +537,74 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <Building2 size={16} style={{ color: '#64748B' }} />
-                      <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#0A192F' }}>Customer (Origin Supplier)</span>
+                      <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#0A192F' }}>Customer (Origin Shipper)</span>
                     </div>
                     <span style={{ fontSize: '0.68rem', color: '#64748B', background: '#F1F5F9', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>Origin</span>
                   </div>
 
+                  {/* Customer Name */}
                   <div>
                     <label style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 600, display: 'block', marginBottom: '3px' }}>
-                      Select Customer:
+                      Customer Name <span className="required">*</span>
                     </label>
-                    {isAddingShipper ? (
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        <input
-                          type="text"
-                          className="form-input form-input-sm"
-                          style={{ flex: 1, fontSize: '0.825rem', background: '#FFFFFF' }}
-                          placeholder="Type customer name..."
-                          value={quickShipperName}
-                          onChange={(e) => setQuickShipperName(e.target.value)}
-                          autoFocus
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              handleQuickAddShipper();
-                            } else if (e.key === 'Escape') {
-                              setIsAddingShipper(false);
-                              setQuickShipperName('');
-                            }
-                          }}
-                        />
-                        <button
-                          type="button"
-                          className="btn btn-primary btn-sm"
-                          style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', whiteSpace: 'nowrap' }}
-                          onClick={handleQuickAddShipper}
-                        >
-                          Save
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-ghost btn-sm"
-                          style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem' }}
-                          onClick={() => { setIsAddingShipper(false); setQuickShipperName(''); }}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    ) : (
-                      <div style={{ display: 'flex', gap: '6px' }}>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <input
+                        type="text"
+                        className="form-input form-input-sm"
+                        style={{ flex: 1, fontSize: '0.825rem', background: '#FFFFFF' }}
+                        placeholder="Enter Customer Name (e.g. Amit Sharma)..."
+                        value={formData.customerName || ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFormData(prev => ({
+                            ...prev,
+                            customerName: val,
+                            customer: val,
+                            shipper: prev.shipperAddress ? `${val}\n${prev.shipperAddress}` : val
+                          }));
+                        }}
+                        required
+                      />
+                      {customers.length > 0 && (
                         <select
                           className="form-select form-select-sm"
+                          style={{ maxWidth: '140px', fontSize: '0.75rem', background: '#F8FAFC' }}
                           value={formData.shipperId || ''}
                           onChange={(e) => handleShipperSelect(e.target.value)}
-                          style={{ fontSize: '0.825rem', background: '#F8FAFC', flex: 1 }}
                         >
-                          <option value="">-- Select Existing Customer (or type below) --</option>
+                          <option value="">Select Existing...</option>
                           {customers.map(c => (
                             <option key={c.id} value={c.id}>
-                              {c.name || c.companyName} {c.destinationPort ? `(${c.destinationPort.split(' - ')[0]})` : ''}
+                              {c.name || c.companyName}
                             </option>
                           ))}
                         </select>
-                        <button
-                          type="button"
-                          onClick={() => setIsAddingShipper(true)}
-                          className="btn btn-outline btn-sm"
-                          style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', color: '#0284C7', borderColor: '#0284C7', background: '#FFFFFF', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}
-                          title="Type New Customer Name"
-                        >
-                          <Plus size={13} />
-                          <span>Add</span>
-                        </button>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
 
-                  <textarea
-                    className="form-textarea"
-                    rows={3}
-                    placeholder="Enter Customer / Origin Supplier name, origin warehouse, address, phone..."
-                    value={formData.shipper}
-                    onChange={(e) => handleInputChange('shipper', e.target.value)}
-                    style={{ fontSize: '0.825rem', resize: 'vertical' }}
-                  />
+                  {/* Customer Address */}
+                  <div>
+                    <label style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 600, display: 'block', marginBottom: '3px' }}>
+                      Customer Address / Origin
+                    </label>
+                    <textarea
+                      className="form-textarea"
+                      rows={2}
+                      placeholder="Enter Address, city, origin warehouse (e.g. Indore, MP)..."
+                      value={formData.shipperAddress || ''}
+                      onChange={(e) => {
+                        const addr = e.target.value;
+                        setFormData(prev => ({
+                          ...prev,
+                          shipperAddress: addr,
+                          customerAddress: addr,
+                          shipper: prev.customerName ? `${prev.customerName}\n${addr}` : addr
+                        }));
+                      }}
+                      style={{ fontSize: '0.825rem', resize: 'vertical' }}
+                    />
+                  </div>
                 </div>
 
                 {/* Receiver / Consignee Card */}
@@ -598,91 +613,73 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <Building2 size={16} style={{ color: '#0284C7' }} />
                       <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#0A192F' }}>
-                        Receiver Name (Consignee) <span className="required">*</span>
+                        Receiver (Consignee) <span className="required">*</span>
                       </span>
                     </div>
                     <span style={{ fontSize: '0.68rem', color: '#0284C7', background: '#E0F2FE', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>Destination</span>
                   </div>
 
+                  {/* Receiver Name */}
                   <div>
                     <label style={{ fontSize: '0.72rem', color: '#0284C7', fontWeight: 600, display: 'block', marginBottom: '3px' }}>
-                      Select Consignee:
+                      Receiver Name <span className="required">*</span>
                     </label>
-                    {isAddingConsignee ? (
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        <input
-                          type="text"
-                          className="form-input form-input-sm"
-                          style={{ flex: 1, fontSize: '0.825rem', background: '#FFFFFF', borderColor: '#7DD3FC' }}
-                          placeholder="Type consignee name..."
-                          value={quickConsigneeName}
-                          onChange={(e) => setQuickConsigneeName(e.target.value)}
-                          autoFocus
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              handleQuickAddConsignee();
-                            } else if (e.key === 'Escape') {
-                              setIsAddingConsignee(false);
-                              setQuickConsigneeName('');
-                            }
-                          }}
-                        />
-                        <button
-                          type="button"
-                          className="btn btn-primary btn-sm"
-                          style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', whiteSpace: 'nowrap' }}
-                          onClick={handleQuickAddConsignee}
-                        >
-                          Save
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-ghost btn-sm"
-                          style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem' }}
-                          onClick={() => { setIsAddingConsignee(false); setQuickConsigneeName(''); }}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    ) : (
-                      <div style={{ display: 'flex', gap: '6px' }}>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <input
+                        type="text"
+                        className="form-input form-input-sm"
+                        style={{ flex: 1, fontSize: '0.825rem', background: '#FFFFFF', borderColor: '#7DD3FC' }}
+                        placeholder="Enter Receiver Name (e.g. Rahul Verma)..."
+                        value={formData.consigneeName || ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFormData(prev => ({
+                            ...prev,
+                            consigneeName: val,
+                            consignee: prev.consigneeAddress ? `${val}\n${prev.consigneeAddress}` : val
+                          }));
+                        }}
+                        required
+                      />
+                      {customers.length > 0 && (
                         <select
                           className="form-select form-select-sm"
-                          style={{ fontSize: '0.825rem', padding: '0.4rem 0.55rem', flex: 1, borderColor: '#7DD3FC', background: '#FFFFFF' }}
-                          onChange={(e) => handleConsigneeSelect(e.target.value)}
+                          style={{ maxWidth: '140px', fontSize: '0.75rem', borderColor: '#7DD3FC', background: '#FFFFFF' }}
                           value={formData.consigneeId || ''}
+                          onChange={(e) => handleConsigneeSelect(e.target.value)}
                         >
-                          <option value="">-- Select Existing Consignee (or type below) --</option>
+                          <option value="">Select Existing...</option>
                           {customers.map(c => (
                             <option key={c.id} value={c.id}>
-                              {c.name || c.companyName} {c.customerNumber ? `(${c.customerNumber})` : ''}
+                              {c.name || c.companyName}
                             </option>
                           ))}
                         </select>
-                        <button
-                          type="button"
-                          onClick={() => setIsAddingConsignee(true)}
-                          className="btn btn-outline btn-sm"
-                          style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', color: '#0284C7', borderColor: '#0284C7', background: '#FFFFFF', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}
-                          title="Type New Consignee Name"
-                        >
-                          <Plus size={13} />
-                          <span>Add</span>
-                        </button>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
 
-                  <textarea
-                    className="form-textarea"
-                    rows={3}
-                    required
-                    placeholder="Enter Receiver Name (Consignee), island address, contact person, phone..."
-                    value={formData.consignee}
-                    onChange={(e) => handleInputChange('consignee', e.target.value)}
-                    style={{ fontSize: '0.825rem', resize: 'vertical', background: '#FFFFFF' }}
-                  />
+                  {/* Receiver Address */}
+                  <div>
+                    <label style={{ fontSize: '0.72rem', color: '#0284C7', fontWeight: 600, display: 'block', marginBottom: '3px' }}>
+                      Receiver Address / Destination
+                    </label>
+                    <textarea
+                      className="form-textarea"
+                      rows={2}
+                      placeholder="Enter Destination address, island location (e.g. Bhopal, MP)..."
+                      value={formData.consigneeAddress || ''}
+                      onChange={(e) => {
+                        const addr = e.target.value;
+                        setFormData(prev => ({
+                          ...prev,
+                          consigneeAddress: addr,
+                          consignee: prev.consigneeName ? `${prev.consigneeName}\n${addr}` : addr
+                        }));
+                      }}
+                      style={{ fontSize: '0.825rem', resize: 'vertical', background: '#FFFFFF' }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
