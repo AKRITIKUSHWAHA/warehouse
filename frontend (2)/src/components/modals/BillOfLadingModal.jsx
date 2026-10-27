@@ -668,7 +668,124 @@ export const BillOfLadingModal = ({
         >
           <div ref={modalBodyRef} className="modal-body custom-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', overflowY: 'auto', flex: 1, minHeight: 0, padding: '1rem 1.25rem' }}>
             
-            {/* STEP 1: Consolidation Link & Live Cargo Summary */}
+            {/* STEP 1: Interactive House B/Ls Linked Table (ON TOP) */}
+            <div style={{
+              background: '#FFFFFF',
+              border: '1px solid #E2E8F0',
+              borderRadius: '8px',
+              padding: '1rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.75rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Box size={16} style={{ color: '#0284C7' }} />
+                  <span style={{ fontWeight: 700, color: '#0A192F', fontSize: '0.9rem' }}>
+                    Linked House Bills of Lading ({selectedHouseBillIds.length} of {candidateHouseBills.length} selected)
+                  </span>
+                </div>
+
+                {candidateHouseBills.length > 0 && (
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      type="button"
+                      onClick={selectAllHouseBills}
+                      className="btn btn-outline btn-sm"
+                      style={{ padding: '0.2rem 0.5rem', fontSize: '0.72rem' }}
+                    >
+                      Select All
+                    </button>
+                    <button
+                      type="button"
+                      onClick={clearAllHouseBills}
+                      className="btn btn-ghost btn-sm"
+                      style={{ padding: '0.2rem 0.5rem', fontSize: '0.72rem', color: '#64748B' }}
+                    >
+                      Deselect All
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {candidateHouseBills.length === 0 ? (
+                <div style={{ padding: '0.75rem 1rem', textAlign: 'center', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '6px', color: '#64748B', fontSize: '0.8rem' }}>
+                  📦 <strong>0 House Bills found for this consolidation.</strong>
+                  <div style={{ fontSize: '0.74rem', color: '#94A3B8', marginTop: '3px' }}>
+                    In Kedreana's 3-step workflow, first create House Bills in Step 2 with this Consolidation Number. They will automatically appear here.
+                  </div>
+                </div>
+              ) : (
+                <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid #E2E8F0', borderRadius: '6px' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+                    <thead>
+                      <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569', textAlign: 'left' }}>
+                        <th style={{ padding: '0.5rem 0.75rem', width: '36px' }}></th>
+                        <th style={{ padding: '0.5rem 0.75rem' }}>HBL Number</th>
+                        <th style={{ padding: '0.5rem 0.75rem' }}>Consignee</th>
+                        <th style={{ padding: '0.5rem 0.75rem' }}>Packages</th>
+                        <th style={{ padding: '0.5rem 0.75rem' }}>Weight (LBS)</th>
+                        <th style={{ padding: '0.5rem 0.75rem' }}>Volume</th>
+                        <th style={{ padding: '0.5rem 0.75rem' }}>Destination</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {candidateHouseBills.map(h => {
+                        const isChecked = selectedHouseBillIds.includes(h.hblNumber) || selectedHouseBillIds.includes(h.id);
+                        const cftVal = h.totalCft || (h.totalCbm ? Number((h.totalCbm * 35.3147).toFixed(1)) : 0);
+                        return (
+                          <tr
+                            key={h.id || h.hblNumber}
+                            onClick={() => toggleHouseBill(h.hblNumber || h.id)}
+                            style={{
+                              borderBottom: '1px solid #F1F5F9',
+                              background: isChecked ? '#F0FDF4' : '#FFFFFF',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <td 
+                              style={{ padding: '0.45rem 0.75rem', textAlign: 'center' }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleHouseBill(h.hblNumber || h.id);
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => toggleHouseBill(h.hblNumber || h.id)}
+                                onClick={(e) => e.stopPropagation()}
+                                style={{ cursor: 'pointer', width: '15px', height: '15px' }}
+                              />
+                            </td>
+                            <td style={{ padding: '0.45rem 0.75rem', fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: '#0A192F' }}>
+                              {h.hblNumber}
+                            </td>
+                            <td style={{ padding: '0.45rem 0.75rem', color: '#1E293B' }}>
+                              {safeString(h.consignee, 'Consignee')}
+                            </td>
+                            <td style={{ padding: '0.45rem 0.75rem', fontWeight: 600 }}>
+                              {h.totalPackages || h.packageCount || 1} pkgs
+                            </td>
+                            <td style={{ padding: '0.45rem 0.75rem' }}>
+                              {h.totalWeightLbs ? `${Number(h.totalWeightLbs).toLocaleString()} lbs` : '—'}
+                            </td>
+                            <td style={{ padding: '0.45rem 0.75rem', color: '#D97706', fontWeight: 600 }}>
+                              {cftVal} CFT ({h.totalCbm || 0} CBM)
+                            </td>
+                            <td style={{ padding: '0.45rem 0.75rem', color: '#0284C7' }}>
+                              {safeString(h.destinationPort, '—')}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* STEP 2: Consolidation Link & Live Cargo Summary (ON BOTTOM) */}
             <div style={{
               background: '#F0F9FF',
               border: '1.5px solid #0284C7',
@@ -688,7 +805,7 @@ export const BillOfLadingModal = ({
                       Company Consolidation Number
                     </h4>
                     <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748B' }}>
-                      Select your company consolidation number to gather all associated House Bills into this container.
+                      Auto-populated from selected House Bill. You can clear or edit if needed.
                     </p>
                   </div>
                 </div>
@@ -846,116 +963,6 @@ export const BillOfLadingModal = ({
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* STEP 2: Interactive House B/Ls Linked Table */}
-            <div style={{
-              background: '#FFFFFF',
-              border: '1px solid #E2E8F0',
-              borderRadius: '8px',
-              padding: '1rem',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.75rem'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Box size={16} style={{ color: '#0284C7' }} />
-                  <span style={{ fontWeight: 700, color: '#0A192F', fontSize: '0.9rem' }}>
-                    Linked House Bills of Lading ({selectedHouseBillIds.length} of {candidateHouseBills.length} selected)
-                  </span>
-                </div>
-
-                {candidateHouseBills.length > 0 && (
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button
-                      type="button"
-                      onClick={selectAllHouseBills}
-                      className="btn btn-outline btn-sm"
-                      style={{ padding: '0.2rem 0.5rem', fontSize: '0.72rem' }}
-                    >
-                      Select All
-                    </button>
-                    <button
-                      type="button"
-                      onClick={clearAllHouseBills}
-                      className="btn btn-ghost btn-sm"
-                      style={{ padding: '0.2rem 0.5rem', fontSize: '0.72rem', color: '#64748B' }}
-                    >
-                      Deselect All
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {candidateHouseBills.length === 0 ? (
-                <div style={{ padding: '0.75rem 1rem', textAlign: 'center', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '6px', color: '#64748B', fontSize: '0.8rem' }}>
-                  📦 <strong>0 House Bills found for this consolidation.</strong>
-                  <div style={{ fontSize: '0.74rem', color: '#94A3B8', marginTop: '3px' }}>
-                    In Kedreana's 3-step workflow, first create House Bills in Step 2 with this Consolidation Number. They will automatically appear here.
-                  </div>
-                </div>
-              ) : (
-                <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid #E2E8F0', borderRadius: '6px' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
-                    <thead>
-                      <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569', textAlign: 'left' }}>
-                        <th style={{ padding: '0.5rem 0.75rem', width: '36px' }}></th>
-                        <th style={{ padding: '0.5rem 0.75rem' }}>HBL Number</th>
-                        <th style={{ padding: '0.5rem 0.75rem' }}>Consignee</th>
-                        <th style={{ padding: '0.5rem 0.75rem' }}>Packages</th>
-                        <th style={{ padding: '0.5rem 0.75rem' }}>Weight (LBS)</th>
-                        <th style={{ padding: '0.5rem 0.75rem' }}>Volume</th>
-                        <th style={{ padding: '0.5rem 0.75rem' }}>Destination</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {candidateHouseBills.map(h => {
-                        const isChecked = selectedHouseBillIds.includes(h.hblNumber) || selectedHouseBillIds.includes(h.id);
-                        const cftVal = h.totalCft || (h.totalCbm ? Number((h.totalCbm * 35.3147).toFixed(1)) : 0);
-                        return (
-                          <tr
-                            key={h.id || h.hblNumber}
-                            onClick={() => toggleHouseBill(h.hblNumber || h.id)}
-                            style={{
-                              borderBottom: '1px solid #F1F5F9',
-                              background: isChecked ? '#F0FDF4' : '#FFFFFF',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            <td style={{ padding: '0.45rem 0.75rem' }}>
-                              <input
-                                type="checkbox"
-                                checked={isChecked}
-                                onChange={() => {}}
-                                style={{ cursor: 'pointer' }}
-                              />
-                            </td>
-                            <td style={{ padding: '0.45rem 0.75rem', fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: '#0A192F' }}>
-                              {h.hblNumber}
-                            </td>
-                            <td style={{ padding: '0.45rem 0.75rem', color: '#1E293B' }}>
-                              {safeString(h.consignee, 'Consignee')}
-                            </td>
-                            <td style={{ padding: '0.45rem 0.75rem', fontWeight: 600 }}>
-                              {h.totalPackages || h.packageCount || 1} pkgs
-                            </td>
-                            <td style={{ padding: '0.45rem 0.75rem' }}>
-                              {h.totalWeightLbs ? `${Number(h.totalWeightLbs).toLocaleString()} lbs` : '—'}
-                            </td>
-                            <td style={{ padding: '0.45rem 0.75rem', color: '#D97706', fontWeight: 600 }}>
-                              {cftVal} CFT ({h.totalCbm || 0} CBM)
-                            </td>
-                            <td style={{ padding: '0.45rem 0.75rem', color: '#0284C7' }}>
-                              {safeString(h.destinationPort, '—')}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
             </div>
 
 
