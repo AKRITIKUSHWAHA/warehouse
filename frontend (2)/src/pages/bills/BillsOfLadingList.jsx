@@ -753,27 +753,31 @@ export const BillsOfLadingList = ({ onNavigate, initialTab = null }) => {
       )}
 
       {/* Add Master B/L Modal (Pre-populated from selected shipment/box) */}
-      <BillOfLadingModal
-        isOpen={showAddModal}
-        isEdit={false}
-        initialShipment={selectedShipmentForBL}
-        onClose={() => {
-          setShowAddModal(false);
-          setSelectedShipmentForBL(null);
-        }}
-        onSave={handleSaveBL}
-      />
+      {showAddModal && (
+        <BillOfLadingModal
+          isOpen={true}
+          isEdit={false}
+          initialShipment={selectedShipmentForBL}
+          onClose={() => {
+            setShowAddModal(false);
+            setSelectedShipmentForBL(null);
+          }}
+          onSave={handleSaveBL}
+        />
+      )}
 
       {/* Edit Master B/L Modal */}
-      <BillOfLadingModal
-        isOpen={!!editingBL}
-        bl={editingBL}
-        isEdit={true}
-        onClose={() => setEditingBL(null)}
-        onSave={async (updates) => {
-          await updateBillOfLading(editingBL.id || editingBL.blNumber, updates);
-        }}
-      />
+      {editingBL && (
+        <BillOfLadingModal
+          isOpen={true}
+          bl={editingBL}
+          isEdit={true}
+          onClose={() => setEditingBL(null)}
+          onSave={async (updates) => {
+            await updateBillOfLading(editingBL.id || editingBL.blNumber, updates);
+          }}
+        />
+      )}
 
       {/* Delete Confirmation Modal */}
       <DeleteConfirmModal

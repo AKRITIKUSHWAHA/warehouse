@@ -3,6 +3,16 @@ import { FileText, X, Save, Plus, Layers, Box } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
 import { useAuth } from '../../context/AuthContext';
 
+const safeString = (val, fallback = '') => {
+  if (val === null || val === undefined) return fallback;
+  if (typeof val === 'string') return val.trim() || fallback;
+  if (typeof val === 'number') return String(val);
+  if (typeof val === 'object') {
+    return val.name || val.portName || val.companyName || val.code || val.portCode || val.label || fallback;
+  }
+  return String(val) || fallback;
+};
+
 export const BillOfLadingModal = ({
   isOpen,
   onClose,
@@ -304,7 +314,7 @@ export const BillOfLadingModal = ({
           initialPackageCount = sumPkgs;
           initialGrossWeight = Math.round(sumWeightLbs);
           initialCbm = Number(sumCbm.toFixed(2));
-          initialPod = found?.destinationPort || targetHbls[0]?.destinationPort || initialPod || 'STT - Port of Charlotte Amalie';
+          initialPod = safeString(found?.destinationPort || targetHbls[0]?.destinationPort || initialPod, 'STT - Port of Charlotte Amalie');
         }
 
         if (found) {
@@ -661,7 +671,7 @@ export const BillOfLadingModal = ({
 
                 {selectedConsolObj && (
                   <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0369A1', background: '#E0F2FE', padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
-                    Matched: {selectedConsolObj.consolidationNumber} ({selectedConsolObj.destinationPort || 'Consolidation'})
+                    Matched: {selectedConsolObj.consolidationNumber} ({safeString(selectedConsolObj.destinationPort, 'Consolidation')})
                   </span>
                 )}
               </div>
@@ -686,7 +696,7 @@ export const BillOfLadingModal = ({
                     <option value="">-- Select Company Consolidation Number --</option>
                     {consolidationOptions.map(opt => (
                       <option key={opt.num} value={opt.num}>
-                        {opt.num} • {opt.destinationPort || 'Caribbean'} ({opt.hblCount} House Bills • {opt.totalPackages} pkgs • {opt.totalWeightLbs} lbs)
+                        {opt.num} • {safeString(opt.destinationPort, 'Caribbean')} ({opt.hblCount} House Bills • {opt.totalPackages} pkgs • {opt.totalWeightLbs} lbs)
                       </option>
                     ))}
                   </select>
@@ -744,7 +754,7 @@ export const BillOfLadingModal = ({
                 <div>
                   <div style={{ fontSize: '0.62rem', color: '#0369A1', fontWeight: 700, textTransform: 'uppercase' }}>Discharge Port</div>
                   <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#0284C7', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {formData.portOfDischarge || 'Destination'}
+                    {safeString(formData.portOfDischarge, 'Destination')}
                   </div>
                 </div>
               </div>
@@ -837,7 +847,7 @@ export const BillOfLadingModal = ({
                               {h.hblNumber}
                             </td>
                             <td style={{ padding: '0.45rem 0.75rem', color: '#1E293B' }}>
-                              {typeof h.consignee === 'object' ? (h.consignee?.name || 'Consignee') : (h.consignee || 'Consignee')}
+                              {safeString(h.consignee, 'Consignee')}
                             </td>
                             <td style={{ padding: '0.45rem 0.75rem', fontWeight: 600 }}>
                               {h.totalPackages || h.packageCount || 1} pkgs
@@ -849,7 +859,7 @@ export const BillOfLadingModal = ({
                               {cftVal} CFT ({h.totalCbm || 0} CBM)
                             </td>
                             <td style={{ padding: '0.45rem 0.75rem', color: '#0284C7' }}>
-                              {typeof h.destinationPort === 'object' ? (h.destinationPort?.name || '—') : (h.destinationPort || '—')}
+                              {safeString(h.destinationPort, '—')}
                             </td>
                           </tr>
                         );
@@ -900,9 +910,12 @@ export const BillOfLadingModal = ({
                     list="vessels-suggestions-list"
                   />
                   <datalist id="vessels-suggestions-list">
-                    {vessels.map(v => (
-                      <option key={`mbl-ves-${v.id || v.name}`} value={v.name} />
-                    ))}
+                    {vessels.map((v, vIdx) => {
+                      const vName = typeof v === 'object' ? (v?.name || v?.vesselName || '') : String(v || '');
+                      return (
+                        <option key={`mbl-ves-${vIdx}-${vName}`} value={vName} />
+                      );
+                    })}
                   </datalist>
                 </div>
 
@@ -979,7 +992,7 @@ export const BillOfLadingModal = ({
                   <span style={{ fontWeight: 600, color: '#334155' }}>Shipper (Forwarder):</span> VI Customs Brokers & Logistics (Miami)
                 </div>
                 <div>
-                  <span style={{ fontWeight: 600, color: '#334155' }}>Consignee:</span> To Order of Destination Agent ({formData.portOfDischarge || 'Caribbean'})
+                  <span style={{ fontWeight: 600, color: '#334155' }}>Consignee:</span> To Order of Destination Agent ({safeString(formData.portOfDischarge, 'Caribbean')})
                 </div>
               </div>
             </div>
