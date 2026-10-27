@@ -192,13 +192,15 @@ export const BillOfLadingDetail = ({ blId, onNavigate }) => {
               Consolidated House Bills of Lading in this Master B/L ({linkedHbls.length})
             </h3>
           </div>
-          <button
-            onClick={() => onNavigate('house-bills')}
-            className="btn btn-sm btn-outline"
-            style={{ fontSize: '0.78rem' }}
-          >
-            + View / Manage House B/Ls
-          </button>
+          {!isAgent && (
+            <button
+              onClick={() => onNavigate('house-bills')}
+              className="btn btn-sm btn-outline"
+              style={{ fontSize: '0.78rem' }}
+            >
+              + View / Manage House B/Ls
+            </button>
+          )}
         </div>
 
         {linkedHbls.length === 0 ? (

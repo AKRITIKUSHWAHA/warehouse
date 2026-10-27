@@ -5,11 +5,13 @@ import { BarcodeVisual } from '../common/BarcodeVisual';
 import { Printer, Download, Layers, Loader2, FileSpreadsheet } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { useAppData } from '../../context/AppDataContext';
+import { useAuth } from '../../context/AuthContext';
 import { downloadPdfFromElement } from '../../services/pdfService';
 
 export const MasterBLViewer = ({ bl, linkedHbls = [], onNavigate }) => {
   const { showToast } = useToast();
   const { settings, generateManifestFromMasterBL } = useAppData() || {};
+  const { isAgent } = useAuth() || {};
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [isGeneratingManifest, setIsGeneratingManifest] = useState(false);
 
@@ -133,16 +135,19 @@ export const MasterBLViewer = ({ bl, linkedHbls = [], onNavigate }) => {
         </div>
 
         <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button
-            className="btn btn-outline btn-sm"
-            onClick={handleOneClickManifest}
-            disabled={isGeneratingManifest}
-            style={{ fontWeight: 700, color: '#0284C7', borderColor: '#0284C7' }}
-            title="Generate Customs Manifest from this Master B/L in 1 click"
-          >
-            <FileSpreadsheet size={15} />
-            <span>{isGeneratingManifest ? 'Generating...' : '⚡ 1-Click Manifest'}</span>
-          </button>
+          {/* Manifest generation is performed by Miami dispatch staff, not destination receiving agents */}
+          {!isAgent && (
+            <button
+              className="btn btn-outline btn-sm"
+              onClick={handleOneClickManifest}
+              disabled={isGeneratingManifest}
+              style={{ fontWeight: 700, color: '#0284C7', borderColor: '#0284C7' }}
+              title="Generate Customs Manifest from this Master B/L in 1 click"
+            >
+              <FileSpreadsheet size={15} />
+              <span>{isGeneratingManifest ? 'Generating...' : '⚡ 1-Click Manifest'}</span>
+            </button>
+          )}
           <button className="btn btn-outline btn-sm" onClick={handlePrint}>
             <Printer size={15} />
             <span>Print B/L Document</span>
