@@ -164,3 +164,48 @@ Thank you
 [18 Oct, 17:00]
 Also, no need for this classification
 ```
+
+---
+
+## 5. Messages from 25 October 2026
+
+```text
+I’ll be honest, everytime I go do this app it gets more and more complicated
+
+K
+Profile Image
+kedreana
+
+25 Oct, 15:22
+I sent you a video of what I was looking for and it was simple.
+
+K
+Profile Image
+kedreana
+
+25 Oct, 15:22
+This is way too complicated and it’s hurting my head
+
+K
+Profile Image
+kedreana
+
+25 Oct, 15:26
+Step one: create warehouse receipts 
+Step two: link warehouse receipts to a house bill of lading with a consolidation number created by my company. 
+Step three: create master bill of lading that gathers all the house bills of lading for the specified consolidation number. From that a manifest can be created.
+
+K
+Profile Image
+kedreana
+
+25 Oct, 15:27
+If you need remote access to view the process, please say and I can show you
+
+K
+Profile Image
+kedreana
+
+25 Oct, 15:27
+But I don’t think you understand what I am looking for.
+```
