@@ -183,14 +183,25 @@ export const CreateHouseBill = ({ onNavigate }) => {
   }, [houseBills]);
 
   // Toggle selection of a WR
-  const toggleWr = (wrId) => {
-    setSelectedWrIds(prev =>
-      prev.includes(wrId) ? prev.filter(id => id !== wrId) : [...prev, wrId]
-    );
+  const toggleWr = (wr) => {
+    const key = typeof wr === 'object' ? (wr.id || wr.receiptNumber) : wr;
+    const wrObj = typeof wr === 'object' ? wr : warehouseReceipts.find(w => w.id === wr || w.receiptNumber === wr);
+    const wrId = wrObj?.id;
+    const wrNum = wrObj?.receiptNumber;
+
+    setSelectedWrIds(prev => {
+      const isAlreadySelected = prev.some(id => id === key || (wrId && id === wrId) || (wrNum && id === wrNum));
+      if (isAlreadySelected) {
+        return prev.filter(id => id !== key && id !== wrId && id !== wrNum);
+      } else {
+        return [...prev, key];
+      }
+    });
   };
 
   const handleSelectAllWrs = () => {
-    if (selectedWrIds.length === displayedWrs.length && displayedWrs.length > 0) {
+    const allSelected = displayedWrs.length > 0 && displayedWrs.every(w => selectedWrIds.some(id => id === w.id || id === w.receiptNumber));
+    if (allSelected) {
       setSelectedWrIds([]);
     } else {
       setSelectedWrIds(displayedWrs.map(w => w.id || w.receiptNumber));
@@ -418,8 +429,9 @@ export const CreateHouseBill = ({ onNavigate }) => {
                   <th style={{ width: '40px', padding: '0.6rem 0.75rem', textAlign: 'center' }}>
                     <input
                       type="checkbox"
-                      checked={displayedWrs.length > 0 && selectedWrIds.length === displayedWrs.length}
+                      checked={displayedWrs.length > 0 && displayedWrs.every(w => selectedWrIds.some(id => id === w.id || id === w.receiptNumber))}
                       onChange={handleSelectAllWrs}
+                      style={{ cursor: 'pointer', width: '16px', height: '16px' }}
                     />
                   </th>
                   <th style={{ padding: '0.6rem 0.75rem' }}>WR Number</th>
@@ -447,12 +459,12 @@ export const CreateHouseBill = ({ onNavigate }) => {
                 ) : (
                   displayedWrs.map(wr => {
                     const wrKey = wr.id || wr.receiptNumber;
-                    const isSelected = selectedWrIds.includes(wrKey) || selectedWrIds.includes(wr.receiptNumber);
+                    const isSelected = selectedWrIds.some(id => id === wrKey || (wr.id && id === wr.id) || (wr.receiptNumber && id === wr.receiptNumber));
 
                     return (
                       <tr
                         key={wrKey}
-                        onClick={() => toggleWr(wrKey)}
+                        onClick={() => toggleWr(wr)}
                         style={{
                           background: isSelected ? '#EFF6FF' : 'transparent',
                           borderBottom: '1px solid #F1F5F9',
@@ -460,12 +472,19 @@ export const CreateHouseBill = ({ onNavigate }) => {
                           cursor: 'pointer'
                         }}
                       >
-                        <td style={{ textAlign: 'center', padding: '0.6rem 0.75rem' }}>
+                        <td 
+                          style={{ textAlign: 'center', padding: '0.6rem 0.75rem', cursor: 'pointer' }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleWr(wr);
+                          }}
+                        >
                           <input
                             type="checkbox"
                             checked={isSelected}
-                            onChange={() => {}}
+                            onChange={() => toggleWr(wr)}
                             onClick={(e) => e.stopPropagation()}
+                            style={{ cursor: 'pointer', width: '16px', height: '16px' }}
                           />
                         </td>
                         <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, fontFamily: 'JetBrains Mono, monospace', color: '#0A192F' }}>
