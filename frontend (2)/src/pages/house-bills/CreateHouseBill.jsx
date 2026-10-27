@@ -423,8 +423,8 @@ export const CreateHouseBill = ({ onNavigate }) => {
                     />
                   </th>
                   <th style={{ padding: '0.6rem 0.75rem' }}>WR Number</th>
-                  <th style={{ padding: '0.6rem 0.75rem' }}>Customer / Consignee</th>
-                  <th style={{ padding: '0.6rem 0.75rem' }}>Shipper</th>
+                  <th style={{ padding: '0.6rem 0.75rem' }}>Customer</th>
+                  <th style={{ padding: '0.6rem 0.75rem' }}>Receiver</th>
                   <th style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>Pieces &amp; Weight</th>
                   <th style={{ padding: '0.6rem 0.75rem', textAlign: 'right' }}>Volume (CFT / CBM)</th>
                   <th style={{ padding: '0.6rem 0.75rem' }}>Destination Port</th>
@@ -472,10 +472,10 @@ export const CreateHouseBill = ({ onNavigate }) => {
                           {wr.receiptNumber || wr.id}
                         </td>
                         <td style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: '#0A192F' }}>
-                          {wr.customer || wr.customerName || (wr.consignee || '').split('\n')[0]}
+                          {wr.customer || wr.customerName || (wr.shipper ? wr.shipper.split('\n')[0] : '—')}
                         </td>
-                        <td style={{ padding: '0.6rem 0.75rem', color: '#64748B', fontSize: '0.75rem' }}>
-                          {(wr.shipper || '').split('\n')[0] || 'Supplier'}
+                        <td style={{ padding: '0.6rem 0.75rem', color: '#0A192F', fontWeight: 600 }}>
+                          {wr.consigneeName || (wr.consignee ? wr.consignee.split('\n')[0] : '—')}
                         </td>
                         <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>
                           <span style={{ fontWeight: 700 }}>{wr.totalPieces || wr.packageCount || 1} pcs</span>
