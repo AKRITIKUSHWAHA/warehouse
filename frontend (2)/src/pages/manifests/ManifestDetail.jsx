@@ -107,15 +107,6 @@ export const ManifestDetail = ({ manifestId, onNavigate }) => {
               Next Step: Handover manifest to Destination Agent & Customs Clearance
             </span>
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              onClick={() => onNavigate('agent-portal')}
-              className="btn btn-primary btn-sm"
-              style={{ fontSize: '0.8rem' }}
-            >
-              View Destination Agent View &rarr;
-            </button>
-          </div>
         </div>
       </div>
 
