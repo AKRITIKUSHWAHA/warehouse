@@ -752,65 +752,51 @@ export const OperationsDashboard = ({ onNavigate }) => {
                   </>
                 ) : (
                   <>
+                    {/* Step 1: Warehouse Receipts */}
                     <button
                       onClick={() => onNavigate('warehouse-receipts', 'create')}
                       className="btn btn-outline btn-sm"
-                      style={{ justifyContent: 'space-between', padding: '0.6rem 0.75rem' }}
+                      style={{ justifyContent: 'space-between', padding: '0.65rem 0.85rem' }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <Package size={16} style={{ color: '#D97706' }} />
-                        <span style={{ fontWeight: 600 }}>1. Create Warehouse Receipt</span>
+                        <span style={{ fontWeight: 600 }}>1. Warehouse Receipts</span>
                       </div>
                       <ChevronRight size={14} style={{ color: '#94A3B8' }} />
                     </button>
 
+                    {/* Step 2: House Bills of Lading */}
                     <button
-                      onClick={() => onNavigate('cargo')}
+                      onClick={() => onNavigate('house-bills', 'create')}
                       className="btn btn-outline btn-sm"
-                      style={{ justifyContent: 'space-between', padding: '0.6rem 0.75rem' }}
+                      style={{ justifyContent: 'space-between', padding: '0.65rem 0.85rem' }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Box size={16} style={{ color: '#0284C7' }} />
-                        <span style={{ fontWeight: 600 }}>2. View Staged Cargo</span>
+                        <FileText size={16} style={{ color: '#0284C7' }} />
+                        <span style={{ fontWeight: 600 }}>2. House Bills of Lading</span>
                       </div>
                       <ChevronRight size={14} style={{ color: '#94A3B8' }} />
                     </button>
 
-                    <button
-                      onClick={() => onNavigate('consolidations', 'create')}
-                      className="btn btn-outline btn-sm"
-                      style={{ justifyContent: 'space-between', padding: '0.6rem 0.75rem' }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Layers size={16} style={{ color: '#10B981' }} />
-                        <span style={{ fontWeight: 600 }}>3. Build Consolidation</span>
-                      </div>
-                      <ChevronRight size={14} style={{ color: '#94A3B8' }} />
-                    </button>
-
+                    {/* Step 3: Master Bills & Manifests */}
                     <button
                       onClick={() => onNavigate('bills-of-lading')}
                       className="btn btn-outline btn-sm"
-                      style={{ justifyContent: 'space-between', padding: '0.6rem 0.75rem' }}
+                      style={{ justifyContent: 'space-between', padding: '0.65rem 0.85rem' }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <FileText size={16} style={{ color: '#2563EB' }} />
-                        <span style={{ fontWeight: 600 }}>4. Bills of Lading (Master &amp; House)</span>
+                        <FileSpreadsheet size={16} style={{ color: '#10B981' }} />
+                        <span style={{ fontWeight: 600 }}>3. Master Bills &amp; Manifests</span>
                       </div>
                       <ChevronRight size={14} style={{ color: '#94A3B8' }} />
                     </button>
 
-                    <button
-                      onClick={() => onNavigate('manifests')}
-                      className="btn btn-outline btn-sm"
-                      style={{ justifyContent: 'space-between', padding: '0.6rem 0.75rem' }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <FileSpreadsheet size={16} style={{ color: '#8B5CF6' }} />
-                        <span style={{ fontWeight: 600 }}>5. Customs Manifests</span>
-                      </div>
-                      <ChevronRight size={14} style={{ color: '#94A3B8' }} />
-                    </button>
+                    {/*
+                    Legacy enterprise shortcuts commented out per client's 3-step workflow:
+                    - 2. View Staged Cargo (onNavigate('cargo'))
+                    - 3. Build Consolidation (onNavigate('consolidations', 'create'))
+                    - 5. Customs Manifests (unified under Step 3: Master Bills & Manifests)
+                    */}
                   </>
                 )}
               </div>
