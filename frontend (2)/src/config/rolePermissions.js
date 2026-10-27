@@ -3,7 +3,7 @@
  * Allows Super Admin to dynamically configure menu visibility and module access per role.
  */
 
-export const STORAGE_KEY_ROLE_PERMISSIONS = 'kers_role_permissions_map_v9';
+export const STORAGE_KEY_ROLE_PERMISSIONS = 'kers_role_permissions_map_v10';
 
 export const SYSTEM_MODULES = [
   // 1. 3-STEP CARGO WORKFLOW
@@ -63,17 +63,18 @@ export const DEFAULT_ROLE_PERMISSIONS_MAP = {
   super_admin: [
     'dashboard', 'warehouse-receipts', 'house-bills', 'bills-of-lading', 'users', 'settings'
   ],
-  operations: [
-    'dashboard', 'warehouse-receipts', 'house-bills', 'bills-of-lading'
-  ],
   warehouse: [
-    'dashboard', 'warehouse-receipts'
-  ],
-  documentation: [
     'dashboard', 'warehouse-receipts', 'house-bills', 'bills-of-lading'
   ],
   agent: [
     'dashboard', 'bills-of-lading'
+  ],
+  // Legacy roles (kept commented for backward compatibility):
+  operations: [
+    'dashboard', 'warehouse-receipts', 'house-bills', 'bills-of-lading'
+  ],
+  documentation: [
+    'dashboard', 'warehouse-receipts', 'house-bills', 'bills-of-lading'
   ]
 };
 

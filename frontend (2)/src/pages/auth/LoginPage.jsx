@@ -56,12 +56,12 @@ export const LoginPage = ({ onLoginSuccess }) => {
     },
     'USR-003': {
       roleKey: 'warehouse',
-      title: 'Warehouse',
-      shortLabel: 'Warehouse',
-      category: 'Cargo Intake',
+      title: 'Warehouse & Logistics Staff',
+      shortLabel: 'Miami Staff',
+      category: 'Cargo Intake & B/Ls',
       badgeColor: '#D97706',
       icon: Package,
-      summary: 'Receive cargo, measure dimensions & print labels'
+      summary: 'Receive cargo, issue House B/Ls & generate Master B/L'
     },
     'USR-004': {
       roleKey: 'agent',
@@ -74,7 +74,17 @@ export const LoginPage = ({ onLoginSuccess }) => {
     }
   };
 
-  const workflowOrder = ['USR-001', 'USR-005', 'USR-002', 'USR-003', 'USR-004'];
+  // 3-Role Architecture Tailored for Kedreana's Small NVOCC Operations:
+  // 1. Super Admin (Full Control - Kedreana)
+  // 2. Miami Warehouse & Logistics Staff (Intake Receipts ➔ House Bills ➔ Master B/L)
+  // 3. Destination Agent (Island Port Clearance & Release)
+  const workflowOrder = [
+    'USR-001', // Super Admin (Kedreana)
+    'USR-003', // Miami Warehouse & Logistics Staff
+    'USR-004'  // Destination Agent
+    // 'USR-005', // Operations (Merged into Miami Staff)
+    // 'USR-002', // Documentation (Merged into Miami Staff)
+  ];
 
   const sortedUsers = workflowOrder.map((code, idx) => {
     const details = roleDetails[code];
