@@ -21,9 +21,12 @@ import {
   MoreVertical
 } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
+import { useAuth } from '../../context/AuthContext';
 
 export const WarehouseReceiptsList = ({ onNavigate }) => {
   const { warehouseReceipts, updateWarehouseReceipt, deleteWarehouseReceipt } = useAppData();
+  const { isWarehouse, isAgent } = useAuth();
+  const canDelete = !isWarehouse && !isAgent;
   const [labelCargo, setLabelCargo] = useState(null);
   const [editingReceipt, setEditingReceipt] = useState(null);
   const [deletingReceipt, setDeletingReceipt] = useState(null);
@@ -284,35 +287,39 @@ export const WarehouseReceiptsList = ({ onNavigate }) => {
                   <span>Edit Receipt</span>
                 </button>
 
-                <div style={{ height: '1px', background: '#F1F5F9', margin: '4px 0' }} />
+                {canDelete && (
+                  <>
+                    <div style={{ height: '1px', background: '#F1F5F9', margin: '4px 0' }} />
 
-                <button
-                  type="button"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '0.45rem 0.65rem',
-                    fontSize: '0.8rem',
-                    fontWeight: 500,
-                    color: '#EF4444',
-                    background: 'transparent',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    width: '100%',
-                    textAlign: 'left'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = '#FEF2F2'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                  onClick={() => {
-                    setActiveMenuId(null);
-                    setDeletingReceipt(item);
-                  }}
-                >
-                  <Trash2 size={14} style={{ color: '#EF4444' }} />
-                  <span>Delete</span>
-                </button>
+                    <button
+                      type="button"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '0.45rem 0.65rem',
+                        fontSize: '0.8rem',
+                        fontWeight: 500,
+                        color: '#EF4444',
+                        background: 'transparent',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        width: '100%',
+                        textAlign: 'left'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#FEF2F2'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                      onClick={() => {
+                        setActiveMenuId(null);
+                        setDeletingReceipt(item);
+                      }}
+                    >
+                      <Trash2 size={14} style={{ color: '#EF4444' }} />
+                      <span>Delete</span>
+                    </button>
+                  </>
+                )}
               </div>
             )}
           </div>

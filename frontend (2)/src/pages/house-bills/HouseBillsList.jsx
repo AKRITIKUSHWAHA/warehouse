@@ -29,7 +29,7 @@ import { canManageHolds } from '../../config/rolePermissions';
 
 export const HouseBillsList = ({ onNavigate }) => {
   const { houseBills, customers = [], warehouseReceipts = [], deleteHouseBill, updateHouseBill, placeHBLHold, clearHBLHold, billsOfLading, fetchMenuApi } = useAppData();
-  const { isAgent, currentUser } = useAuth();
+  const { isAgent, isWarehouse, currentUser } = useAuth();
 
   const [editingHBL, setEditingHBL] = useState(null);
   const [deletingHBL, setDeletingHBL] = useState(null);
@@ -311,7 +311,7 @@ export const HouseBillsList = ({ onNavigate }) => {
                   )
                 )}
 
-                {!isAgent && (
+                {!isAgent && !isWarehouse && (
                   <>
                     <div style={{ height: '1px', background: '#F1F5F9', margin: '4px 0' }} />
                     <button
