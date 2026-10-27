@@ -146,14 +146,28 @@ export const BillOfLadingDetail = ({ blId, onNavigate }) => {
             { label: bl.blNumber }
           ]}
           actions={
-            <button
-              onClick={() => onNavigate('bills-of-lading')}
-              className="btn btn-outline btn-sm"
-              title="Back to Bills of Lading"
-            >
-              <ArrowLeft size={15} />
-              <span>Back</span>
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                onClick={() => onNavigate('bills-of-lading')}
+                className="btn btn-outline btn-sm"
+                title="Back to Bills of Lading"
+              >
+                <ArrowLeft size={15} />
+                <span>Back</span>
+              </button>
+              {!isAgent && (
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteModal(true)}
+                  className="btn btn-outline btn-sm"
+                  style={{ color: '#EF4444', borderColor: '#FCA5A5', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                  title="Delete Master B/L"
+                >
+                  <Trash2 size={14} />
+                  <span>Delete</span>
+                </button>
+              )}
+            </div>
           }
         />
 

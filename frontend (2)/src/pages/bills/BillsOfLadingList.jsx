@@ -613,6 +613,39 @@ export const BillsOfLadingList = ({ onNavigate, initialTab = null }) => {
                     <span>Clear Hold &amp; Release</span>
                   </button>
                 )}
+
+                {!isAgent && (
+                  <>
+                    <div style={{ height: '1px', background: '#F1F5F9', margin: '4px 0' }} />
+                    <button
+                      type="button"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '0.45rem 0.65rem',
+                        fontSize: '0.8rem',
+                        fontWeight: 500,
+                        color: '#EF4444',
+                        background: 'transparent',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        width: '100%',
+                        textAlign: 'left'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#FEF2F2'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                      onClick={() => {
+                        setActiveMenuId(null);
+                        setDeletingBL(item);
+                      }}
+                    >
+                      <Trash2 size={14} style={{ color: '#EF4444' }} />
+                      <span style={{ fontWeight: 600 }}>Delete B/L</span>
+                    </button>
+                  </>
+                )}
               </div>
             )}
           </div>
