@@ -26,9 +26,55 @@ export const TopHeader = ({
   onOpenSearch,
   onNavigate
 }) => {
-  const { currentUser, switchUser, logout, usersList, isAgent } = useAuth();
+  const { currentUser, switchUser, logout, usersList, isAgent, isMenuAllowed } = useAuth();
   const { resetDemoData, billsOfLading } = useAppData();
   const { showToast } = useToast();
+
+  const roleKey = currentUser?.roleKey || 'super_admin';
+
+  // Role-specific Quick Actions based on Kedreana's workflow and matrix permissions
+  const allQuickActions = [
+    {
+      id: 'warehouse-receipts',
+      label: roleKey === 'warehouse' ? '1. New Warehouse Receipt' : '1. New Warehouse Receipt',
+      icon: Package,
+      color: '#0284C7',
+      onClick: () => {
+        onNavigate('warehouse-receipts', 'create');
+        setShowCreateMenu(false);
+      }
+    },
+    {
+      id: 'house-bills',
+      label: '2. New House B/L (HBL)',
+      icon: FileText,
+      color: '#059669',
+      onClick: () => {
+        onNavigate('house-bills', 'create');
+        setShowCreateMenu(false);
+      }
+    },
+    {
+      id: 'bills-of-lading',
+      label: '3. Create Master B/L & Manifest',
+      icon: FileText,
+      color: '#8B5CF6',
+      onClick: () => {
+        onNavigate('bills-of-lading', 'create');
+        setShowCreateMenu(false);
+      }
+    }
+  ];
+
+  const allowedQuickActions = allQuickActions.filter(action => {
+    if (isAgent || roleKey === 'agent') return false;
+    if (roleKey === 'warehouse') {
+      // Warehouse Staff ONLY manages Step 1: Warehouse Receipts
+      return action.id === 'warehouse-receipts';
+    }
+    if (roleKey === 'super_admin') return true;
+    return isMenuAllowed ? isMenuAllowed(roleKey, action.id) : true;
+  });
 
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCreateMenu, setShowCreateMenu] = useState(false);
@@ -127,7 +173,7 @@ export const TopHeader = ({
         </button>
 
         {/* Quick Action "Create New" Menu */}
-        {!isAgent && (
+        {!isAgent && allowedQuickActions.length > 0 && (
           <div ref={createMenuRef} style={{ position: 'relative' }}>
             <button
               onClick={() => {
@@ -161,30 +207,28 @@ export const TopHeader = ({
                   padding: '0.35rem'
                 }}
               >
-                <div
-                  onClick={() => { onNavigate('warehouse-receipts', 'create'); setShowCreateMenu(false); }}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0.55rem 0.75rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.825rem' }}
-                  className="card-hover"
-                >
-                  <Package size={16} style={{ color: '#0284C7' }} />
-                  <span>1. New Warehouse Receipt</span>
-                </div>
-                <div
-                  onClick={() => { onNavigate('house-bills', 'create'); setShowCreateMenu(false); }}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0.55rem 0.75rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.825rem' }}
-                  className="card-hover"
-                >
-                  <FileText size={16} style={{ color: '#059669' }} />
-                  <span>2. New House B/L (HBL)</span>
-                </div>
-                <div
-                  onClick={() => { onNavigate('bills-of-lading', 'create'); setShowCreateMenu(false); }}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0.55rem 0.75rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.825rem' }}
-                  className="card-hover"
-                >
-                  <FileText size={16} style={{ color: '#8B5CF6' }} />
-                  <span>3. Create Master B/L & Manifest</span>
-                </div>
+                {allowedQuickActions.map(action => {
+                  const Icon = action.icon;
+                  return (
+                    <div
+                      key={action.id}
+                      onClick={action.onClick}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.65rem',
+                        padding: '0.55rem 0.75rem',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '0.825rem'
+                      }}
+                      className="card-hover"
+                    >
+                      <Icon size={16} style={{ color: action.color }} />
+                      <span>{action.label}</span>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

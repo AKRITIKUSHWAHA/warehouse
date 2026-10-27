@@ -64,7 +64,7 @@ export const DEFAULT_ROLE_PERMISSIONS_MAP = {
     'dashboard', 'warehouse-receipts', 'house-bills', 'bills-of-lading', 'users', 'settings'
   ],
   warehouse: [
-    'dashboard', 'warehouse-receipts', 'house-bills', 'bills-of-lading'
+    'dashboard', 'warehouse-receipts'
   ],
   agent: [
     'dashboard', 'bills-of-lading'
