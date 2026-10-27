@@ -12,30 +12,6 @@ export const initialUsers = [
     phone: "+1 (305) 555-0100"
   },
   {
-    id: "USR-005",
-    name: "Elena Rostova",
-    email: "elena.r@vicustoms.com",
-    role: "Operations Coordinator",
-    roleKey: "operations",
-    department: "Vessel Operations & Consolidations",
-    status: "Active",
-    avatar: "ER",
-    lastLogin: "2026-08-29 08:05 AM",
-    phone: "+1 (305) 555-0199"
-  },
-  {
-    id: "USR-002",
-    name: "Sarah Jenkins",
-    email: "sarah.j@vicustoms.com",
-    role: "Documentation Staff",
-    roleKey: "documentation",
-    department: "B/L Documentation & Billing",
-    status: "Active",
-    avatar: "SJ",
-    lastLogin: "2026-08-29 09:12 AM",
-    phone: "+1 (305) 555-0142"
-  },
-  {
     id: "USR-003",
     name: "Carlos Mendez",
     email: "carlos.m@vicustoms.com",
@@ -81,24 +57,6 @@ export const initialRolesPermissions = [
     }
   },
   {
-    roleKey: "operations",
-    roleName: "Operations Coordinator",
-    description: "Builds consolidations, manages vessels, and tracks cargo movement.",
-    userCount: 2,
-    permissions: {
-      warehouseReceipts: { view: true, create: false, edit: false, delete: false },
-      cargo: { view: true, create: false, edit: true, delete: false },
-      consolidations: { view: true, create: true, edit: true, delete: false },
-      shipments: { view: true, create: true, edit: true, delete: false },
-      billsOfLading: { view: true, create: false, edit: false, placeHold: false, clearHold: false, release: false, cancel: false },
-      manifests: { view: true, generate: false, export: true },
-      agentPortal: { view: false, manage: false },
-      auditTrail: { view: true, export: false },
-      systemSettings: { view: false, edit: false },
-      customers: { view: true, create: false, edit: false, delete: false }
-    }
-  },
-  {
     roleKey: "warehouse",
     roleName: "Warehouse Staff",
     description: "Receives cargo, measures package dimensions & weight, creates Warehouse Receipts, and prints 4x6 labels.",
@@ -118,25 +76,8 @@ export const initialRolesPermissions = [
     }
   },
   {
-    roleKey: "documentation",
-    roleName: "Documentation Staff",
-    description: "Issues Bills of Lading, manages hold/release, generates manifests, manages vessels and consolidations.",
-    userCount: 3,
-    permissions: {
-      warehouseReceipts: { view: true, create: true, edit: true, delete: true },
-      cargo: { view: true, create: true, edit: true, delete: true },
-      consolidations: { view: true, create: true, edit: true, delete: true },
-      shipments: { view: true, create: true, edit: true, delete: true },
-      billsOfLading: { view: true, create: true, edit: true, placeHold: true, clearHold: true, release: true, cancel: true },
-      manifests: { view: true, generate: true, export: true },
-      agentPortal: { view: false, manage: false },
-      auditTrail: { view: true, export: false },
-      systemSettings: { view: false, edit: false }
-    }
-  },
-  {
     roleKey: "agent",
-    roleName: "Agent",
+    roleName: "Destination Agent",
     description: "Dedicated portal access for agents. Export manifests, view assigned shipments, update consolidation statuses, receive cargo, and prepare HBLs.",
     userCount: 8,
     permissions: {

@@ -54,16 +54,6 @@ const ROLE_DEFINITIONS = [
     testUserId: 'USR-001'
   },
   {
-    roleKey: 'operations',
-    roleName: 'Operations Coordinator',
-    shortTitle: 'Operations',
-    color: '#0284C7',
-    badgeColor: '#0284C7',
-    badgeBg: '#E0F2FE',
-    desc: 'Consolidations, ocean freight, cargo movement & tracking',
-    testUserId: 'USR-005'
-  },
-  {
     roleKey: 'warehouse',
     roleName: 'Warehouse Staff',
     shortTitle: 'Warehouse',
@@ -72,16 +62,6 @@ const ROLE_DEFINITIONS = [
     badgeBg: '#DCFCE7',
     desc: 'Cargo intake, dimension scanning, 4x6 labels & warehouse receipts',
     testUserId: 'USR-003'
-  },
-  {
-    roleKey: 'documentation',
-    roleName: 'Documentation Staff',
-    shortTitle: 'Documentation',
-    color: '#D97706',
-    badgeColor: '#D97706',
-    badgeBg: '#FEF3C7',
-    desc: 'House B/L, Master B/L, Customs manifests & cargo hold release',
-    testUserId: 'USR-002'
   },
   {
     roleKey: 'agent',
@@ -118,9 +98,7 @@ const CATEGORY_META = {
 
 const ROLE_NAME_MAP = {
   super_admin: 'Super Admin',
-  operations: 'Operations Coordinator',
   warehouse: 'Warehouse Staff',
-  documentation: 'Documentation Staff',
   agent: 'Destination Agent'
 };
 
@@ -161,10 +139,13 @@ export const UsersList = ({ onNavigate }) => {
   const [selectedCategory, setSelectedCategory] = useState('ALL');
 
   const enrichedUsers = useMemo(() => {
-    return (usersList || []).map(u => ({
-      ...u,
-      role: u.role || ROLE_NAME_MAP[u.roleKey] || (u.roleKey ? u.roleKey.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Staff Member')
-    }));
+    const activeRoles = ['super_admin', 'warehouse', 'agent'];
+    return (usersList || [])
+      .filter(u => activeRoles.includes(u.roleKey))
+      .map(u => ({
+        ...u,
+        role: u.role || ROLE_NAME_MAP[u.roleKey] || (u.roleKey ? u.roleKey.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Staff Member')
+      }));
   }, [usersList]);
 
   // Extract unique categories from system modules

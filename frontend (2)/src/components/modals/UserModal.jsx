@@ -11,9 +11,9 @@ export const UserModal = ({
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    roleKey: 'operations',
-    role: 'Operations Coordinator',
-    department: 'Operations & Freight Logistics',
+    roleKey: 'warehouse',
+    role: 'Warehouse Staff',
+    department: 'Miami CFS Warehouse',
     status: 'Active'
   });
 
@@ -25,9 +25,7 @@ export const UserModal = ({
 
   const roles = [
     { key: 'super_admin', name: 'Super Admin', department: 'Executive Management & Administration' },
-    { key: 'operations', name: 'Operations Coordinator', department: 'Operations & Freight Logistics' },
     { key: 'warehouse', name: 'Warehouse Staff', department: 'CFS Warehouse & Cargo Receiving' },
-    { key: 'documentation', name: 'Documentation Specialist', department: 'Customs & Documentation' },
     { key: 'agent', name: 'Destination Port Agent', department: 'Caribbean Agent Network' }
   ];
 
@@ -36,18 +34,18 @@ export const UserModal = ({
       setFormData({
         name: user.name || '',
         email: user.email || '',
-        roleKey: user.roleKey || 'operations',
-        role: user.role || 'Operations Coordinator',
-        department: user.department || 'Operations & Freight Logistics',
+        roleKey: user.roleKey || 'warehouse',
+        role: user.role || 'Warehouse Staff',
+        department: user.department || 'Miami CFS Warehouse',
         status: user.status || 'Active'
       });
     } else {
       setFormData({
         name: '',
         email: '',
-        roleKey: 'operations',
-        role: 'Operations Coordinator',
-        department: 'Operations & Freight Logistics',
+        roleKey: 'warehouse',
+        role: 'Warehouse Staff',
+        department: 'Miami CFS Warehouse',
         status: 'Active'
       });
     }

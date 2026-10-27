@@ -15,8 +15,6 @@ const AuthContext = createContext(null);
 
 export const ROLE_TITLES = {
   super_admin: 'Super Admin',
-  operations: 'Operations Coordinator',
-  documentation: 'Documentation Staff',
   warehouse: 'Warehouse Staff',
   agent: 'Destination Agent',
 };
@@ -30,10 +28,15 @@ export const normalizeUser = (user) => {
   };
 };
 
+const ACTIVE_ROLE_KEYS = ['super_admin', 'warehouse', 'agent'];
+
 export const AuthProvider = ({ children }) => {
   const [usersList, setUsersList] = useState(() => {
     initializeStorage();
-    return getStored(KEYS.USERS, initialUsers);
+    const stored = getStored(KEYS.USERS, initialUsers);
+    const valid = (Array.isArray(stored) ? stored : initialUsers).filter(u => ACTIVE_ROLE_KEYS.includes(u.roleKey));
+    setStored(KEYS.USERS, valid);
+    return valid;
   });
 
   const syncUsers = useCallback(async () => {
@@ -42,14 +45,18 @@ export const AuthProvider = ({ children }) => {
       if (res && res.data) {
         const backendUsers = Array.isArray(res.data) ? res.data : (res.data.items || res.data.users || []);
         if (backendUsers.length > 0) {
-          setUsersList(backendUsers);
+          const filtered = backendUsers.filter(u => ACTIVE_ROLE_KEYS.includes(u.roleKey));
+          setUsersList(filtered);
+          setStored(KEYS.USERS, filtered);
           return;
         }
       }
     } catch {
       // Fallback to storage or initial
     }
-    setUsersList(getStored(KEYS.USERS, initialUsers));
+    const filteredInitial = initialUsers.filter(u => ACTIVE_ROLE_KEYS.includes(u.roleKey));
+    setUsersList(filteredInitial);
+    setStored(KEYS.USERS, filteredInitial);
   }, []);
 
   const [currentUser, setCurrentUser] = useState(() => {
