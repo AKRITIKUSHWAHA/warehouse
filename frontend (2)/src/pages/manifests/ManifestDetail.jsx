@@ -78,36 +78,6 @@ export const ManifestDetail = ({ manifestId, onNavigate }) => {
 
         {/* Primary Workflow Journey Indicator */}
         <WorkflowIndicator currentStage="manifests" onStageClick={(stageId) => onNavigate(stageId)} />
-
-        {/* Status + Next Step Action Guide */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '1rem',
-          padding: '0.875rem 1.25rem',
-          background: '#F0FDF4',
-          border: '1px solid #BBF7D0',
-          borderRadius: '10px'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <div style={{
-              background: '#16A34A',
-              color: '#FFFFFF',
-              borderRadius: '6px',
-              padding: '0.35rem 0.65rem',
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              letterSpacing: '0.04em'
-            }}>
-              CURRENT STATUS: {currentManifest.status?.toUpperCase() || 'READY'}
-            </div>
-            <span style={{ fontSize: '0.85rem', color: '#166534', fontWeight: 600 }}>
-              Next Step: Handover manifest to Destination Agent & Customs Clearance
-            </span>
-          </div>
-        </div>
       </div>
 
       {/* Embedded Manifest Viewer with Portrait / Landscape Toggle */}
