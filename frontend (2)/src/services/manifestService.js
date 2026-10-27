@@ -153,15 +153,29 @@ export const manifestService = {
       const isOnHold = matchedBL?.status === 'On Hold' || matchedBL?.holdDetails?.isOnHold;
       const status = isOnHold ? 'Generated (Subject to B/L Hold)' : 'Generated';
 
+      const pod = matchedBL?.portOfDischarge || matchedBL?.destinationPort || linkedHbls[0]?.destinationPort || 'Port of Charlotte Amalie (St. Thomas)';
+      const depDate = matchedBL?.issueDate || matchedBL?.createdDate || new Date().toISOString().split('T')[0];
+      let arrDate = matchedBL?.arrivalDate || '';
+      if (!arrDate && depDate) {
+        try {
+          const d = new Date(depDate);
+          d.setDate(d.getDate() + 3);
+          arrDate = d.toISOString().split('T')[0];
+        } catch {
+          arrDate = '';
+        }
+      }
+
       createdManifest = await this.generateManifest({
         manifestNumber,
-        title: `Ocean Cargo Manifest - ${matchedBL?.portOfDischarge || 'Destination'} (${matchedBL?.oceanVessel || 'Vessel'})`,
+        title: `Ocean Cargo Manifest - ${pod} (${matchedBL?.oceanVessel || 'M/V Regional Carrier'})`,
         vesselName: matchedBL?.oceanVessel || 'M/V Regional Carrier',
         flag: '',
         carrier: matchedBL?.carrier || 'Tropical Shipping',
         portOfLoading: matchedBL?.portOfLoading || 'Port of Miami (USMIA)',
-        portOfDischarge: matchedBL?.portOfDischarge || '',
-        departureDate: matchedBL?.issueDate || matchedBL?.createdDate || new Date().toISOString().split('T')[0],
+        portOfDischarge: pod,
+        departureDate: depDate,
+        arrivalDate: arrDate,
         totalBLs: 1,
         totalHouseBills: linkedHbls.length,
         totalContainers: 1,

@@ -636,13 +636,17 @@ export const BillsOfLadingList = ({ onNavigate, initialTab = null }) => {
         actions={
           !isAgent && (
             <button
-              onClick={() => {
+              type="button"
+              id="btn-create-master-bl"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 setSelectedShipmentForBL(null);
                 setShowAddModal(true);
               }}
               className="btn btn-primary btn-sm"
               title="Create ocean carrier Master Bill of Lading"
-              style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, cursor: 'pointer' }}
             >
               <Plus size={15} />
               <span>Create Master Bill of Lading</span>

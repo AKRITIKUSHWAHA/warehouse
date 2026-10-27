@@ -63,41 +63,48 @@ export const BillOfLadingModal = ({
   const candidateHouseBills = useMemo(() => {
     if (!selectedConsolidationNumber) {
       // If no consolidation is entered, show unassigned house bills matching destination
-      const pod = formData.portOfDischarge?.toLowerCase() || '';
+      const rawPod = typeof formData.portOfDischarge === 'object' ? formData.portOfDischarge?.name : formData.portOfDischarge;
+      const pod = String(rawPod || '').toLowerCase();
       return houseBills.filter(hb => {
+        if (!hb) return false;
         if (bl && (bl.houseBillIds?.includes(hb.hblNumber) || bl.houseBillIds?.includes(hb.id))) return true;
         if (hb.assignedMasterBLId && hb.assignedMasterBLId !== bl?.blNumber && hb.assignedMasterBLId !== bl?.id) return false;
         if (!pod) return true;
-        const hbDest = (hb.destinationPort || '').toLowerCase();
+        const rawHbDest = typeof hb.destinationPort === 'object' ? hb.destinationPort?.name : hb.destinationPort;
+        const hbDest = String(rawHbDest || '').toLowerCase();
         return hbDest.includes(pod.split(' - ')[0]) || hbDest.includes(pod.split(' - ')[1] || pod);
       });
     }
 
-    const trimmed = selectedConsolidationNumber.trim().toLowerCase();
+    const trimmed = String(selectedConsolidationNumber || '').trim().toLowerCase();
 
     // 1. Check direct HBL matches tagged with this company consolidation number
     const directHbls = houseBills.filter(hb =>
-      hb.assignedConsolidationId && hb.assignedConsolidationId.trim().toLowerCase() === trimmed
+      hb && hb.assignedConsolidationId && String(hb.assignedConsolidationId).trim().toLowerCase() === trimmed
     );
     if (directHbls.length > 0) {
       return directHbls;
     }
 
     const consol = consolidations.find(c =>
-      (c.consolidationNumber && c.consolidationNumber.toLowerCase() === trimmed) ||
-      (c.id && String(c.id).toLowerCase() === trimmed)
+      c && (
+        (c.consolidationNumber && String(c.consolidationNumber).trim().toLowerCase() === trimmed) ||
+        (c.id && String(c.id).trim().toLowerCase() === trimmed)
+      )
     );
     if (!consol) {
       return houseBills.filter(hb => {
+        if (!hb) return false;
         if (bl && (bl.houseBillIds?.includes(hb.hblNumber) || bl.houseBillIds?.includes(hb.id))) return true;
         return !hb.assignedMasterBLId || hb.assignedMasterBLId === bl?.blNumber;
       });
     }
 
     return houseBills.filter(hb => {
+      if (!hb) return false;
       // 1. Explicitly assigned to this consolidation
-      const matchConsol = hb.assignedConsolidationId === consol.consolidationNumber ||
-        hb.assignedConsolidationId === consol.id ||
+      const matchConsol = String(hb.assignedConsolidationId || '') === String(consol.consolidationNumber || '') ||
+        String(hb.assignedConsolidationId || '') === String(consol.id || '') ||
         (Array.isArray(consol.houseBillIds) && (consol.houseBillIds.includes(hb.hblNumber) || consol.houseBillIds.includes(hb.id)));
       if (matchConsol) return true;
 
@@ -106,7 +113,9 @@ export const BillOfLadingModal = ({
 
       // 3. Or unassigned House Bills with matching destination
       const isUnassigned = !hb.assignedMasterBLId || hb.assignedMasterBLId === bl?.blNumber || hb.assignedMasterBLId === bl?.id;
-      const matchPort = consol.destinationCode && (hb.destinationCode === consol.destinationCode || hb.destinationPort?.includes(consol.destinationCode));
+      const consolDest = typeof consol.destinationCode === 'string' ? consol.destinationCode : '';
+      const hbDestStr = typeof hb.destinationPort === 'object' ? (hb.destinationPort?.name || '') : String(hb.destinationPort || '');
+      const matchPort = consolDest && (hb.destinationCode === consolDest || hbDestStr.includes(consolDest));
       return isUnassigned && matchPort;
     });
   }, [selectedConsolidationNumber, consolidations, houseBills, formData.portOfDischarge, bl]);
@@ -117,11 +126,14 @@ export const BillOfLadingModal = ({
 
     // 1. Scan consolidations
     consolidations.forEach(c => {
-      const num = (c.consolidationNumber || c.id || '').trim();
+      if (!c) return;
+      const num = String(c.consolidationNumber || c.id || '').trim();
       if (num && !map.has(num)) {
         const matchingHbls = houseBills.filter(h =>
-          (h.assignedConsolidationId && h.assignedConsolidationId.trim().toLowerCase() === num.toLowerCase()) ||
-          (Array.isArray(c.houseBillIds) && (c.houseBillIds.includes(h.hblNumber) || c.houseBillIds.includes(h.id)))
+          h && (
+            (h.assignedConsolidationId && String(h.assignedConsolidationId).trim().toLowerCase() === num.toLowerCase()) ||
+            (Array.isArray(c.houseBillIds) && (c.houseBillIds.includes(h.hblNumber) || c.houseBillIds.includes(h.id)))
+          )
         );
         let pkgs = 0;
         let lbs = 0;
@@ -132,9 +144,12 @@ export const BillOfLadingModal = ({
           cbm += Number(h.totalCbm || 0);
         });
 
+        const rawDest = c.destinationPort || c.dischargePort || matchingHbls[0]?.destinationPort || '';
+        const destPort = typeof rawDest === 'object' ? rawDest?.name : String(rawDest || '');
+
         map.set(num, {
           num,
-          destinationPort: c.destinationPort || c.dischargePort || (matchingHbls[0]?.destinationPort) || '',
+          destinationPort: destPort,
           vesselName: c.vesselName || '',
           carrier: c.carrier || 'Tropical Shipping',
           containerNumber: c.containerNumber || '',
@@ -150,10 +165,11 @@ export const BillOfLadingModal = ({
 
     // 2. Scan house bills for assignedConsolidationId
     houseBills.forEach(h => {
-      const num = (h.assignedConsolidationId || '').trim();
+      if (!h) return;
+      const num = String(h.assignedConsolidationId || '').trim();
       if (num && !map.has(num)) {
         const matchingHbls = houseBills.filter(hb =>
-          hb.assignedConsolidationId && hb.assignedConsolidationId.trim().toLowerCase() === num.toLowerCase()
+          hb && hb.assignedConsolidationId && String(hb.assignedConsolidationId).trim().toLowerCase() === num.toLowerCase()
         );
         let pkgs = 0;
         let lbs = 0;
@@ -164,9 +180,12 @@ export const BillOfLadingModal = ({
           cbm += Number(hb.totalCbm || 0);
         });
 
+        const hRawDest = h.destinationPort || '';
+        const hDest = typeof hRawDest === 'object' ? hRawDest?.name : String(hRawDest || '');
+
         map.set(num, {
           num,
-          destinationPort: h.destinationPort || '',
+          destinationPort: hDest,
           vesselName: '',
           carrier: 'Tropical Shipping',
           containerNumber: '',
@@ -232,9 +251,9 @@ export const BillOfLadingModal = ({
         status: bl.status || 'Draft'
       });
     } else {
-      let initConsolNum = initialShipment?.consolidationId || initialShipment?.consolidationNumber || initialConsolidationNumber || '';
+      let initConsolNum = String(initialShipment?.consolidationId || initialShipment?.consolidationNumber || initialConsolidationNumber || '').trim();
       if (!initConsolNum && consolidationOptions.length > 0) {
-        initConsolNum = consolidationOptions[0].num;
+        initConsolNum = String(consolidationOptions[0].num || '').trim();
       }
       setSelectedConsolidationNumber(initConsolNum);
 
@@ -251,19 +270,23 @@ export const BillOfLadingModal = ({
       let initialCbm = Number(initialShipment?.totalCbm) || 0;
 
       if (initConsolNum) {
-        const trimmed = initConsolNum.trim().toLowerCase();
+        const trimmed = initConsolNum.toLowerCase();
         let targetHbls = houseBills.filter(hb =>
-          hb.assignedConsolidationId && hb.assignedConsolidationId.trim().toLowerCase() === trimmed
+          hb && hb.assignedConsolidationId && String(hb.assignedConsolidationId).trim().toLowerCase() === trimmed
         );
         const found = consolidations.find(c =>
-          (c.consolidationNumber && c.consolidationNumber.toLowerCase() === trimmed) ||
-          (c.id && String(c.id).toLowerCase() === trimmed)
+          c && (
+            (c.consolidationNumber && String(c.consolidationNumber).trim().toLowerCase() === trimmed) ||
+            (c.id && String(c.id).trim().toLowerCase() === trimmed)
+          )
         );
         if (targetHbls.length === 0 && found) {
           const matchedHbls = houseBills.filter(hb =>
-            hb.assignedConsolidationId === found.consolidationNumber ||
-            hb.assignedConsolidationId === found.id ||
-            (Array.isArray(found.houseBillIds) && (found.houseBillIds.includes(hb.hblNumber) || found.houseBillIds.includes(hb.id)))
+            hb && (
+              String(hb.assignedConsolidationId || '') === String(found.consolidationNumber || '') ||
+              String(hb.assignedConsolidationId || '') === String(found.id || '') ||
+              (Array.isArray(found.houseBillIds) && (found.houseBillIds.includes(hb.hblNumber) || found.houseBillIds.includes(hb.id)))
+            )
           );
           targetHbls = matchedHbls;
         }
@@ -332,24 +355,27 @@ export const BillOfLadingModal = ({
 
   // Handle Consolidation text input change
   const handleConsolidationChange = (consolNum) => {
-    setSelectedConsolidationNumber(consolNum);
+    const rawVal = String(consolNum || '');
+    setSelectedConsolidationNumber(rawVal);
 
-    if (!consolNum) {
+    if (!rawVal.trim()) {
       setSelectedHouseBillIds([]);
       return;
     }
 
-    const trimmed = consolNum.trim().toLowerCase();
+    const trimmed = rawVal.trim().toLowerCase();
 
     // 1. Check direct HBL matches tagged with this company consolidation number
     const directHbls = houseBills.filter(hb =>
-      hb.assignedConsolidationId && hb.assignedConsolidationId.trim().toLowerCase() === trimmed
+      hb && hb.assignedConsolidationId && String(hb.assignedConsolidationId).trim().toLowerCase() === trimmed
     );
 
     // 2. Check consolidation record
     const selectedConsol = consolidations.find(c =>
-      (c.consolidationNumber && c.consolidationNumber.toLowerCase() === trimmed) ||
-      (c.id && String(c.id).toLowerCase() === trimmed)
+      c && (
+        (c.consolidationNumber && String(c.consolidationNumber).trim().toLowerCase() === trimmed) ||
+        (c.id && String(c.id).trim().toLowerCase() === trimmed)
+      )
     );
 
     let targetHbls = directHbls;
@@ -486,10 +512,12 @@ export const BillOfLadingModal = ({
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const trimmed = selectedConsolidationNumber ? selectedConsolidationNumber.trim().toLowerCase() : '';
+    const trimmed = String(selectedConsolidationNumber || '').trim().toLowerCase();
     const selectedConsol = consolidations.find(c =>
-      (c.consolidationNumber && c.consolidationNumber.toLowerCase() === trimmed) ||
-      (c.id && String(c.id).toLowerCase() === trimmed)
+      c && (
+        (c.consolidationNumber && String(c.consolidationNumber).trim().toLowerCase() === trimmed) ||
+        (c.id && String(c.id).trim().toLowerCase() === trimmed)
+      )
     );
 
     onSave({
@@ -519,8 +547,8 @@ export const BillOfLadingModal = ({
       },
       oceanVessel: formData.oceanVessel || 'M/V Caribbean Carrier',
       carrier: formData.carrier || 'Tropical Shipping',
-      portOfLoading: formData.portOfLoading,
-      portOfDischarge: formData.portOfDischarge,
+      portOfLoading: formData.portOfLoading || 'Port of Miami (USMIA)',
+      portOfDischarge: formData.portOfDischarge || selectedConsolObj?.destinationPort || 'Port of Charlotte Amalie (St. Thomas)',
       containerNumber: formData.containerNumber,
       sealNumber: formData.sealNumber,
       cargoDescription: formData.cargoDescription,
@@ -538,8 +566,10 @@ export const BillOfLadingModal = ({
   };
 
   const selectedConsolObj = consolidations.find(c =>
-    (c.consolidationNumber && c.consolidationNumber.toLowerCase() === selectedConsolidationNumber?.trim().toLowerCase()) ||
-    (c.id && String(c.id).toLowerCase() === selectedConsolidationNumber?.trim().toLowerCase())
+    c && (
+      (c.consolidationNumber && String(c.consolidationNumber).trim().toLowerCase() === String(selectedConsolidationNumber || '').trim().toLowerCase()) ||
+      (c.id && String(c.id).trim().toLowerCase() === String(selectedConsolidationNumber || '').trim().toLowerCase())
+    )
   );
 
   return (
@@ -556,11 +586,15 @@ export const BillOfLadingModal = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        zIndex: 1050,
+        zIndex: 99999,
         padding: '1.5rem',
         overflowY: 'auto'
       }}
-      onClick={onClose}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
     >
       <div
         className="modal-dialog"
@@ -575,7 +609,8 @@ export const BillOfLadingModal = ({
           borderRadius: '12px',
           background: '#FFFFFF',
           boxShadow: '0 20px 40px rgba(0, 0, 0, 0.25)',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          zIndex: 100000
         }}
       >
         <div className="modal-header" style={{ padding: '0.75rem 1.25rem', borderBottom: '1px solid #E2E8F0', flexShrink: 0 }}>
@@ -802,7 +837,7 @@ export const BillOfLadingModal = ({
                               {h.hblNumber}
                             </td>
                             <td style={{ padding: '0.45rem 0.75rem', color: '#1E293B' }}>
-                              {h.consignee?.name || h.consignee || 'Consignee'}
+                              {typeof h.consignee === 'object' ? (h.consignee?.name || 'Consignee') : (h.consignee || 'Consignee')}
                             </td>
                             <td style={{ padding: '0.45rem 0.75rem', fontWeight: 600 }}>
                               {h.totalPackages || h.packageCount || 1} pkgs
@@ -814,7 +849,7 @@ export const BillOfLadingModal = ({
                               {cftVal} CFT ({h.totalCbm || 0} CBM)
                             </td>
                             <td style={{ padding: '0.45rem 0.75rem', color: '#0284C7' }}>
-                              {h.destinationPort || '—'}
+                              {typeof h.destinationPort === 'object' ? (h.destinationPort?.name || '—') : (h.destinationPort || '—')}
                             </td>
                           </tr>
                         );

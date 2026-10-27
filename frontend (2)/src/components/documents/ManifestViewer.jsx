@@ -7,17 +7,19 @@ import { useAppData } from '../../context/AppDataContext';
 
 export const ManifestViewer = ({ manifest }) => {
   const { showToast } = useToast();
-  const { billsOfLading = [], houseBills = [], settings } = useAppData() || {};
+  const { billsOfLading = [], houseBills = [], customers = [], settings } = useAppData() || {};
   const [orientation, setOrientation] = useState('landscape'); // 'landscape' | 'portrait'
 
   if (!manifest) return null;
+
+  const matchedBL = billsOfLading.find(b => b.blNumber === manifest.masterBLNumber || b.id === manifest.masterBLNumber);
 
   const resolvedLineItems = (manifest.lineItems && manifest.lineItems.length > 0)
     ? manifest.lineItems
     : (() => {
         const blNum = manifest.masterBLNumber || manifest.masterBLId;
         if (!blNum) return [];
-        const bl = billsOfLading.find(b => b.blNumber === blNum || b.id === blNum);
+        const bl = matchedBL || billsOfLading.find(b => b.blNumber === blNum || b.id === blNum);
         if (!bl) return [];
         const linkedHbls = houseBills.filter(h =>
           h.assignedMasterBLId === bl.id ||
@@ -25,25 +27,32 @@ export const ManifestViewer = ({ manifest }) => {
           bl.houseBillIds?.includes(h.hblNumber)
         );
         if (linkedHbls.length > 0) {
-          return linkedHbls.map((h, idx) => ({
-            itemNumber: idx + 1,
-            hblNumber: h.hblNumber,
-            blNumber: bl.blNumber,
-            shipper: typeof h.shipper === 'object' ? h.shipper.name : h.shipper || 'Miami CFS Hub',
-            consignee: typeof h.consignee === 'object' ? h.consignee.name : h.consignee || 'Consignee',
-            notifyParty: typeof h.notifyParty === 'object' ? h.notifyParty.name : h.notifyParty || bl.agentName || 'Port Destination Agent',
-            containerNumber: bl.containerNumber || 'MSKU-829104-5',
-            sealNumber: bl.sealNumber || 'SEAL-VI-8821',
-            packageCount: h.totalPieces || h.totalPackages || 1,
-            totalPieces: h.totalPieces || h.totalPackages || 1,
-            packageType: 'Cartons / Pallets',
-            cargoDescription: h.cargoDescription || 'Consolidated Cargo Goods',
-            grossWeightLbs: Number(h.totalWeightLbs) || 0,
-            grossWeightKg: Number(h.totalWeightKg) || Number(((Number(h.totalWeightLbs) || 0) * 0.453592).toFixed(1)),
-            cft: Number(h.totalCft) || Number(((Number(h.totalCbm) || 0) * 35.3147).toFixed(2)),
-            cbm: Number(h.totalCbm) || 0,
-            customsValueUsd: Number(((h.totalPieces || 1) * 1250).toFixed(2)) || 25000.00
-          }));
+          return linkedHbls.map((h, idx) => {
+            const sCust = customers.find(c => c.id === h.shipperId || c.id === h.customerId);
+            const cCust = customers.find(c => c.id === h.consigneeId);
+            const shipperName = (typeof h.shipper === 'object' && h.shipper?.name) ? h.shipper.name : (sCust?.name || h.customerName || h.shipper || 'Miami CFS Hub');
+            const consigneeName = (typeof h.consignee === 'object' && h.consignee?.name) ? h.consignee.name : (cCust?.name || h.consignee || 'Consignee');
+
+            return {
+              itemNumber: idx + 1,
+              hblNumber: h.hblNumber,
+              blNumber: bl.blNumber,
+              shipper: shipperName,
+              consignee: consigneeName,
+              notifyParty: typeof h.notifyParty === 'object' ? h.notifyParty.name : h.notifyParty || bl.agentName || 'Port Destination Agent',
+              containerNumber: bl.containerNumber || 'MSKU-829104-5',
+              sealNumber: bl.sealNumber || 'SEAL-VI-8821',
+              packageCount: h.totalPieces || h.totalPackages || 1,
+              totalPieces: h.totalPieces || h.totalPackages || 1,
+              packageType: 'Cartons / Pallets',
+              cargoDescription: h.cargoDescription || 'Consolidated Cargo Goods',
+              grossWeightLbs: Number(h.totalWeightLbs) || 0,
+              grossWeightKg: Number(h.totalWeightKg) || Number(((Number(h.totalWeightLbs) || 0) * 0.453592).toFixed(1)),
+              cft: Number(h.totalCft) || Number(((Number(h.totalCbm) || 0) * 35.3147).toFixed(2)),
+              cbm: Number(h.totalCbm) || 0,
+              customsValueUsd: Number(((h.totalPieces || 1) * 1250).toFixed(2)) || 25000.00
+            };
+          });
         }
         return [
           {
@@ -67,8 +76,26 @@ export const ManifestViewer = ({ manifest }) => {
         ];
       })();
 
+  const rawPod = (manifest.portOfDischarge && manifest.portOfDischarge.trim() !== '') ? manifest.portOfDischarge : '';
+  const resolvedPod = rawPod || manifest.destinationPort || matchedBL?.portOfDischarge || matchedBL?.destinationPort || (resolvedLineItems[0]?.destinationPort) || 'Port of Charlotte Amalie (St. Thomas)';
+
+  const resolvedArrivalDate = manifest.arrivalDate || (() => {
+    if (manifest.departureDate) {
+      try {
+        const d = new Date(manifest.departureDate);
+        d.setDate(d.getDate() + 3);
+        return d.toISOString().split('T')[0];
+      } catch {
+        return '';
+      }
+    }
+    return '';
+  })();
+
   const activeManifest = {
     ...manifest,
+    portOfDischarge: resolvedPod,
+    arrivalDate: resolvedArrivalDate,
     lineItems: resolvedLineItems,
     totalCft: manifest.totalCft && manifest.totalCft !== '0.00' && manifest.totalCft !== '0'
       ? manifest.totalCft
@@ -265,7 +292,10 @@ export const ManifestViewer = ({ manifest }) => {
           </div>
           <div style={{ padding: '0.5rem' }}>
             <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#64748B' }}>DEPARTURE / ETA</div>
-            <div style={{ fontWeight: 700 }}>{activeManifest.departureDate} → {activeManifest.arrivalDate}</div>
+            <div style={{ fontWeight: 700 }}>
+              {activeManifest.departureDate}
+              {activeManifest.arrivalDate ? ` → ${activeManifest.arrivalDate}` : ''}
+            </div>
           </div>
         </div>
 
