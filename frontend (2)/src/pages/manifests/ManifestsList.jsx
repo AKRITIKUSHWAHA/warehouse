@@ -264,63 +264,67 @@ export const ManifestsList = ({ onNavigate, hideHeaderWorkflow = false }) => {
                   <span>Export CSV / XML</span>
                 </button>
 
-                <button
-                  type="button"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '0.45rem 0.65rem',
-                    fontSize: '0.8rem',
-                    fontWeight: 500,
-                    color: '#1E293B',
-                    background: 'transparent',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    width: '100%',
-                    textAlign: 'left'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = '#F8FAFC'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                  onClick={() => {
-                    setActiveMenuId(null);
-                    setEditingManifest(item);
-                  }}
-                >
-                  <Edit2 size={14} style={{ color: '#D97706' }} />
-                  <span>Edit Manifest</span>
-                </button>
+                {!isAgent && (
+                  <>
+                    <button
+                      type="button"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '0.45rem 0.65rem',
+                        fontSize: '0.8rem',
+                        fontWeight: 500,
+                        color: '#1E293B',
+                        background: 'transparent',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        width: '100%',
+                        textAlign: 'left'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#F8FAFC'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                      onClick={() => {
+                        setActiveMenuId(null);
+                        setEditingManifest(item);
+                      }}
+                    >
+                      <Edit2 size={14} style={{ color: '#D97706' }} />
+                      <span>Edit Manifest</span>
+                    </button>
 
-                <div style={{ height: '1px', background: '#F1F5F9', margin: '4px 0' }} />
+                    <div style={{ height: '1px', background: '#F1F5F9', margin: '4px 0' }} />
 
-                <button
-                  type="button"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '0.45rem 0.65rem',
-                    fontSize: '0.8rem',
-                    fontWeight: 500,
-                    color: '#EF4444',
-                    background: 'transparent',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    width: '100%',
-                    textAlign: 'left'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = '#FEF2F2'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                  onClick={() => {
-                    setActiveMenuId(null);
-                    setDeletingManifest(item);
-                  }}
-                >
-                  <Trash2 size={14} style={{ color: '#EF4444' }} />
-                  <span>Delete Manifest</span>
-                </button>
+                    <button
+                      type="button"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '0.45rem 0.65rem',
+                        fontSize: '0.8rem',
+                        fontWeight: 500,
+                        color: '#EF4444',
+                        background: 'transparent',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        width: '100%',
+                        textAlign: 'left'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#FEF2F2'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                      onClick={() => {
+                        setActiveMenuId(null);
+                        setDeletingManifest(item);
+                      }}
+                    >
+                      <Trash2 size={14} style={{ color: '#EF4444' }} />
+                      <span>Delete Manifest</span>
+                    </button>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -379,8 +383,8 @@ export const ManifestsList = ({ onNavigate, hideHeaderWorkflow = false }) => {
         emptyTitle="No shipping manifests created yet"
         emptyWhy="Manifests compile loaded shipment bills of lading for port authority and customs declaration."
         emptyNextStep="Create a manifest for an outgoing shipment or export destination manifests."
-        emptyActionLabel="Create Manifest"
-        onEmptyAction={() => setShowAddModal(true)}
+        emptyActionLabel={!isAgent ? "Create Manifest" : undefined}
+        onEmptyAction={!isAgent ? () => setShowAddModal(true) : undefined}
       />
 
       {/* Add Manifest Modal */}

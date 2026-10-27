@@ -9,8 +9,12 @@ import { manifestService } from '../../services/manifestService';
 
 import { WorkflowIndicator } from '../../components/common/WorkflowIndicator';
 
+import { useToast } from '../../context/ToastContext';
+import { useAuth } from '../../context/AuthContext';
+
 export const ManifestDetail = ({ manifestId, onNavigate }) => {
   const { manifests, updateManifest, deleteManifest } = useAppData();
+  const { isAgent } = useAuth();
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [liveManifest, setLiveManifest] = useState(null);
@@ -58,20 +62,24 @@ export const ManifestDetail = ({ manifestId, onNavigate }) => {
                 <ArrowLeft size={15} />
                 <span>Back</span>
               </button>
-              <button
-                onClick={() => setShowEditModal(true)}
-                className="btn btn-secondary btn-sm"
-              >
-                <Edit2 size={15} />
-                <span>Edit Manifest</span>
-              </button>
-              <button
-                onClick={() => setShowDeleteModal(true)}
-                className="btn btn-danger btn-sm"
-              >
-                <Trash2 size={15} />
-                <span>Delete Manifest</span>
-              </button>
+              {!isAgent && (
+                <>
+                  <button
+                    onClick={() => setShowEditModal(true)}
+                    className="btn btn-secondary btn-sm"
+                  >
+                    <Edit2 size={15} />
+                    <span>Edit Manifest</span>
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteModal(true)}
+                    className="btn btn-danger btn-sm"
+                  >
+                    <Trash2 size={15} />
+                    <span>Delete Manifest</span>
+                  </button>
+                </>
+              )}
             </div>
           }
         />
