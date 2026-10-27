@@ -124,6 +124,78 @@ export const OperationsDashboard = ({ onNavigate }) => {
     }
   ];
 
+  // Master B/L columns for Step 3 Cargo Overview
+  const masterBLColumns = [
+    {
+      header: 'Master B/L #',
+      accessor: 'blNumber',
+      render: (item) => (
+        <div>
+          <div style={{ fontWeight: 700, color: '#0A192F', fontFamily: 'JetBrains Mono, monospace' }}>
+            {item.blNumber}
+          </div>
+          <div style={{ fontSize: '0.72rem', color: '#64748B' }}>
+            {item.issueDate || item.createdDate || 'Recent'}
+          </div>
+        </div>
+      )
+    },
+    {
+      header: 'Destination',
+      accessor: 'portOfDischarge',
+      render: (item) => (
+        <div>
+          <div style={{ fontWeight: 600, color: '#0A192F' }}>{item.portOfDischarge || 'Destination Port'}</div>
+          <div style={{ fontSize: '0.72rem', color: '#64748B' }}>From {item.portOfLoading || 'Miami CFS Hub'}</div>
+        </div>
+      )
+    },
+    {
+      header: 'Vessel / Container',
+      accessor: 'oceanVessel',
+      render: (item) => (
+        <div>
+          <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{item.oceanVessel || 'Ocean Vessel'}</div>
+          <div style={{ fontSize: '0.72rem', color: '#64748B', fontFamily: 'JetBrains Mono, monospace' }}>
+            {item.containerNumber || 'Container Assigned'}
+          </div>
+        </div>
+      )
+    },
+    {
+      header: 'Cargo Load',
+      accessor: 'packageCount',
+      render: (item) => (
+        <div>
+          <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{item.packageCount || item.totalPieces || 1} pkgs</div>
+          <div style={{ fontSize: '0.72rem', color: '#64748B' }}>{item.grossWeightLbs || 0} lbs</div>
+        </div>
+      )
+    },
+    {
+      header: 'Status',
+      accessor: 'status',
+      render: (item) => <StatusBadge status={item.status || 'Draft'} />
+    },
+    {
+      header: 'Actions',
+      align: 'right',
+      render: (item) => (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onNavigate('bills-of-lading', item.id || item.blNumber);
+          }}
+          className="btn btn-sm btn-outline"
+          style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+        >
+          <span>View B/L</span>
+          <ArrowRight size={13} />
+        </button>
+      )
+    }
+  ];
+
   // Render role-specific task cards
   const renderActionTasks = () => {
     // 1. WAREHOUSE ROLE TASKS
@@ -327,7 +399,9 @@ export const OperationsDashboard = ({ onNavigate }) => {
       );
     }
 
-    // 4. SUPER ADMIN ROLE TASKS
+    // 4. SUPER ADMIN ROLE TASKS - Aligned with 3-Step Cargo Workflow
+    const holdBLsCount = (billsOfLading || []).filter(b => b.status === 'On Hold' || b.holdDetails?.isOnHold).length;
+
     return (
       <div className="grid grid-cols-4 gap-3" style={{ marginBottom: '1rem' }}>
         <div
@@ -336,61 +410,61 @@ export const OperationsDashboard = ({ onNavigate }) => {
           style={{ padding: '0.65rem 0.85rem', cursor: 'pointer', borderLeft: '4px solid #D97706' }}
         >
           <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#D97706', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            Incoming Goods
+            1. Warehouse Receipts
           </div>
           <div style={{ fontSize: '1.18rem', fontWeight: 700, color: '#0A192F', margin: '0.12rem 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {dbMetrics?.totalWarehouseReceipts ?? readyReceipts.length} Receipts Ready
+            {(warehouseReceipts || []).length} Receipts Ready
           </div>
           <div style={{ fontSize: '0.71rem', color: '#64748B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            New warehouse intake
+            {readyReceipts.length} ready for House Bill
           </div>
         </div>
 
         <div
-          onClick={() => onNavigate('consolidations')}
+          onClick={() => onNavigate('house-bills')}
           className="card card-hover"
           style={{ padding: '0.65rem 0.85rem', cursor: 'pointer', borderLeft: '4px solid #0284C7' }}
         >
           <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#0284C7', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            Containers
+            2. House Bills (HBL)
           </div>
           <div style={{ fontSize: '1.18rem', fontWeight: 700, color: '#0A192F', margin: '0.12rem 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {dbMetrics?.totalConsolidations ?? activeConsolidations.length} Active Containers
+            {(houseBills || []).length} House Bills Issued
           </div>
           <div style={{ fontSize: '0.71rem', color: '#64748B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            Packing &amp; consolidations
+            Customer-level B/Ls
           </div>
         </div>
 
         <div
           onClick={() => onNavigate('bills-of-lading')}
           className="card card-hover"
-          style={{ padding: '0.65rem 0.85rem', cursor: 'pointer', borderLeft: `4px solid ${(dbMetrics?.activeHoldsCount ?? holdBLs.length) > 0 ? '#EF4444' : '#10B981'}` }}
+          style={{ padding: '0.65rem 0.85rem', cursor: 'pointer', borderLeft: `4px solid ${holdBLsCount > 0 ? '#EF4444' : '#10B981'}` }}
         >
-          <div style={{ fontSize: '0.68rem', fontWeight: 700, color: (dbMetrics?.activeHoldsCount ?? holdBLs.length) > 0 ? '#EF4444' : '#10B981', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            B/L Status
+          <div style={{ fontSize: '0.68rem', fontWeight: 700, color: holdBLsCount > 0 ? '#EF4444' : '#10B981', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            3. Master Bills (MBL)
           </div>
           <div style={{ fontSize: '1.18rem', fontWeight: 700, color: '#0A192F', margin: '0.12rem 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {dbMetrics?.activeHoldsCount ?? holdBLs.length} Bills On Hold
+            {(billsOfLading || []).length} Master B/L Active
           </div>
           <div style={{ fontSize: '0.71rem', color: '#64748B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            Master &amp; House B/L releases
+            {holdBLsCount > 0 ? `${holdBLsCount} bills on hold` : 'Consolidated carrier bills'}
           </div>
         </div>
 
         <div
-          onClick={() => onNavigate('shipments')}
+          onClick={() => onNavigate('bills-of-lading', null, { tab: 'manifests' })}
           className="card card-hover"
-          style={{ padding: '0.65rem 0.85rem', cursor: 'pointer', borderLeft: '4px solid #10B981' }}
+          style={{ padding: '0.65rem 0.85rem', cursor: 'pointer', borderLeft: '4px solid #8B5CF6' }}
         >
-          <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            Ocean Freight
+          <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#8B5CF6', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            Customs Manifests
           </div>
           <div style={{ fontSize: '1.18rem', fontWeight: 700, color: '#0A192F', margin: '0.12rem 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {dbMetrics?.totalShipments ?? activeShipments.length} Ships In Transit
+            {(manifests || []).length} Cargo Manifests
           </div>
           <div style={{ fontSize: '0.71rem', color: '#64748B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            Active vessel sailings
+            1-Click customs declarations
           </div>
         </div>
       </div>
@@ -588,37 +662,37 @@ export const OperationsDashboard = ({ onNavigate }) => {
         </div>
       ) : (
         <div className="grid grid-cols-12 gap-5">
-          {/* Active Shipments (8 cols) */}
+          {/* Active Master Bills of Lading (Step 3) */}
           <div style={{ gridColumn: 'span 8' }} className="col-span-8-mobile">
             <div className="card">
               <div className="card-header">
                 <div>
-                  <h3 style={{ fontSize: '1rem', color: '#0A192F' }}>Active Master Shipments</h3>
+                  <h3 style={{ fontSize: '1rem', color: '#0A192F' }}>Active Master Bills &amp; Consolidations</h3>
                   <p style={{ fontSize: '0.75rem', color: '#64748B', margin: 0 }}>
-                    Real-time status of consolidated ocean freight shipments
+                    Real-time consolidated carrier bills &amp; ocean container shipments (Step 3)
                   </p>
                 </div>
                 <button
-                  onClick={() => onNavigate('shipments')}
+                  onClick={() => onNavigate('bills-of-lading')}
                   className="btn btn-ghost btn-sm"
                   style={{ fontSize: '0.78rem' }}
                 >
-                  <span>All Shipments</span>
+                  <span>All Master B/Ls</span>
                   <ChevronRight size={14} />
                 </button>
               </div>
               <div style={{ padding: 0 }}>
                 <ResponsiveTable
-                  columns={shipmentColumns}
-                  data={shipments}
+                  columns={masterBLColumns}
+                  data={billsOfLading}
                   searchable={false}
                   pageSize={4}
-                  emptyTitle="No Active Ocean Shipments"
-                  emptyWhy="All carrier shipments and master bills have been cleared or dispatched."
-                  emptyNextStep="Create a Master B/L in Step 3 to schedule a new ocean departure."
-                  emptyActionLabel="View Master Bills & Manifests"
+                  emptyTitle="No Master Bills Issued Yet"
+                  emptyWhy="Master Bills combine multiple House Bills into a consolidated ocean carrier booking."
+                  emptyNextStep="Go to Step 3 to issue your first Master B/L."
+                  emptyActionLabel="+ Issue Master B/L"
                   onEmptyAction={() => onNavigate('bills-of-lading')}
-                  onRowClick={(item) => onNavigate('shipments', item.id)}
+                  onRowClick={(item) => onNavigate('bills-of-lading', item.id || item.blNumber)}
                 />
               </div>
             </div>
