@@ -45,7 +45,7 @@ export const OperationsDashboard = ({ onNavigate }) => {
         if (data) setDbMetrics(data);
       });
     }
-  }, [roleKey]);
+  }, [roleKey, warehouseReceipts, houseBills, billsOfLading, consolidations, shipments]);
 
 
   // Metrics for Action Tasks
@@ -355,7 +355,7 @@ export const OperationsDashboard = ({ onNavigate }) => {
             Containers
           </div>
           <div style={{ fontSize: '1.18rem', fontWeight: 700, color: '#0A192F', margin: '0.12rem 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {dbMetrics?.totalConsolidations ?? stagedCargo.length} Active Containers
+            {dbMetrics?.totalConsolidations ?? activeConsolidations.length} Active Containers
           </div>
           <div style={{ fontSize: '0.71rem', color: '#64748B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             Packing &amp; consolidations
