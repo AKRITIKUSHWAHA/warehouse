@@ -51,14 +51,11 @@ export const WarehouseReceiptsList = ({ onNavigate }) => {
       )
     },
     {
-      header: 'Customer & Consignee',
+      header: 'Customer',
       accessor: 'customer',
       render: (item) => (
-        <div>
-          <div style={{ fontWeight: 600, color: '#0A192F' }}>{item.customer || item.customerName}</div>
-          <div style={{ fontSize: '0.72rem', color: '#64748B', maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {item.consignee}
-          </div>
+        <div style={{ fontWeight: 600, color: '#0A192F' }}>
+          {item.customer || item.customerName || (typeof item.shipper === 'object' ? item.shipper?.name : item.shipper) || 'Valued Customer'}
         </div>
       )
     },

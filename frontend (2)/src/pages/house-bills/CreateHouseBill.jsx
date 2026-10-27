@@ -91,7 +91,7 @@ export const CreateHouseBill = ({ onNavigate }) => {
       };
     }
     const first = selectedWrs[0];
-    const custName = first.customer || first.customerName || (first.consignee || '').split('\n')[0] || 'Valued Customer';
+    const custName = first.customer || first.customerName || (first.shipper ? first.shipper.split('\n')[0] : '') || (first.consignee || '').split('\n')[0] || 'Valued Customer';
     const destPort = first.destinationPort || first.dischargePort || 'Port of Charlotte Amalie';
     const destCode = first.destinationCode || 'STT';
     const shipperName = first.shipper ? first.shipper.split('\n')[0] : 'CFS Miami Terminal';

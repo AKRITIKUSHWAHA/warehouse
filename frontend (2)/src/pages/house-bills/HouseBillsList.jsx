@@ -73,18 +73,21 @@ export const HouseBillsList = ({ onNavigate }) => {
       )
     },
     {
-      header: 'Customer & Consignee',
+      header: 'Customer',
       accessor: 'customerName',
-      render: (item) => (
-        <div>
+      render: (item) => {
+        const rawCust = item.customerName || item.customer;
+        const shipperName = typeof item.shipper === 'object' ? item.shipper?.name : item.shipper;
+        // If rawCust looks like an address line (e.g. "rd Floor", "3rd Floor") and shipperName exists, use shipperName
+        const isAddressLike = rawCust && /^\s*(\d*(st|nd|rd|th)?\s*floor|gala\s*no|plot\s*no|suite|apt|unit|ste)\b/i.test(rawCust);
+        const displayName = (!rawCust || isAddressLike) && shipperName ? shipperName : (rawCust || shipperName || 'Customer');
+
+        return (
           <div style={{ fontWeight: 700, color: '#0A192F', fontSize: '0.875rem' }}>
-            {item.customerName || (typeof item.consignee === 'object' ? item.consignee.name : item.consignee)}
+            {displayName}
           </div>
-          <div style={{ fontSize: '0.72rem', color: '#64748B' }}>
-            From: {typeof item.shipper === 'object' ? item.shipper.name : item.shipper}
-          </div>
-        </div>
-      )
+        );
+      }
     },
     {
       header: 'Destination Port',
@@ -380,7 +383,7 @@ export const HouseBillsList = ({ onNavigate }) => {
       <ResponsiveTable
         columns={columns}
         data={visibleHouseBills}
-        searchPlaceholder="Search by HBL #, customer, shipper, consignee, WR #, destination, Consol #..."
+        searchPlaceholder="Search by HBL #, customer, WR #, destination, Consol #..."
         filterOptions={['All']}
         pageSize={10}
         emptyTitle="No House Bills of Lading Found"
