@@ -442,7 +442,7 @@ export const OperationsDashboard = ({ onNavigate }) => {
         </div>
       );
     }
-    // Super admin
+    // Super admin - aligned with Kedreana's 3-step cargo workflow
     return (
       <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
         <button
@@ -452,12 +452,22 @@ export const OperationsDashboard = ({ onNavigate }) => {
           <Package size={15} />
           <span>Warehouse Receipt</span>
         </button>
+        {/*
+        Legacy 8-step enterprise consolidation wizard commented out per client feedback:
         <button
           onClick={() => onNavigate('consolidations', 'create')}
           className="btn btn-primary btn-sm"
         >
           <Layers size={15} />
           <span>Build Consolidation</span>
+        </button>
+        */}
+        <button
+          onClick={() => onNavigate('house-bills', 'create')}
+          className="btn btn-primary btn-sm"
+        >
+          <FileText size={15} />
+          <span>Issue House Bill</span>
         </button>
       </div>
     );
