@@ -235,37 +235,36 @@ export const ManifestsList = ({ onNavigate, hideHeaderWorkflow = false }) => {
                   <span>Print Manifest</span>
                 </button>
 
-                <button
-                  type="button"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '0.45rem 0.65rem',
-                    fontSize: '0.8rem',
-                    fontWeight: 500,
-                    color: '#1E293B',
-                    background: 'transparent',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    width: '100%',
-                    textAlign: 'left'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = '#F8FAFC'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                  onClick={() => {
-                    setActiveMenuId(null);
-                    manifestService.exportCsv(item);
-                    showToast(`Exported CSV for ${item.manifestNumber}.`, 'success', 'CSV Exported');
-                  }}
-                >
-                  <Download size={14} style={{ color: '#0284C7' }} />
-                  <span>Export CSV / XML</span>
-                </button>
-
                 {!isAgent && (
                   <>
+                    <button
+                      type="button"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '0.45rem 0.65rem',
+                        fontSize: '0.8rem',
+                        fontWeight: 500,
+                        color: '#1E293B',
+                        background: 'transparent',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        width: '100%',
+                        textAlign: 'left'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#F8FAFC'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                      onClick={() => {
+                        setActiveMenuId(null);
+                        manifestService.exportCsv(item);
+                        showToast(`Exported CSV for ${item.manifestNumber}.`, 'success', 'CSV Exported');
+                      }}
+                    >
+                      <Download size={14} style={{ color: '#0284C7' }} />
+                      <span>Export CSV / XML</span>
+                    </button>
                     <button
                       type="button"
                       style={{
