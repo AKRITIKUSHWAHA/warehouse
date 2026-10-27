@@ -1044,7 +1044,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   padding: 1.5rem 1rem;
   overflow-x: hidden;
   overflow-y: auto;
@@ -1056,12 +1056,13 @@
 .login-inner-container {
   width: 100%;
   max-width: 920px;
-  margin: auto 0;
+  margin: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   box-sizing: border-box;
   min-width: 0;
+  padding: 0.75rem 0;
 }
 
 .login-brand-header {
@@ -1159,19 +1160,21 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 0.5rem 0.35rem;
-  min-height: 66px;
-  border-radius: 8px;
+  gap: 6px;
+  padding: 0.6rem 0.4rem;
+  min-height: 72px;
+  border-radius: 10px;
   background-color: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  border: 1.5px solid #E2E8F0;
   cursor: pointer;
   transition: all 160ms cubic-bezier(0.4, 0, 0.2, 1);
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow: visible;
   position: relative;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .role-icon-btn:hover {
@@ -1180,23 +1183,40 @@
   box-shadow: 0 4px 8px rgba(10, 25, 47, 0.12);
 }
 
+.role-icon-btn:active {
+  transform: scale(0.96);
+}
+
 .role-icon-btn.active {
   background-color: #0A192F;
   border-color: #0A192F;
   box-shadow: 0 3px 8px rgba(10, 25, 47, 0.25);
 }
 
+.role-icon-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+  flex-shrink: 0;
+  margin: 0 auto;
+}
+
 .role-icon-label {
-  font-size: 0.63rem;
+  font-size: 0.68rem;
   font-weight: 700;
   color: #334155;
   text-align: center;
-  line-height: 1.15;
+  line-height: 1.2;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 24px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -1205,13 +1225,51 @@
   display: block;
   width: 100%;
   white-space: nowrap;
-  overflow: visible;
-  line-height: 1.15;
+  line-height: 1.2;
   text-align: center;
 }
 
 .role-icon-btn.active .role-icon-label {
   color: #FFFFFF;
+}
+
+/* Touch-friendly full-width login submit button */
+.login-submit-btn {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 0.92rem;
+  background-color: #0A192F;
+  border: 1px solid #0A192F;
+  color: #FFFFFF;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(10, 25, 47, 0.2);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 160ms cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 0.35rem;
+}
+
+.login-submit-btn:hover:not(:disabled) {
+  background-color: #0F2341;
+  border-color: #0F2341;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(10, 25, 47, 0.28);
+}
+
+.login-submit-btn:active:not(:disabled) {
+  transform: scale(0.98);
+  background-color: #050d18;
+}
+
+.login-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 /* Compact layout for shorter laptop screens (e.g. 1366x768 or high-DPI scaling) */
@@ -1286,16 +1344,29 @@
   }
 
   .role-icon-grid {
-    gap: 0.2rem !important;
+    gap: 0.35rem !important;
   }
 
   .role-icon-btn {
-    padding: 0.3rem 0.05rem !important;
-    min-height: 56px !important;
+    padding: 0.5rem 0.2rem !important;
+    min-height: 66px !important;
+    border-radius: 8px !important;
+    overflow: visible !important;
+  }
+
+  .role-icon-circle {
+    width: 26px !important;
+    height: 26px !important;
   }
 
   .role-icon-label {
-    font-size: 0.58rem !important;
-    height: 22px !important;
+    font-size: 0.65rem !important;
+    height: auto !important;
+    line-height: 1.2 !important;
+  }
+
+  .login-submit-btn {
+    min-height: 46px !important;
+    font-size: 0.95rem !important;
   }
 }

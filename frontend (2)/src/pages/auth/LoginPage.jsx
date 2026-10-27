@@ -220,25 +220,21 @@ export const LoginPage = ({ onLoginSuccess }) => {
                     return (
                       <button
                         key={u.personaKey}
+                        id={`login-role-${u.roleKey || u.id}`}
                         type="button"
-                        onClick={() => handleQuickLogin(u)}
+                        onClick={() => {
+                          handleSelectPersona(u);
+                          handleQuickLogin(u);
+                        }}
                         className={`role-icon-btn ${isSelected ? 'active' : ''}`}
                         title={`Sign in as ${u.name} (${details.title})`}
+                        aria-label={`Select ${details.title}`}
                       >
-                        <div style={{
-                          width: '30px',
-                          height: '30px',
-                          borderRadius: '50%',
-                          backgroundColor: details.badgeColor,
-                          color: '#FFFFFF',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: 800,
-                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                          flexShrink: 0
-                        }}>
-                          <Icon size={16} />
+                        <div
+                          className="role-icon-circle"
+                          style={{ backgroundColor: details.badgeColor }}
+                        >
+                          <Icon size={15} />
                         </div>
                         <span className="role-icon-label">
                           {details.shortLabel === 'Super Admin' ? (
@@ -266,11 +262,11 @@ export const LoginPage = ({ onLoginSuccess }) => {
                 </div>
               </div>
 
-            <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
+            <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
               <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.2rem' }}>Email Address</label>
+                <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600, marginBottom: '0.25rem' }}>Email Address</label>
                 <div className="input-with-icon">
-                  <Mail size={15} className="input-icon-left" style={{ color: '#94A3B8' }} />
+                  <Mail size={16} className="input-icon-left" style={{ color: '#94A3B8' }} />
                   <input
                     type="email"
                     className="form-control"
@@ -278,24 +274,24 @@ export const LoginPage = ({ onLoginSuccess }) => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    style={{ paddingLeft: '2.2rem', height: '38px', fontSize: '0.825rem' }}
+                    style={{ paddingLeft: '2.3rem', height: '42px', fontSize: '0.875rem' }}
                   />
                 </div>
               </div>
 
               <div className="form-group" style={{ marginBottom: 0 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.2rem' }}>
-                  <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600, margin: 0 }}>Password</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
+                  <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600, margin: 0 }}>Password</label>
                 </div>
                 <div className="input-with-icon">
-                  <Lock size={15} className="input-icon-left" style={{ color: '#94A3B8' }} />
+                  <Lock size={16} className="input-icon-left" style={{ color: '#94A3B8' }} />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     className="form-control"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    style={{ paddingLeft: '2.2rem', paddingRight: '2.2rem', height: '38px', fontSize: '0.825rem' }}
+                    style={{ paddingLeft: '2.3rem', paddingRight: '2.4rem', height: '42px', fontSize: '0.875rem' }}
                   />
                   <button
                     type="button"
@@ -308,21 +304,26 @@ export const LoginPage = ({ onLoginSuccess }) => {
                       background: 'none',
                       border: 'none',
                       cursor: 'pointer',
-                      color: '#94A3B8'
+                      color: '#94A3B8',
+                      padding: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
                     }}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
-                    {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem', margin: '0.1rem 0' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer', color: '#334155' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.78rem', margin: '0.15rem 0' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#334155' }}>
                   <input
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    style={{ accentColor: '#0A192F', cursor: 'pointer' }}
+                    style={{ accentColor: '#0A192F', cursor: 'pointer', width: '16px', height: '16px' }}
                   />
                   <span>Remember my login</span>
                 </label>
@@ -330,26 +331,16 @@ export const LoginPage = ({ onLoginSuccess }) => {
 
               <button
                 type="submit"
-                className="btn btn-primary"
+                id="login-submit-button"
+                className="login-submit-btn"
                 disabled={isLoading}
-                style={{
-                  width: '100%',
-                  height: '40px',
-                  justifyContent: 'center',
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  marginTop: '0.2rem',
-                  backgroundColor: '#0A192F',
-                  borderColor: '#0A192F',
-                  boxShadow: '0 4px 10px rgba(10, 25, 47, 0.2)'
-                }}
               >
                 {isLoading ? (
                   <span>Signing in...</span>
                 ) : (
                   <>
                     <span>Sign In</span>
-                    <ArrowRight size={15} />
+                    <ArrowRight size={16} />
                   </>
                 )}
               </button>
