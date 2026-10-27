@@ -381,7 +381,7 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
       .map(p => `${p.pieces}x ${p.packageType} (${p.description})`)
       .join(', ');
 
-    const custName = formData.customerName || formData.customer || (formData.shipper ? formData.shipper.split('\n')[0] : '') || 'Valued Customer';
+    const custName = formData.customerName || formData.customer || (formData.shipper ? formData.shipper.split('\n')[0] : '') || '';
     const custAddress = formData.customerAddress || formData.shipperAddress || (formData.shipper && formData.shipper.includes('\n') ? formData.shipper.split('\n').slice(1).join(', ') : '') || '';
 
     const recName = formData.consigneeName || (formData.consignee ? formData.consignee.split('\n')[0] : '') || '';
@@ -415,7 +415,7 @@ export const CreateWarehouseReceipt = ({ onNavigate }) => {
       volumetricWeightLbs,
       volumetricWeightKg,
       warehouseLocation: formData.warehouseLocation || 'General Staging',
-      cargoDescription: descSummary || formData.cargoDescription || 'General Cargo Merchandise',
+      cargoDescription: descSummary || formData.cargoDescription || '',
       status: "Received"
     };
 

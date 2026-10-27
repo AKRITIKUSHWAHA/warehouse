@@ -97,7 +97,7 @@ export class WarehouseService {
 
     const totalWeightKg = Number((totalWeightLbs * 0.453592).toFixed(1));
     const destCode = input.destinationCode || (input.destinationPort ? (input.destinationPort.includes(' - ') ? input.destinationPort.split(' - ')[0].trim() : input.destinationPort.slice(0, 3).toUpperCase()) : '');
-    const customerDisplayName = input.customerName || (input as any).customer || 'General Cargo';
+    const customerDisplayName = input.customerName || (input as any).customer || '';
 
     const created = await this.repo.create({
       receiptNumber,
@@ -114,7 +114,7 @@ export class WarehouseService {
       agentName: input.agentName || '',
       destinationPort: input.destinationPort || '',
       destinationCode: destCode,
-      cargoDescription: input.cargoDescription || 'General Cargo',
+      cargoDescription: input.cargoDescription || '',
       packageCount: packages.length,
       totalPieces: totalPieces || 1,
       packageType: input.packageType || (packages[0]?.packageType as string) || 'Carton',

@@ -57,7 +57,7 @@ export const WarehouseReceiptsList = ({ onNavigate }) => {
         const rawCustomer = item.customer || item.customerName || '';
         const rawShipper = typeof item.shipper === 'object' ? item.shipper?.name : (item.shipper || '');
         
-        let name = rawCustomer || (rawShipper ? rawShipper.split('\n')[0] : 'Valued Customer');
+        let name = rawCustomer || (rawShipper ? rawShipper.split('\n')[0] : '—');
         let address = item.customerAddress || item.shipperAddress || '';
         if (!address && typeof rawShipper === 'string' && rawShipper.includes('\n')) {
           address = rawShipper.split('\n').slice(1).join(', ');
