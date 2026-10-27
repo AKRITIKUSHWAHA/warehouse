@@ -1,16 +1,57 @@
-# React + Vite
+# VI Customs Brokers & Logistics — Frontend Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Modern React + Vite frontend for **VI Customs Brokers & Logistics** freight forwarding and cargo consolidation platform.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 1. Overview & Business Model
 
-## React Compiler
+* **Business:** NVOCC / Freight Forwarding Agent (Miami CFS ➔ Eastern Caribbean)
+* **Core Workflow:**
+  1. **1. Warehouse Receipts:** Dock intake, customer creation, package dimensions & weight, barcode thermal labels.
+  2. **2. House Bills of Lading:** Customer cargo bills ready for consolidation.
+  3. **3. Master Bills & Manifests:** Container & vessel assignment, full-page ocean B/L print, 1-click ocean manifest generation.
+* **Agent Portal:** Dedicated destination port portal for inbound vessels, cargo volume (CBM/CFT), and document inspection.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the Oxlint configuration
+## 2. Technology Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+* **Framework:** React 18
+* **Build Tool:** Vite 6 / 8
+* **Styling:** Vanilla CSS design system with responsive layouts
+* **Icons:** `lucide-react`
+* **API Client:** Fetch client with automatic JWT bearer authorization and token refresh
+* **Backend Connection:** Proxies `/api/v1` to Fastify backend on `http://127.0.0.1:5001`
+
+---
+
+## 3. Running Locally
+
+### Prerequisites
+* Node.js v20+
+* Fastify Backend running on port `5001`
+* PostgreSQL running with `wereHouseDb`
+
+### Commands
+```bash
+# Install dependencies
+npm install
+
+# Start Vite development server
+npm run dev
+# Accessible at: http://localhost:5173
+
+# Production build
+npm run build
+```
+
+---
+
+## 4. User Roles & Login Credentials
+
+| Role | User Name | Email | Password | Scope |
+| :--- | :--- | :--- | :--- | :--- |
+| **Super Admin** | Marcus Vance | `marcus.vance@vicustoms.com` | `password123` | Full access, settings, RBAC, holds & releases |
+| **Warehouse** | Carlos Mendez | `carlos.m@vicustoms.com` | `password123` | Dock intake, WRs (starting 3100), HBLs (No Delete) |
+| **Agent** | Destination Agent Staff | `agent@vicustoms.com` | `password123` | Master B/Ls, Manifests, Inbound Volume (Read-Only) |

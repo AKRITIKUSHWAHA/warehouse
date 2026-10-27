@@ -30,22 +30,23 @@ $$\text{Customer} \longrightarrow \text{Warehouse Receipt (WR)} \longrightarrow 
    - All **18 active tables migrated** with foreign keys, indexes, and cascades (containers & voyages modules removed per NVOCC agent scope).
    - Migration files: `backend/drizzle/migrations/`.
 
-3. **Complete Dummy Data Removal (Database Clean Slate):**
-   - **15 tables zeroed / clean:** `ports`, `customers`, `vessels`, `warehouse_receipts`, `cargo`, `house_bills`, `consolidations`, `shipments`, `bills_of_lading`, `manifests`, `agents`, `documents`, `tracking_events`, `audit_logs`, `permissions` = **0 rows**.
-   - **3 core system tables preserved:**
-     - `users` (5 workflow login personas)
-     - `roles` (5 system roles)
-     - `settings` (numbering rules & company profile)
+3. **Role & Permission Alignment (3 Core Personas):**
+   - System streamlined to 3 core operational roles matching client requirements:
+     - `super_admin` (Marcus Vance)
+     - `warehouse` (Carlos Mendez)
+     - `agent` (Destination Agent Staff)
+   - Purged legacy `operations` and `documentation` users from PostgreSQL and UI.
+   - Restricted Delete action from `warehouse` and `agent` roles.
+   - Restricted Edit/Export Manifest actions from `agent` role.
 
-4. **Frontend Mock & Fallback Data Handled:**
+4. **Live Agent Portal Dashboard & Volume Calculation:**
+   - Inbound consignments and volume dynamically calculated from active Master Bills (`BL-VI-2026-646`) and Manifests (`MNF-2026-0001`).
+   - Decimal precision preserved (`0.01 CBM` / `0.40 CFT`, 2 pkgs, 67 lbs) avoiding round-down to zero.
+
+5. **Frontend Mock & Fallback Data Handled:**
    - Location: `frontend (2)`
    - Storage service clean-slate auto-purge (`kers_clean_slate_v8`) implemented.
    - Frontend build tested: `npm run build` succeeds cleanly with 0 errors.
-
-5. **5-Stage Workflow & Scoped Navigation Synchronized:**
-   - Role isolation strictly configured: Carlos Mendez (`warehouse`), Elena Rostova (`operations`), Sarah Jenkins (`documentation`), Destination Agent Staff (`agent`), Marcus Vance (`super_admin`).
-   - Sidebar menus strictly scoped per persona.
-   - Authoritative manual updated in `frontend (2)/workflow.md`.
 
 ---
 
@@ -53,11 +54,9 @@ $$\text{Customer} \longrightarrow \text{Warehouse Receipt (WR)} \longrightarrow 
 
 | Persona Name | System Role | Email | Password | Primary Interface |
 | :--- | :--- | :--- | :--- | :--- |
-| **Carlos Mendez** | `warehouse` | `carlos.m@vicustoms.com` | `<CONFIGURED_IN_SEED_OR_ENV>` | Miami CFS Intake, WRs, Cargo, 4x6 Roll Labels |
-| **Elena Rostova** | `operations` | `elena.r@vicustoms.com` | `<CONFIGURED_IN_SEED_OR_ENV>` | Consolidation Wizard, Master Shipments |
-| **Sarah Jenkins** | `documentation` | `sarah.j@vicustoms.com` | `<CONFIGURED_IN_SEED_OR_ENV>` | Maritime Docs, HBL Issuance, Holds & Ocean Manifests |
-| **Destination Agent Staff** | `agent` | `agent@vicustoms.com` | `<CONFIGURED_IN_SEED_OR_ENV>` | Secure Port Agent Hub, Cargo Release |
-| **Marcus Vance** | `super_admin` | `marcus.vance@vicustoms.com` | `<CONFIGURED_IN_SEED_OR_ENV>` | Full HQ Console, RBAC Matrix, Audit Trail, Settings |
+| **Marcus Vance** | `super_admin` | `marcus.vance@vicustoms.com` | `password123` | Full HQ Console, RBAC Matrix, Audit Trail, Settings |
+| **Carlos Mendez** | `warehouse` | `carlos.m@vicustoms.com` | `password123` | Miami CFS Intake, WRs (starting 3100), Cargo, 4x6 Roll Labels, HBLs (No Delete) |
+| **Destination Agent Staff** | `agent` | `agent@vicustoms.com` | `password123` | Secure Port Agent Hub, Master B/Ls, Outward Manifests (Read-Only) |
 
 ---
 

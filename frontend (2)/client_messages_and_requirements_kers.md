@@ -1,199 +1,57 @@
-# KERS Customs & Logistics — Client Messages & Requirements
+# Client Messages & Requirements (Verbatim Unedited Transcripts)
 
-> **Purpose:** This document collects the client messages and feedback that were previously shared in the conversation about the **KERS Customs & Logistics / Freight Forwarding & Cargo Consolidation frontend** project.
->
-> **Important:** Only the messages whose exact wording was preserved are marked as **Exact client message**. Other items are included as **Client feedback summarized from the user's shared conversation** and should be confirmed against the original chat if exact wording is required.
+**Client Name:** Kedreana  
+**Company:** VI Customs Brokers & Logistics  
+**Business Profile:** NVOCC / Shipping Agent (Eastern Caribbean Operations)  
 
----
-
-## 1. Client Information
-
-- **Client name/contact shown in conversation:** `kedreana`
-- **Project:** KERS Customs & Logistics
-- **Application:** Freight Forwarding & Cargo Consolidation frontend
-- **Current scope:** Frontend-first implementation; backend to be handled after client approval.
+> **Note:** This document contains the raw, exact, unedited messages sent by the client. Nothing has been altered, paraphrased, or removed.
 
 ---
 
-## 2. Exact Client Messages
+## 1. Messages from 1 September 2026
 
-### 2.1 — 1 September 2026
+```text
+There are a few things that does not work for us. I thought you were going to send a questionnaire. I’m not sure if I understand the workflow. I don’t see the house BL options
+```
 
-**Client:** kedreana
-
-> “There are a few things that does not work for us. I thought you were going to send a questionnaire. I’m not sure if I understand the workflow. I don’t see the house BL options”
-
-### Meaning captured from the conversation
-
-The client communicated that:
-
-1. Some parts of the application were not working as expected.
-2. The client expected a questionnaire.
-3. The current workflow was not clear enough.
-4. The client could not find the House B/L options.
+```text
+the application seams a little complex
+```
 
 ---
 
-## 3. Other Client Feedback Shared in the Conversation
+## 2. Messages from 20 September 2026
 
-The following points were shared as the client's detailed feedback/requirements. The exact original wording was not preserved in the available conversation context, so these are documented as summarized requirements.
+```text
+20 Sept, 21:05
+#### Agent
+Please replace the current *Destination Agent* role name with simply *Agent*, as some agents may also use the system for export operations rather than only receiving inbound cargo.
 
-### 3.1 Customer, Shipper and Consignee
+The Agent role should allow the user to:
 
-- The customer and consignee may be different people or companies.
-- Shipper and consignee must be handled independently.
-- Shipper and consignee should be selectable through a dropdown/search interface.
-- Reusable customer/company profiles should be supported.
+* Access manifests assigned to their location/agency
+* Export/download manifest data
+* Access Bills of Lading assigned to them
+* View the relevant consolidation/container information
+* Update consolidation status, including:
 
-### 3.2 Warehouse Receipt
+  * Arrived at port
+  * Container unloaded
+  * Documents released
+* Receive and measure cargo where applicable
+* Print labels
+* Prepare House Bills of Lading
 
-- Warehouse Receipt intake should be simple and clear.
-- After saving a Warehouse Receipt, the form should reset to a blank state for the next entry.
-- Package dimensions must be visible:
-  - Length
-  - Width
-  - Height
-- Weight and pieces should be visible and usable.
-- The warehouse location feature was not required and was requested to be removed.
-- Destination should be captured correctly and carried forward into the later workflow.
+Agents should only have access to the shipments, consolidations, manifests and Bills of Lading relevant to their assigned location/agency.
 
-### 3.3 House B/L
-
-- The client could not find the House B/L options.
-- House B/L workflow and available options needed clarification.
-- House B/L rates/charges input was unclear.
-- Warehouse Receipts should be linkable to a House B/L.
-- Linked Warehouse Receipts should remain visible in the relevant House B/L and cargo/inventory views.
-- One House B/L may need to connect to one or more Warehouse Receipts, depending on the client's confirmed business rules.
-
-> **Note:** The exact House B/L workflow, rate structure, and option list should not be guessed. These must be confirmed with the client.
-
-### 3.4 Destination Ports and Services
-
-- Custom islands/service destinations and ports are required.
-- Destinations/ports should be selected from dropdowns or searchable options.
-- The destination/port should not depend only on unrestricted free-text entry.
-
-### 3.5 Manifest
-
-- The Manifest should initially be blank.
-- It should populate from saved Master B/L or Master Shipment data.
-- The Manifest should not contain unrelated hardcoded data.
-- The data flow should be:
-
-  `Saved Master B/L / Master Shipment → Manifest`
-
-### 3.6 Measurements and Volume Display
-
-- CFT should be the primary volume measurement.
-- CBM should be shown as the secondary measurement.
-- The preferred display format discussed was similar to:
-
-  `45.0 CFT (1.27 CBM)`
+I did not complete a WR because I was unable to add Client information. Additionally, please UNLINK Customer to the Consignee.. Thats not always the case.
+```
 
 ---
 
-## 4. Client Concern About Application Complexity
+## 3. Messages from 21 September 2026
 
-The client also communicated that:
-
-> “the application seams a little complex”
-
-This indicates that the interface and workflow should be made easier to understand without removing required freight-forwarding functionality.
-
-The frontend should therefore focus on:
-
-- Clear role-based navigation.
-- A simple and visible end-to-end workflow.
-- Clear “next step” actions.
-- Less duplication in menus and buttons.
-- Simple forms with understandable labels.
-- A clear House B/L entry point.
-- A clear relationship between:
-
-  `Warehouse Receipt → Cargo Inventory → House B/L → Consolidation → Master B/L → Manifest`
-
----
-
-## 5. Workflow Requirements Collected From Client Feedback
-
-The following workflow was reconstructed from the client's feedback and the project discussions:
-
-1. Create or select a customer profile.
-2. Create a Warehouse Receipt.
-3. Enter package description, dimensions, weight and pieces.
-4. Select shipper and consignee independently.
-5. Select the destination/service port.
-6. Save the Warehouse Receipt.
-7. Generate or view cargo labels and inventory records.
-8. Link one or more Warehouse Receipts to a House B/L.
-9. Enter or review House B/L rates/charges.
-10. Consolidate eligible House B/Ls or cargo into a shipment/container.
-11. Generate or save the Master B/L.
-12. Populate the Manifest from saved Master B/L/Master Shipment data.
-13. Continue with agent assignment, tracking and delivery workflow as applicable.
-
----
-
-## 6. Issues the Client Expected to Be Addressed
-
-- Some existing functions were not working correctly.
-- The questionnaire was missing or had not yet been provided.
-- The overall workflow was difficult to understand.
-- House B/L options were not visible.
-- The application felt too complex.
-- Customer, shipper and consignee relationships needed clearer handling.
-- Warehouse Receipt dimensions were not sufficiently visible.
-- Warehouse Receipt reset behavior needed improvement.
-- House B/L rates/charges needed a clearer interface.
-- Warehouse Receipts needed to remain connected to House B/L and cargo inventory.
-- Custom destinations and ports needed dropdown/search support.
-- Manifest data needed to come from saved Master B/L/Master Shipment records.
-- CFT and CBM display priority needed to be corrected.
-
----
-
-## 7. Important Clarifications Still Needed From the Client
-
-These points should be confirmed before claiming that the frontend fully matches the client's process:
-
-- Exact House B/L workflow and all available options.
-- Whether a House B/L can link multiple Warehouse Receipts in every case.
-- Exact House B/L rate and charge fields.
-- Exact customer, shipper and consignee rules.
-- Complete list of service destinations and ports.
-- Exact Manifest fields and export format.
-- Whether CSV/XML output must follow a specific external/customs schema.
-- Exact roles and permissions required by the client.
-- Final preferred terminology for shipments, House B/L, Master B/L and cargo records.
-
----
-
-## 8. Implementation Rules Based on the Client Feedback
-
-- Do not remove working core features without client approval.
-- Do not invent missing House B/L business rules.
-- Keep the workflow connected through shared frontend state/data.
-- Ensure saved records are reused in later pages.
-- Make the interface understandable for a first-time user.
-- Keep the application responsive on desktop, tablet and mobile.
-- Do not claim that everything is 100% tested unless browser/manual testing has actually been completed.
-- Separate code verification/build verification from real browser QA.
-
----
-
-## 9. Source and Accuracy Note
-
-This file is based on the client messages and requirements previously shared in the conversation. One exact client message is preserved above. The remaining requirements are included as reconstructed summaries because their complete original wording is not available in the current context.
-
-For a legally or contractually exact record, compare this document with the original client chat, WhatsApp messages, email, or project PDF and update the wording accordingly.
-
-
-
-
-date:-21-9-26 client requriement
-
-
+```text
 [8:32 pm, 21/9/2026] +91 93038 32031: Hello. I am trying to review this weekend. You will get some feedback tomorrow
 [8:32 pm, 21/9/2026] +91 93038 32031: Let me send you my logo and business name
 [8:33 pm, 21/9/2026] +91 93038 32031: VI Customs Brokers & Logistics
@@ -253,30 +111,56 @@ This should be a broader operational role with access to:
 * Access and manage consolidation information
 
 This role essentially handles the documentation and shipment-management side of the operation and therefore requires broader access than the Warehouse/Operations role.
+```
 
-K
-Profile Image
-kedreana
+---
 
-20 Sept, 21:05
-#### Agent
-Please replace the current *Destination Agent* role name with simply *Agent*, as some agents may also use the system for export operations rather than only receiving inbound cargo.
+## 4. Messages from 18 October 2026
 
-The Agent role should allow the user to:
+```text
+[18 Oct, 16:41]
+Customers and consignees. I only need customers. I want to be able to use them either way. They could be a consignee or shipper. Please remove that rule. I’ve been asking that for a long time. When I select my importer the customer account profile automatically changes. I don’t want it that way.
 
-* Access manifests assigned to their location/agency
-* Export/download manifest data
-* Access Bills of Lading assigned to them
-* View the relevant consolidation/container information
-* Update consolidation status, including:
+[18 Oct, 16:41]
+The bill of lading form. I sent you a copy of how I wanted it. It’s supposed to fill the entire page. This isn’t the standard look.
 
-  * Arrived at port
-  * Container unloaded
-  * Documents released
-* Receive and measure cargo where applicable
-* Print labels
-* Prepare House Bills of Lading
+[18 Oct, 16:45]
+I need help understanding the master bill of lading and manifesting process. 
 
-Agents should only have access to the shipments, consolidations, manifests and Bills of Lading relevant to their assigned location/agency.
+In the bill of lading process, we usually create our own consolidation number. That way when we create the master bill of lading, we select that particular consolidation number and the options of bills of ladings are there for selection. 
 
-I did not complete a WR because I was unable to add Client information. Additionally, please UNLINK Customer to the Consignee.. Thats not always the case.
+That master bill of lading usually has all the details which is then a one click process for creating the manifest.
+
+[18 Oct, 16:53]
+We don’t need the active voyage schedules. And operational status. We just need the fleet directory. I’d like to add my vessels and you build with our actual information
+
+[18 Oct, 16:54]
+We do not service Bahamas. It’s literally small vessels in the eastern Caribbean
+
+[18 Oct, 16:54]
+This is for a huge operation and that’s not what we do
+
+[18 Oct, 16:55]
+Please if you can clear the entire program I would appreciate it. I’d like to add the vessels we service
+
+[18 Oct, 16:56]
+Also, we do not manage equipment so the container fleet is not necessary
+
+[18 Oct, 16:56]
+We’re more or less NVOCC
+
+[18 Oct, 16:56]
+We don own any vessels. We are agents
+
+[18 Oct, 16:57]
+So with the containers, we get one from a VOCC, fill it and export.
+
+[18 Oct, 16:57]
+Let’s start fresh with the software then I can do the testing
+
+[18 Oct, 16:57]
+Thank you
+
+[18 Oct, 17:00]
+Also, no need for this classification
+```

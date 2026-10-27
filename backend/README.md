@@ -217,14 +217,13 @@ Populates safe initial roles, Caribbean port records, Nassau port agent, system 
 npm run db:seed
 ```
 
-### Pre-seeded Development Personas
+### Pre-seeded Development Personas (3 Core Roles)
 
 | Name | Role | Email | Password |
 |---|---|---|---|
-| Marcus Vance | `super_admin` | `marcus.vance@vicustoms.com` | `<CONFIGURED_IN_SEED_OR_ENV>` |
-| Sarah Jenkins | `documentation` | `sarah.j@vicustoms.com` | `<CONFIGURED_IN_SEED_OR_ENV>` |
-| Carlos Mendez | `operations` | `carlos.m@vicustoms.com` | `<CONFIGURED_IN_SEED_OR_ENV>` |
-| Destination Agent | `agent` | `agent@vicustoms.com` | `<CONFIGURED_IN_SEED_OR_ENV>` |
+| Marcus Vance | `super_admin` | `marcus.vance@vicustoms.com` | `password123` |
+| Carlos Mendez | `warehouse` | `carlos.m@vicustoms.com` | `password123` |
+| Destination Agent Staff | `agent` | `agent@vicustoms.com` | `password123` |
 
 ---
 

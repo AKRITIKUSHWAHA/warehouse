@@ -1,13 +1,121 @@
-# Client Requirements & Feedback Summary (Kedreana)
+# Client Messages & Requirements (Verbatim Unedited Transcripts)
 
-**Date of Communication:** 18 October  
-**Client:** Kedreana  
-**Project:** Warehouse & Ocean Freight Management System  
-**Business Profile:** NVOCC / Freight Forwarding Agent (Eastern Caribbean Operations)
+**Client Name:** Kedreana  
+**Company:** VI Customs Brokers & Logistics  
+**Business Profile:** NVOCC / Shipping Agent (Eastern Caribbean Operations)  
+
+> **Note:** This document contains the raw, exact, unedited messages sent by the client. Nothing has been altered, paraphrased, or removed.
 
 ---
 
-## 1. Raw Messages from Client (Transcript)
+## 1. Messages from 1 September 2026
+
+```text
+There are a few things that does not work for us. I thought you were going to send a questionnaire. I’m not sure if I understand the workflow. I don’t see the house BL options
+```
+
+```text
+the application seams a little complex
+```
+
+---
+
+## 2. Messages from 20 September 2026
+
+```text
+20 Sept, 21:05
+#### Agent
+Please replace the current *Destination Agent* role name with simply *Agent*, as some agents may also use the system for export operations rather than only receiving inbound cargo.
+
+The Agent role should allow the user to:
+
+* Access manifests assigned to their location/agency
+* Export/download manifest data
+* Access Bills of Lading assigned to them
+* View the relevant consolidation/container information
+* Update consolidation status, including:
+
+  * Arrived at port
+  * Container unloaded
+  * Documents released
+* Receive and measure cargo where applicable
+* Print labels
+* Prepare House Bills of Lading
+
+Agents should only have access to the shipments, consolidations, manifests and Bills of Lading relevant to their assigned location/agency.
+
+I did not complete a WR because I was unable to add Client information. Additionally, please UNLINK Customer to the Consignee.. Thats not always the case.
+```
+
+---
+
+## 3. Messages from 21 September 2026
+
+```text
+[8:32 pm, 21/9/2026] +91 93038 32031: Hello. I am trying to review this weekend. You will get some feedback tomorrow
+[8:32 pm, 21/9/2026] +91 93038 32031: Let me send you my logo and business name
+[8:33 pm, 21/9/2026] +91 93038 32031: VI Customs Brokers & Logistics
+[8:33 pm, 21/9/2026] +91 93038 32031: Hello,
+
+After deciding to test the latest version of the application, I went through some of the core functions and noted the following issues and changes that are required.
+
+### Issues Identified During Testing
+
+*1. Clear Slate / Reset*
+
+I selected the option to clear the slate/reset the application. However, while some information appeared to be cleared, the *customer database was not cleared*. All previously entered customer information remained in the system.
+
+*2. Warehouse Staff – Unable to Add Customers*
+
+I signed in under the Warehouse Staff role and was unable to add a new customer.
+
+Because Warehouse/Operations staff will be receiving cargo, they need the ability to create a customer when cargo arrives for someone who is not already in the system.
+
+*3. Warehouse Receipt (WR) Numbering*
+
+Warehouse Receipt numbers do not need to begin with "WR."
+
+I would prefer the system-generated Warehouse Receipt number to be *numeric only*.
+
+Example: *100245* instead of *WR100245*. Lets start at 3100
+
+There should also be an option for authorized *Documentation and Admin staff* to manually enter or edit a WR number, as some shipments may arrive with an existing warehouse receipt/reference number that we need to use.
+
+### User Roles & Permissions
+After reviewing the current setup, I believe we can simplify the user roles. This is not a large operation, so we do not need highly separated roles for every individual function. Some responsibilities can be combined.
+
+#### Warehouse / Operations
+This role should be able to:
+
+* Add and access customers
+* Receive cargo
+* Enter cargo dimensions and weight
+* Create Warehouse Receipts
+* Print cargo/warehouse labels
+* Prepare House Bills of Lading
+
+#### Documentation
+This should be a broader operational role with access to:
+
+* Add and access customers
+* Enter cargo dimensions and weight
+* Create Warehouse Receipts
+* Print labels
+* Prepare House Bills of Lading
+* Review and edit House Bills of Lading
+* Prepare manifests
+* Issue and clear holds
+* Add/manage vessel names
+* Assign shipments/cargo to a consolidation or container
+* Edit Warehouse Receipt numbers
+* Access and manage consolidation information
+
+This role essentially handles the documentation and shipment-management side of the operation and therefore requires broader access than the Warehouse/Operations role.
+```
+
+---
+
+## 4. Messages from 18 October 2026
 
 ```text
 [18 Oct, 16:41]
@@ -56,84 +164,3 @@ Thank you
 [18 Oct, 17:00]
 Also, no need for this classification
 ```
-
----
-
-## 2. Core Business Understanding (Client Reality vs Current Software)
-
-| Aspect | Current System (Over-engineered) | Client's Real Business (Actual Need) |
-|---|---|---|
-| **Role / Identity** | Carrier / Ship Owner (VOCC) | **NVOCC / Shipping Agent** (Non-Vessel Operating Common Carrier). |
-| **Geographic Coverage** | Bahamas (Nassau / Freeport routes) | **Eastern Caribbean** (Small islands, feeder vessels). No Bahamas. |
-| **Vessels** | Active voyage tracking, complex schedules & rotations | Simple **Vessel / Fleet Directory** to list their serviced vessels. |
-| **Containers / Equipment** | Full Container Fleet & Equipment asset management | **No equipment management needed**. They lease containers from VOCCs, stuff them, and export. Only container/seal numbers are recorded. |
-| **Parties (Contacts)** | Strict segregation (Commercial Importer, Shipper, Consignee) | **Single unified Customer directory**. Any contact can act as Shipper OR Consignee interchangeably. |
-| **B/L Workflow** | Generic, disconnected Master B/L creation | **Consolidation Number ➔ Master B/L (HBL multi-select) ➔ 1-Click Manifest**. |
-| **B/L Document Layout** | Compact / non-standard preview card | **Full-page standard ocean Bill of Lading** fitting standard letter/A4 print. |
-
----
-
-## 3. Detailed Client Feedback & Action Items
-
-### ① Customer & Consignee Rules
-* **Problem:** System forces account classifications (Commercial Importer, Shipper, Consignee, etc.) and treats them as separate entities. Selecting an importer overwrites/changes the customer account profile.
-* **Client Request:** 
-  * Eliminate the distinction rule. Maintain a single list of **Customers**.
-  * Any customer can be selected as a **Shipper** or a **Consignee**.
-  * Remove the bug where selecting an importer changes the customer profile automatically.
-  * Remove unnecessary classification tags.
-
----
-
-### ② Bill of Lading (B/L) Document Design
-* **Problem:** Current B/L view does not look like standard maritime shipping paperwork and leaves blank margin space.
-* **Client Request:** 
-  * The form must **fill the entire page** (Full Page 100% standard ocean Bill of Lading format).
-  * Align styling with standard industry layouts (as per sample previously provided by client).
-
----
-
-### ③ Master B/L & Manifest Process (Consolidation Workflow)
-* **Client's Actual Operational Workflow:**
-  1. **Consolidation Creation:** Warehouse staff creates House Bills of Lading (HBLs) under a specific **Consolidation Number**.
-  2. **Master B/L Creation:** When creating a Master Bill of Lading (MBL), the user simply selects that **Consolidation Number**.
-  3. **Auto-Populate HBLs:** All HBLs tied to that consolidation number appear as options for selection.
-  4. **1-Click Manifest Generation:** Once the Master B/L is verified, clicking a single button generates the **Customs Cargo Manifest** with all aggregated line items.
-
----
-
-### ④ Vessel / Fleet Directory Simplification
-* **Remove:** 
-  * "Active Voyage Schedules"
-  * "Operational Status" tracking
-  * Bahamas route defaults (e.g., Nassau Container Port, Bahama Express)
-* **Retain:** 
-  * A clean, simple **Vessel Directory / Fleet Directory** where the client can add and maintain the small vessels they service in the Eastern Caribbean.
-
----
-
-### ⑤ Equipment / Container Fleet Removal
-* **Client Request:** Remove the **Container Fleet / Equipment Management** module completely.
-* **Reason:** As an NVOCC, they do not own or track container assets. They simply receive empty containers from ocean carriers (VOCC), pack cargo, record the container & seal numbers on the B/L, and ship them out.
-
----
-
-### ⑥ Complete System Data Reset (Fresh Start)
-* **Client Request:** *"Please if you can clear the entire program I would appreciate it... Let’s start fresh with the software then I can do the testing."*
-* **Action Required:** 
-  * Clear all dummy/seed records (dummy Bahama vessels, test receipts, fake containers, voyage logs).
-  * Provide a clean database state ready for client testing with actual vessels and customer accounts.
-
----
-
-## 4. Developer Implementation Checklist
-
-- [ ] **Data Model & UI:** Merge Customer and Consignee into a single flexible `Customer` directory without rigid role locks.
-- [ ] **Bug Fix:** Prevent auto-changing the customer profile when selecting an importer in receipt/B/L intake forms.
-- [ ] **Consolidation Flow:** Add Consolidation Number selector on Master B/L creation modal/page to multi-select related HBLs.
-- [ ] **1-Click Manifest:** Add a direct "Generate Manifest from Master B/L" button on the MBL screen.
-- [ ] **Navigation & Modules:**
-  - [ ] Remove `ContainersList` (Container Fleet) from the navigation bar.
-  - [ ] Simplify `VesselsList` to only display the Fleet Directory (hide/remove Voyage Scheduler and live status widgets).
-- [ ] **Print Layout:** Redesign the Bill of Lading printable document view to fill 100% of the page with standard maritime grid lines.
-- [ ] **Database Wipe / Clean Seed:** Provide a reset script to wipe test data and prepare fresh system for Eastern Caribbean data entry.
